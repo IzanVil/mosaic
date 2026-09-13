@@ -11,7 +11,9 @@ use crate::db::Db;
 /// Devuelve todos los proyectos: primero los fijados, luego por nombre.
 #[tauri::command]
 pub async fn list_projects(db: State<'_, Arc<Db>>) -> Result<Vec<Project>, String> {
-    Ok(db.with_conn(repo::list_all)?)
+    let projects = db.with_conn(repo::list_all)?;
+    tracing::debug!(count = projects.len(), "list_projects");
+    Ok(projects)
 }
 
 /// Devuelve un proyecto concreto.

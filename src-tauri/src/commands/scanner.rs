@@ -39,7 +39,9 @@ pub async fn add_scan_path(db: State<'_, Arc<Db>>, path: String) -> Result<repo:
 /// Devuelve todas las rutas raíz configuradas.
 #[tauri::command]
 pub async fn list_scan_paths(db: State<'_, Arc<Db>>) -> Result<Vec<repo::ScanPath>, String> {
-    Ok(db.with_conn(repo::list)?)
+    let paths = db.with_conn(repo::list)?;
+    tracing::debug!(count = paths.len(), "list_scan_paths");
+    Ok(paths)
 }
 
 /// Elimina una ruta raíz. Los proyectos ya descubiertos se conservan.
