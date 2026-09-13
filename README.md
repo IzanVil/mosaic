@@ -10,17 +10,18 @@ sin cuentas, sin telemetría, sin IA.
 
 ## Estado
 
-**En construcción.** Ahora mismo está terminado el backend de la Fase 1:
+**En construcción.** La Fase 1 está terminada:
 
 - Esquema SQLite con migraciones.
 - Escaneo de rutas configurables con detección de proyectos por ficheros
   marcadores (`.git`, `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`,
   `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`).
 - Detección heurística del lenguaje primario.
-- Comandos Tauri para configurar rutas, escanear y listar proyectos.
+- Interfaz para añadir y quitar rutas de escaneo, lanzar escaneos y ver en una
+  lista los proyectos encontrados.
 
-**Todavía no hay interfaz**: la ventana arranca y muestra un texto de relleno.
-El frontend (Fase 1, paso 4) y la integración con Git (Fase 2) están pendientes.
+Pendiente: el estado de Git en vivo (Fase 2), las tarjetas visuales con acciones
+rápidas (Fase 3) y las etiquetas, la búsqueda y los filtros (Fase 4).
 
 ## Stack
 
