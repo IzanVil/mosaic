@@ -1,0 +1,71 @@
+# Mosaic
+
+Organizador visual de proyectos de código para escritorio. Descubre las carpetas
+de proyectos que tienes en el disco y las presenta en un tablero con su estado de
+Git, etiquetas y accesos directos para abrirlas en el IDE, la terminal o el
+explorador de archivos.
+
+Local-first: todo se guarda en una base de datos SQLite en tu máquina. Sin red,
+sin cuentas, sin telemetría, sin IA.
+
+## Estado
+
+**En construcción.** Ahora mismo está terminado el backend de la Fase 1:
+
+- Esquema SQLite con migraciones.
+- Escaneo de rutas configurables con detección de proyectos por ficheros
+  marcadores (`.git`, `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`,
+  `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`).
+- Detección heurística del lenguaje primario.
+- Comandos Tauri para configurar rutas, escanear y listar proyectos.
+
+**Todavía no hay interfaz**: la ventana arranca y muestra un texto de relleno.
+El frontend (Fase 1, paso 4) y la integración con Git (Fase 2) están pendientes.
+
+## Stack
+
+Rust + Tauri 2 en el backend; Svelte 5 con TypeScript, Vite y Tailwind 4 en el
+frontend. SQLite vía `rusqlite`.
+
+## Compilar
+
+Requisitos: Rust estable, Node 20+, pnpm y las dependencias de sistema de
+Tauri 2. En Fedora:
+
+```bash
+sudo dnf install webkit2gtk4.1-devel libsoup3-devel gtk3-devel \
+                 openssl-devel curl wget file
+```
+
+Para otras distribuciones, macOS y Windows, ver
+[los requisitos de Tauri](https://tauri.app/start/prerequisites/).
+
+```bash
+pnpm install          # dependencias del frontend
+pnpm tauri dev        # app en modo desarrollo
+pnpm tauri build      # binario de release
+```
+
+Tests y comprobaciones del backend:
+
+```bash
+cd src-tauri
+cargo test
+cargo clippy --all-targets -- -D warnings
+cargo fmt --check
+```
+
+El nivel de logs se controla con la variable `MOSAIC_LOG` (por ejemplo
+`MOSAIC_LOG=debug pnpm tauri dev`).
+
+## Dónde guarda los datos
+
+- Linux: `~/.local/share/mosaic/mosaic.db`
+- macOS: `~/Library/Application Support/dev.izan.mosaic/mosaic.db`
+- Windows: `%APPDATA%\izan\mosaic\data\mosaic.db`
+
+Mosaic solo lee metadatos de los repositorios; nunca modifica su contenido.
+
+## Licencia
+
+MIT. Ver [LICENSE](LICENSE).
