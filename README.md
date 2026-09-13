@@ -23,6 +23,12 @@ sin cuentas, sin telemetría, sin IA.
 Pendiente: el estado de Git en vivo (Fase 2), las tarjetas visuales con acciones
 rápidas (Fase 3) y las etiquetas, la búsqueda y los filtros (Fase 4).
 
+## Documentación
+
+- [Arquitectura](docs/ARCHITECTURE.md) — capas, escáner, modelo de datos y
+  decisiones de diseño.
+- [Roadmap](docs/ROADMAP.md) — qué está hecho y qué viene después.
+
 ## Stack
 
 Rust + Tauri 2 en el backend; Svelte 5 con TypeScript, Vite y Tailwind 4 en el
