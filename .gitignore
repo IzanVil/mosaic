@@ -1,0 +1,35 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Builds
+dist/
+build/
+target/
+.svelte-kit/
+src-tauri/gen/
+
+# Base de datos local
+*.db
+*.db-wal
+*.db-shm
+
+# Entorno y logs
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editores / SO
+.DS_Store
+Thumbs.db
+.directory
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Caches de herramientas
+node_modules/.tmp/
+.cache/
