@@ -94,6 +94,44 @@ Heurística, en orden:
 
 Los empates se rompen alfabéticamente para que el resultado sea determinista.
 
+### `core/git.rs`
+
+Mosaic **solo lee** de los repositorios y nunca habla con la red: `git2` se
+compila sin las features `ssh` ni `https`, y con `vendored-libgit2`, de modo que
+no depende de que haya una libgit2 en el sistema.
+
+`ahead` y `behind` se calculan con `graph_ahead_behind` entre la rama local y su
+upstream, **sin hacer `fetch`**. Son `NULL` si la rama no tiene upstream. Los
+números pueden estar desfasados respecto al remoto real, exactamente igual que
+`git status` sin conexión.
+
+`is_dirty` usa el mismo criterio que `git status`: ficheros modificados más
+ficheros sin seguir, respetando `.gitignore`. No se entra a recorrer los
+directorios sin seguir, porque saber que existen basta y contarlos puede ser
+carísimo.
+
+Casos que el lector contempla: rama sin nacer (repositorio recién inicializado,
+del que sí se sabe el nombre de la rama), HEAD separado (hay commit pero no
+rama) y repositorios bare (nunca sucios). `Repository::open` no busca hacia
+arriba, así que un repositorio anidado devuelve su propio estado y no el de su
+contenedor.
+
+El refresco masivo es tolerante a fallos: un repositorio ilegible no aborta el
+proceso, se registra el aviso y **se borra su entrada de la caché** para no
+mostrar datos rancios.
+
+### Refresco en segundo plano
+
+Una tarea lanzada en el `setup` de Tauri refresca el estado Git cada N minutos
+(5 por defecto, configurable; `0` lo desactiva). El intervalo se relee en cada
+vuelta, así que un cambio en los ajustes surte efecto sin reiniciar. Hace un
+primer refresco a los 5 segundos del arranque porque la caché que quedó de la
+sesión anterior puede estar muy desactualizada.
+
+Al terminar emite el evento `git-status-refreshed`, que el frontend escucha para
+recargar la caché. La caché es reconstruible: si se borra, el siguiente refresco
+la repuebla.
+
 ## Modelo de datos
 
 Seis tablas: `scan_paths`, `projects`, `tags`, `project_tags`,

@@ -28,18 +28,25 @@ que desaparecen del disco; tope de entradas por escaneo con aviso.
 
 ---
 
-## Fase 2 — Integración Git
+## Fase 2 — Integración Git ✅
 
 Objetivo: mostrar el estado Git en vivo de cada proyecto.
 
-- [ ] `core/git.rs` con `read_git_status(path) -> GitStatus` usando `git2`
-- [ ] Leer rama actual, ahead/behind, dirty y último commit
-- [ ] `refresh_git_status(project_id)` y `refresh_all_git_status()`
-- [ ] Persistir en `git_status_cache`
-- [ ] Refresco automático en segundo plano cada N minutos (por defecto 5)
-- [ ] `GitStatusBadge.svelte`: rama, indicador dirty, flechas ↑↓ y tooltip con el
+- [x] `core/git.rs` con `read_git_status(path) -> GitStatus` usando `git2`
+- [x] Leer rama actual, ahead/behind, dirty y último commit
+- [x] `refresh_git_status(project_id)` y `refresh_all_git_status()`
+- [x] Persistir en `git_status_cache`
+- [x] Refresco automático en segundo plano cada N minutos (por defecto 5)
+- [x] `GitStatusBadge.svelte`: rama, indicador dirty, flechas ↑↓ y tooltip con el
       último mensaje de commit
-- [ ] Repositorios Git de prueba en `tests/fixtures/`
+- [x] Repositorios Git de prueba, creados con `git2` dentro de los propios tests
+      en lugar de commitearlos en `tests/fixtures/`
+
+**Extras sobre lo planeado:** `list_git_status()` y un store propio, para no
+cambiar el contrato de `list_projects`; botón de refresco manual en la cabecera;
+evento `git-status-refreshed` para que la interfaz se entere del refresco de
+fondo; primer refresco a los 5 s del arranque, porque la caché de la sesión
+anterior puede estar muy desactualizada.
 
 ---
 
