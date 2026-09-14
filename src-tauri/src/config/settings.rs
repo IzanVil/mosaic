@@ -16,11 +16,15 @@ pub const KEY_EXCLUDED_DIRS: &str = "scan.excluded_dirs";
 pub const KEY_MAX_ENTRIES_PER_SCAN: &str = "scan.max_entries_per_scan";
 /// Si el escaneo se lanza automáticamente al arrancar la aplicación.
 pub const KEY_SCAN_ON_STARTUP: &str = "scan.on_startup";
+/// Minutos entre refrescos automáticos del estado Git.
+pub const KEY_GIT_REFRESH_MINUTES: &str = "git.refresh_interval_minutes";
 
 /// Profundidad máxima por defecto (la raíz es el nivel 0).
 pub const DEFAULT_MAX_DEPTH: usize = 4;
 /// Tope de entradas por defecto.
 pub const DEFAULT_MAX_ENTRIES_PER_SCAN: usize = 50_000;
+/// Intervalo por defecto entre refrescos automáticos del estado Git.
+pub const DEFAULT_GIT_REFRESH_MINUTES: u64 = 5;
 
 /// Directorios excluidos por defecto: dependencias, artefactos de build y
 /// cachés de herramientas.
@@ -64,6 +68,8 @@ pub struct Settings {
     pub excluded_dirs: Vec<String>,
     pub max_entries_per_scan: usize,
     pub scan_on_startup: bool,
+    /// Minutos entre refrescos automáticos del estado Git. `0` los desactiva.
+    pub git_refresh_interval_minutes: u64,
 }
 
 impl Default for Settings {
@@ -76,6 +82,7 @@ impl Default for Settings {
                 .collect(),
             max_entries_per_scan: DEFAULT_MAX_ENTRIES_PER_SCAN,
             scan_on_startup: false,
+            git_refresh_interval_minutes: DEFAULT_GIT_REFRESH_MINUTES,
         }
     }
 }
@@ -128,11 +135,16 @@ pub fn load(conn: &Connection) -> Result<Settings> {
         .map(|v| v == "true" || v == "1")
         .unwrap_or(defaults.scan_on_startup);
 
+    let git_refresh_interval_minutes = get_raw(conn, KEY_GIT_REFRESH_MINUTES)?
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(defaults.git_refresh_interval_minutes);
+
     Ok(Settings {
         max_depth,
         excluded_dirs,
         max_entries_per_scan,
         scan_on_startup,
+        git_refresh_interval_minutes,
     })
 }
 
@@ -149,6 +161,11 @@ pub fn save(conn: &Connection, settings: &Settings) -> Result<()> {
         conn,
         KEY_SCAN_ON_STARTUP,
         &settings.scan_on_startup.to_string(),
+    )?;
+    set_raw(
+        conn,
+        KEY_GIT_REFRESH_MINUTES,
+        &settings.git_refresh_interval_minutes.to_string(),
     )?;
     Ok(())
 }
@@ -167,6 +184,7 @@ mod tests {
         assert_eq!(settings.max_depth, 4);
         assert_eq!(settings.max_entries_per_scan, 50_000);
         assert!(!settings.scan_on_startup);
+        assert_eq!(settings.git_refresh_interval_minutes, 5);
     }
 
     #[test]
@@ -177,6 +195,7 @@ mod tests {
             excluded_dirs: vec!["node_modules".into(), "target".into()],
             max_entries_per_scan: 100,
             scan_on_startup: true,
+            git_refresh_interval_minutes: 15,
         };
 
         db.with_conn(|conn| save(conn, &custom)).unwrap();
