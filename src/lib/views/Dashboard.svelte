@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { FolderSearch, GitBranch, TriangleAlert } from '@lucide/svelte';
+  import { FolderSearch, TriangleAlert } from '@lucide/svelte';
 
   import EmptyState from '../components/EmptyState.svelte';
+  import GitStatusBadge from '../components/GitStatusBadge.svelte';
+  import { gitStatus } from '../stores/gitStatus';
   import { loadingProjects, projects, projectsError, scanning } from '../stores/projects';
   import { scanPaths } from '../stores/scanPaths';
   import { formatRelativeTime, shortenPath } from '../utils/format';
@@ -67,13 +69,7 @@
           {/if}
 
           {#if project.is_git_repo}
-            <span
-              class="inline-flex shrink-0 items-center gap-1 text-xs text-content-muted"
-              title="Repositorio Git"
-            >
-              <GitBranch size={12} />
-              Git
-            </span>
+            <GitStatusBadge status={$gitStatus[project.id]} />
           {/if}
 
           {#if project.missing}

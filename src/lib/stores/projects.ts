@@ -5,6 +5,7 @@ import { writable } from 'svelte/store';
 import { listProjects } from '../api/projects';
 import { scanAllPaths } from '../api/scanner';
 import type { Project, ScanSummary } from '../types';
+import { refreshAllGitStatus } from './gitStatus';
 
 export const projects = writable<Project[]>([]);
 export const loadingProjects = writable(false);
@@ -38,6 +39,9 @@ export async function runScan(): Promise<ScanSummary | null> {
     const summary = await scanAllPaths();
     lastScan.set(summary);
     projects.set(await listProjects());
+    // Los proyectos recién descubiertos no tienen estado Git cacheado: sin esto
+    // sus indicadores estarían vacíos hasta el siguiente refresco automático.
+    await refreshAllGitStatus();
     return summary;
   } catch (error) {
     projectsError.set(String(error));

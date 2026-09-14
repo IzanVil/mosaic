@@ -1,21 +1,36 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { RefreshCw, Settings as SettingsIcon, LayoutList } from '@lucide/svelte';
+  import { listen } from '@tauri-apps/api/event';
+  import { GitBranch, RefreshCw, Settings as SettingsIcon, LayoutList } from '@lucide/svelte';
 
   import Dashboard from './lib/views/Dashboard.svelte';
   import Settings from './lib/views/Settings.svelte';
+  import {
+    gitError,
+    loadGitStatus,
+    refreshAllGitStatus,
+    refreshingGit,
+  } from './lib/stores/gitStatus';
   import { lastScan, loadProjects, projects, runScan, scanning } from './lib/stores/projects';
   import { loadScanPaths } from './lib/stores/scanPaths';
   import { formatDuration } from './lib/utils/format';
+
+  /** Lo emite el backend al terminar un refresco automático de estado Git. */
+  const GIT_REFRESHED = 'git-status-refreshed';
 
   type View = 'dashboard' | 'settings';
 
   let view = $state<View>('dashboard');
 
-  // Carga inicial: proyectos ya conocidos y rutas configuradas.
+  // Carga inicial: lo que ya está en la base de datos, sin tocar el disco.
   onMount(() => {
     void loadProjects();
     void loadScanPaths();
+    void loadGitStatus();
+
+    // El refresco automático corre en el backend; aquí solo recogemos el aviso.
+    const unlisten = listen(GIT_REFRESHED, () => void loadGitStatus());
+    return () => void unlisten.then((stop) => stop());
   });
 
   async function scan() {
@@ -78,6 +93,19 @@
 
       <button
         type="button"
+        onclick={refreshAllGitStatus}
+        disabled={$refreshingGit}
+        title="Releer el estado Git de todos los repositorios"
+        class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
+               text-sm text-content transition hover:bg-surface-2 disabled:opacity-60
+               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      >
+        <GitBranch size={16} class={$refreshingGit ? 'animate-pulse' : ''} />
+        {$refreshingGit ? 'Leyendo…' : 'Git'}
+      </button>
+
+      <button
+        type="button"
         onclick={scan}
         disabled={$scanning}
         class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
@@ -89,6 +117,16 @@
       </button>
     </div>
   </header>
+
+  {#if $gitError}
+    <p
+      class="mx-6 mt-4 rounded-md border border-surface-border bg-surface-1 px-4 py-3 text-sm
+             text-content"
+      role="alert"
+    >
+      {$gitError}
+    </p>
+  {/if}
 
   <main class="flex flex-1 flex-col overflow-y-auto">
     {#if view === 'dashboard'}

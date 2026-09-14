@@ -48,3 +48,35 @@ export interface ScanSummary {
   truncated: boolean;
   elapsed_ms: number;
 }
+
+/**
+ * Espejo de `db::repositories::git_status::GitStatusEntry`.
+ *
+ * El backend serializa el `GitStatus` aplanado, así que sus campos llegan al
+ * mismo nivel que `project_id` y `refreshed_at`.
+ */
+export interface GitStatusEntry {
+  project_id: number;
+  /** Cuándo se leyó el repositorio, en segundos desde el epoch Unix. */
+  refreshed_at: number;
+  /** Rama actual. `null` si el HEAD está separado. */
+  branch: string | null;
+  /** Commits por delante del upstream. `null` si la rama no tiene upstream. */
+  ahead: number | null;
+  /** Commits por detrás del upstream. `null` si la rama no tiene upstream. */
+  behind: number | null;
+  /** Hay cambios sin commitear, con el mismo criterio que `git status`. */
+  is_dirty: boolean;
+  last_commit_sha: string | null;
+  /** Primera línea del mensaje del último commit. */
+  last_commit_msg: string | null;
+  last_commit_at: number | null;
+  remote_url: string | null;
+}
+
+/** Espejo de `core::git::GitRefreshSummary`. */
+export interface GitRefreshSummary {
+  refreshed: number;
+  failed: number;
+  elapsed_ms: number;
+}
