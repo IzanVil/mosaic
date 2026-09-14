@@ -462,6 +462,20 @@ mod tests {
     }
 
     #[test]
+    fn bare_repository_is_never_dirty() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo = Repository::init_bare(tmp.path()).unwrap();
+        assert!(repo.is_bare());
+
+        let status = read_git_status(tmp.path()).unwrap();
+
+        assert!(
+            !status.is_dirty,
+            "un repositorio bare no tiene árbol de trabajo que ensuciar"
+        );
+    }
+
+    #[test]
     fn a_plain_directory_is_not_a_repository() {
         let tmp = tempfile::tempdir().unwrap();
 
