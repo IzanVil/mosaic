@@ -5,7 +5,7 @@ description = "Organizador visual local-first de proyectos de código"
 authors = ["Izan"]
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/izan/mosaic"
+repository = "https://github.com/IzanVil/mosaic"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

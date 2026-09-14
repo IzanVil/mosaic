@@ -61,7 +61,7 @@ mod tests {
     #[test]
     fn name_from_path_uses_folder_name() {
         assert_eq!(
-            DiscoveredProject::name_from_path(Path::new("/home/izan/code/mosaic")),
+            DiscoveredProject::name_from_path(Path::new("/proyectos/mosaic")),
             "mosaic"
         );
     }
