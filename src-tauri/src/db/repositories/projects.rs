@@ -3,10 +3,18 @@
 //! # Semántica de marcas de tiempo
 //!
 //! - `created_at`: se fija en la inserción y no se modifica jamás.
-//! - `updated_at`: solo avanza si cambian metadatos propios del proyecto
-//!   (nombre, lenguaje primario, condición de repositorio Git o notas).
+//! - `updated_at`: solo avanza si cambian metadatos propios del proyecto, es
+//!   decir columnas de `projects`. Hoy [`upsert_by_path`] compara `name`,
+//!   `primary_language` e `is_git_repo`; `notes` entrará en la comparación
+//!   cuando la Fase 5 permita editarlas, porque nada las escribe todavía.
 //! - `last_seen_at`: avanza cada vez que el escáner ve el proyecto en disco.
 //! - `missing`: `0` cuando el escáner lo ve, `1` cuando deja de verlo.
+//!
+//! `is_git_repo` es la columna de `projects` —si la carpeta tiene o no un
+//! repositorio—, **no** el estado vivo de `git_status_cache`. El refresco
+//! automático de Git escribe únicamente en la caché, así que no puede hacer
+//! avanzar `updated_at`; lo fija el test de integración
+//! `refreshing_git_status_never_touches_the_projects_table`.
 //!
 //! Ver `missing` nunca borra datos: las etiquetas y notas del usuario
 //! sobreviven a que el proyecto desaparezca del disco.

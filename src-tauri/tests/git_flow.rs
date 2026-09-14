@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 
 use git2::{IndexAddOption, Repository, RepositoryInitOptions, Signature};
-use mosaic_lib::core::git::refresh_all;
+use mosaic_lib::core::git::{refresh_all, refresh_one};
 use mosaic_lib::core::now_ts;
 use mosaic_lib::core::scanner::run_full_scan;
 use mosaic_lib::db::repositories::{
@@ -155,4 +155,110 @@ fn a_repository_that_disappears_drops_out_of_the_cache() {
     assert_eq!(summary.refreshed, 1);
     assert_eq!(summary.failed, 1);
     assert_eq!(db.with_conn(cache::list_all).unwrap().len(), 1);
+}
+
+/// El refresco automático corre cada pocos minutos: si tocara `updated_at`,
+/// la fecha de modificación de todos los proyectos avanzaría sola para siempre.
+/// `upsert_by_path` solo compara metadatos propios de `projects` —entre ellos la
+/// columna `is_git_repo`, no el estado vivo de la caché—, y la ruta de refresco
+/// solo escribe en `git_status_cache`.
+#[test]
+fn refreshing_git_status_never_touches_the_projects_table() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+
+    let db = scanned_db(&root);
+    let antes = db.with_conn(projects_repo::list_all).unwrap();
+
+    // Varios refrescos seguidos, con cambios reales en el repositorio entre medias.
+    refresh_all(&db).unwrap();
+    write(&root.join("sucio/otro.ts"), "// más cambios");
+    refresh_all(&db).unwrap();
+    fs::remove_file(root.join("sucio/pendiente.ts")).unwrap();
+    refresh_all(&db).unwrap();
+
+    let despues = db.with_conn(projects_repo::list_all).unwrap();
+    assert_eq!(antes.len(), despues.len());
+
+    for (antes, despues) in antes.iter().zip(despues.iter()) {
+        assert_eq!(antes.id, despues.id);
+        assert_eq!(
+            antes.updated_at, despues.updated_at,
+            "el refresco de Git no debe bumpear updated_at de {}",
+            antes.name
+        );
+        assert_eq!(antes.last_seen_at, despues.last_seen_at);
+        assert_eq!(antes.created_at, despues.created_at);
+        assert_eq!(antes.missing, despues.missing);
+    }
+
+    // Y sí ha actualizado la caché, que es lo suyo.
+    assert!(db.with_conn(cache::list_all).unwrap().len() == 2);
+}
+
+#[test]
+fn refresh_one_updates_a_single_repository() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+
+    let db = scanned_db(&root);
+    let projects = db.with_conn(projects_repo::list_all).unwrap();
+    let limpio = projects.iter().find(|p| p.name == "limpio").unwrap();
+
+    let entry = refresh_one(&db, limpio.id).unwrap().unwrap();
+
+    assert_eq!(entry.project_id, limpio.id);
+    assert_eq!(entry.status.branch.as_deref(), Some("main"));
+    assert!(!entry.status.is_dirty);
+    assert_eq!(
+        db.with_conn(cache::list_all).unwrap().len(),
+        1,
+        "solo se ha refrescado el proyecto pedido"
+    );
+}
+
+#[test]
+fn refresh_one_returns_nothing_for_a_project_without_git() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+
+    let db = scanned_db(&root);
+    let projects = db.with_conn(projects_repo::list_all).unwrap();
+    let sin_git = projects.iter().find(|p| p.name == "sin-git").unwrap();
+
+    assert!(refresh_one(&db, sin_git.id).unwrap().is_none());
+    assert!(db.with_conn(cache::list_all).unwrap().is_empty());
+}
+
+#[test]
+fn refresh_one_clears_the_cache_when_the_repository_becomes_unreadable() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+
+    let db = scanned_db(&root);
+    let projects = db.with_conn(projects_repo::list_all).unwrap();
+    let sucio = projects.iter().find(|p| p.name == "sucio").unwrap();
+
+    refresh_one(&db, sucio.id).unwrap();
+    assert!(db
+        .with_conn(|conn| cache::get(conn, sucio.id))
+        .unwrap()
+        .is_some());
+
+    fs::remove_dir_all(root.join("sucio")).unwrap();
+
+    assert!(
+        refresh_one(&db, sucio.id).is_err(),
+        "un refresco manual debe informar del fallo al usuario"
+    );
+    assert!(
+        db.with_conn(|conn| cache::get(conn, sucio.id))
+            .unwrap()
+            .is_none(),
+        "y no dejar datos rancios en la caché"
+    );
 }
