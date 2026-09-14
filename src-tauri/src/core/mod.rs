@@ -1,5 +1,6 @@
 //! Lógica de negocio de Mosaic, independiente de Tauri.
 
+pub mod git;
 pub mod project;
 pub mod scanner;
 

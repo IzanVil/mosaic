@@ -21,6 +21,10 @@ pub enum AppError {
     #[error("error de E/S: {0}")]
     Io(#[from] std::io::Error),
 
+    /// Fallo leyendo un repositorio Git.
+    #[error("error de Git: {0}")]
+    Git(#[from] git2::Error),
+
     /// La ruta no existe, no es un directorio o no es representable en UTF-8.
     #[error("ruta inválida: {0}")]
     InvalidPath(String),
