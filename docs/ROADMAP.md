@@ -50,16 +50,23 @@ anterior puede estar muy desactualizada.
 
 ---
 
-## Fase 3 — Tarjetas visuales y grid
+## Fase 3 — Tarjetas visuales y grid ✅
 
 Objetivo: la experiencia visual principal.
 
-- [ ] `ProjectCard.svelte` con acciones rápidas al pasar el ratón
-- [ ] `ProjectGrid.svelte`: grid responsivo con `auto-fill` y mínimo de 280 px
-- [ ] Abrir en IDE, en terminal y en el explorador de archivos
-- [ ] `open_in(kind, project_id)` y `commands/system.rs`
-- [ ] Detección automática de los IDEs y terminales disponibles
-- [ ] Marcar como favorito
+- [x] `ProjectCard.svelte` con acciones rápidas al pasar el ratón
+- [x] `ProjectGrid.svelte`: grid responsivo con `auto-fill` y mínimo de 280 px
+- [x] Abrir en IDE, en terminal y en el explorador de archivos
+- [x] `open_in(kind, project_id)` y `commands/system.rs`
+- [x] Detección automática de los IDEs y terminales disponibles
+- [x] Marcar como favorito
+
+Las etiquetas en la tarjeta quedan para la Fase 4, que es cuando existen.
+
+**Extras sobre lo planeado:** selector de editor y terminal preferidos en los
+ajustes, porque detectar varios y no poder elegir no sirve de nada; registro de
+`last_opened_at` al abrir un proyecto, visible en la propia tarjeta; las acciones
+se deshabilitan en los proyectos que ya no están en el disco.
 
 ---
 

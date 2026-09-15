@@ -10,7 +10,7 @@ sin cuentas, sin telemetría, sin IA.
 
 ## Estado
 
-**En construcción.** Las fases 1 y 2 están terminadas:
+**En construcción.** Las fases 1, 2 y 3 están terminadas:
 
 - Esquema SQLite con migraciones.
 - Escaneo de rutas configurables con detección de proyectos por ficheros
@@ -22,9 +22,10 @@ sin cuentas, sin telemetría, sin IA.
 - Estado Git de cada proyecto: rama, cambios sin commitear, commits por delante y
   por detrás del upstream y último commit, con refresco automático en segundo
   plano.
+- Tablero de tarjetas con acciones rápidas: abrir el proyecto en el editor, en la
+  terminal o en el explorador de archivos, y destacar los que más uses.
 
-Pendiente: las tarjetas visuales con acciones rápidas (Fase 3) y las etiquetas,
-la búsqueda y los filtros (Fase 4).
+Pendiente: las etiquetas, la búsqueda y los filtros (Fase 4).
 
 ## Documentación
 

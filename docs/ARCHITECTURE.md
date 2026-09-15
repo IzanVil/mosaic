@@ -132,6 +132,30 @@ Al terminar emite el evento `git-status-refreshed`, que el frontend escucha para
 recargar la caché. La caché es reconstruible: si se borra, el siguiente refresco
 la repuebla.
 
+### `core/launcher.rs`
+
+Abrir un proyecto significa lanzar un proceso externo, así que **nunca se
+construye una línea de shell**: los procesos se lanzan con `Command` pasando la
+ruta como un argumento suelto. Una carpeta llamada `raro; rm -rf ~/ #` llega
+entera como un único argumento, y hay un test que lo fija.
+
+Los IDEs y los terminales se detectan buscando ejecutables en el `PATH`, contra
+una tabla ordenada por preferencia. El explorador de archivos no sale de ninguna
+tabla: lo resuelve el sistema a través del crate `open`.
+
+Cada terminal recibe el directorio con su propia bandera (`--directory` en kitty,
+`--workdir` en Konsole, `--cwd` en WezTerm…), además de lanzarse con
+`current_dir`. Lo segundo solo no basta: varios terminales hablan con un servidor
+que ya existe y no heredarían el directorio de trabajo.
+
+La elección de aplicación es "la preferida si sigue instalada, si no la primera
+disponible". Si el usuario eligió un editor y luego lo desinstaló, se avisa por el
+log y se usa otro en vez de fallar.
+
+`last_opened_at` solo se registra si el lanzamiento tuvo éxito. Ni eso ni la marca
+de favorito tocan `updated_at`: son preferencias de presentación, no metadatos que
+describan la carpeta.
+
 ## Modelo de datos
 
 Seis tablas: `scan_paths`, `projects`, `tags`, `project_tags`,
