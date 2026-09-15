@@ -2,7 +2,7 @@
 name = "mosaic"
 version = "0.1.0"
 description = "Organizador visual local-first de proyectos de código"
-authors = ["Izan"]
+authors = ["Izan Vilchez"]
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/IzanVil/mosaic"
