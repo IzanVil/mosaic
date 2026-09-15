@@ -155,6 +155,35 @@ pub fn upsert_by_path(
     })
 }
 
+/// Fija o quita la marca de favorito de un proyecto.
+///
+/// No toca `updated_at`: fijar un proyecto es una preferencia de presentación,
+/// no un cambio en los metadatos que describen la carpeta.
+pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
+    let affected = conn.execute(
+        "UPDATE projects SET pinned = ?2 WHERE id = ?1",
+        params![id, pinned],
+    )?;
+    if affected == 0 {
+        return Err(AppError::NotFound(format!("proyecto {id}")));
+    }
+    Ok(())
+}
+
+/// Registra que el proyecto se acaba de abrir.
+///
+/// Tampoco toca `updated_at`, por el mismo motivo que [`set_pinned`].
+pub fn touch_last_opened(conn: &Connection, id: i64, now: i64) -> Result<()> {
+    let affected = conn.execute(
+        "UPDATE projects SET last_opened_at = ?2 WHERE id = ?1",
+        params![id, now],
+    )?;
+    if affected == 0 {
+        return Err(AppError::NotFound(format!("proyecto {id}")));
+    }
+    Ok(())
+}
+
 /// Marca como ausentes los proyectos bajo `roots` que el escaneo no ha visto.
 ///
 /// `seen` contiene los identificadores que el escáner acaba de encontrar en
@@ -428,6 +457,63 @@ mod tests {
         assert_eq!(projects.len(), 2);
         assert_eq!(projects[0].name, "alfa");
         assert_eq!(projects[1].name, "zeta");
+    }
+
+    #[test]
+    fn set_pinned_toggles_the_flag_without_touching_updated_at() {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/mosaic", None), 1_000))
+            .unwrap()
+            .id;
+
+        db.with_conn(|conn| set_pinned(conn, id, true)).unwrap();
+        let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+        assert!(stored.pinned);
+        assert_eq!(
+            stored.updated_at, 1_000,
+            "fijar no es un cambio de metadatos"
+        );
+
+        db.with_conn(|conn| set_pinned(conn, id, false)).unwrap();
+        assert!(!db.with_conn(|conn| get_by_id(conn, id)).unwrap().pinned);
+    }
+
+    #[test]
+    fn touch_last_opened_records_the_moment_without_touching_updated_at() {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/mosaic", None), 1_000))
+            .unwrap()
+            .id;
+        assert_eq!(
+            db.with_conn(|conn| get_by_id(conn, id))
+                .unwrap()
+                .last_opened_at,
+            None
+        );
+
+        db.with_conn(|conn| touch_last_opened(conn, id, 7_000))
+            .unwrap();
+
+        let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+        assert_eq!(stored.last_opened_at, Some(7_000));
+        assert_eq!(stored.updated_at, 1_000);
+    }
+
+    #[test]
+    fn pinning_and_opening_report_missing_projects() {
+        let db = Db::open_in_memory().unwrap();
+
+        assert!(matches!(
+            db.with_conn(|conn| set_pinned(conn, 42, true)).unwrap_err(),
+            AppError::NotFound(_)
+        ));
+        assert!(matches!(
+            db.with_conn(|conn| touch_last_opened(conn, 42, 1))
+                .unwrap_err(),
+            AppError::NotFound(_)
+        ));
     }
 
     #[test]

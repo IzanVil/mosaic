@@ -21,3 +21,14 @@ pub async fn list_projects(db: State<'_, Arc<Db>>) -> Result<Vec<Project>, Strin
 pub async fn get_project(db: State<'_, Arc<Db>>, id: i64) -> Result<Project, String> {
     Ok(db.with_conn(|conn| repo::get_by_id(conn, id))?)
 }
+
+/// Fija o quita la marca de favorito de un proyecto.
+#[tauri::command]
+pub async fn set_project_pinned(
+    db: State<'_, Arc<Db>>,
+    id: i64,
+    pinned: bool,
+) -> Result<(), String> {
+    db.with_conn(|conn| repo::set_pinned(conn, id, pinned))?;
+    Ok(())
+}

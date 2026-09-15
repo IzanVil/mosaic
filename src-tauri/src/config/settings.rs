@@ -18,6 +18,10 @@ pub const KEY_MAX_ENTRIES_PER_SCAN: &str = "scan.max_entries_per_scan";
 pub const KEY_SCAN_ON_STARTUP: &str = "scan.on_startup";
 /// Minutos entre refrescos automáticos del estado Git.
 pub const KEY_GIT_REFRESH_MINUTES: &str = "git.refresh_interval_minutes";
+/// Ejecutable del IDE preferido. Vacío = usar el primero que se detecte.
+pub const KEY_PREFERRED_IDE: &str = "apps.preferred_ide";
+/// Ejecutable del terminal preferido. Vacío = usar el primero que se detecte.
+pub const KEY_PREFERRED_TERMINAL: &str = "apps.preferred_terminal";
 
 /// Profundidad máxima por defecto (la raíz es el nivel 0).
 pub const DEFAULT_MAX_DEPTH: usize = 4;
@@ -70,6 +74,10 @@ pub struct Settings {
     pub scan_on_startup: bool,
     /// Minutos entre refrescos automáticos del estado Git. `0` los desactiva.
     pub git_refresh_interval_minutes: u64,
+    /// Ejecutable del IDE preferido; vacío significa "el primero disponible".
+    pub preferred_ide: String,
+    /// Ejecutable del terminal preferido; vacío significa "el primero disponible".
+    pub preferred_terminal: String,
 }
 
 impl Default for Settings {
@@ -83,6 +91,8 @@ impl Default for Settings {
             max_entries_per_scan: DEFAULT_MAX_ENTRIES_PER_SCAN,
             scan_on_startup: false,
             git_refresh_interval_minutes: DEFAULT_GIT_REFRESH_MINUTES,
+            preferred_ide: String::new(),
+            preferred_terminal: String::new(),
         }
     }
 }
@@ -139,12 +149,18 @@ pub fn load(conn: &Connection) -> Result<Settings> {
         .and_then(|v| v.parse().ok())
         .unwrap_or(defaults.git_refresh_interval_minutes);
 
+    let preferred_ide = get_raw(conn, KEY_PREFERRED_IDE)?.unwrap_or(defaults.preferred_ide);
+    let preferred_terminal =
+        get_raw(conn, KEY_PREFERRED_TERMINAL)?.unwrap_or(defaults.preferred_terminal);
+
     Ok(Settings {
         max_depth,
         excluded_dirs,
         max_entries_per_scan,
         scan_on_startup,
         git_refresh_interval_minutes,
+        preferred_ide,
+        preferred_terminal,
     })
 }
 
@@ -167,6 +183,8 @@ pub fn save(conn: &Connection, settings: &Settings) -> Result<()> {
         KEY_GIT_REFRESH_MINUTES,
         &settings.git_refresh_interval_minutes.to_string(),
     )?;
+    set_raw(conn, KEY_PREFERRED_IDE, &settings.preferred_ide)?;
+    set_raw(conn, KEY_PREFERRED_TERMINAL, &settings.preferred_terminal)?;
     Ok(())
 }
 
@@ -185,6 +203,8 @@ mod tests {
         assert_eq!(settings.max_entries_per_scan, 50_000);
         assert!(!settings.scan_on_startup);
         assert_eq!(settings.git_refresh_interval_minutes, 5);
+        assert!(settings.preferred_ide.is_empty());
+        assert!(settings.preferred_terminal.is_empty());
     }
 
     #[test]
@@ -196,6 +216,8 @@ mod tests {
             max_entries_per_scan: 100,
             scan_on_startup: true,
             git_refresh_interval_minutes: 15,
+            preferred_ide: "zed".into(),
+            preferred_terminal: "kitty".into(),
         };
 
         db.with_conn(|conn| save(conn, &custom)).unwrap();
