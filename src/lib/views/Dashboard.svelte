@@ -3,8 +3,9 @@
 
   import EmptyState from '../components/EmptyState.svelte';
   import GitStatusBadge from '../components/GitStatusBadge.svelte';
+  import ScanSummaryBar from '../components/ScanSummaryBar.svelte';
   import { gitStatus } from '../stores/gitStatus';
-  import { loadingProjects, projects, projectsError, scanning } from '../stores/projects';
+  import { lastScan, loadingProjects, projects, projectsError, scanning } from '../stores/projects';
   import { scanPaths } from '../stores/scanPaths';
   import { formatRelativeTime, shortenPath } from '../utils/format';
 
@@ -20,6 +21,10 @@
 </script>
 
 <section class="flex flex-1 flex-col">
+  {#if $lastScan}
+    <ScanSummaryBar summary={$lastScan} />
+  {/if}
+
   {#if $projectsError}
     <p
       class="m-4 rounded-md border border-surface-border bg-surface-1 px-4 py-3 text-sm text-content"

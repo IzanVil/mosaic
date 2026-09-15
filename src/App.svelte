@@ -11,9 +11,8 @@
     refreshAllGitStatus,
     refreshingGit,
   } from './lib/stores/gitStatus';
-  import { lastScan, loadProjects, projects, runScan, scanning } from './lib/stores/projects';
-  import { loadScanPaths } from './lib/stores/scanPaths';
-  import { formatDuration } from './lib/utils/format';
+  import { loadProjects, projects, runScan, scanning } from './lib/stores/projects';
+  import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
 
   /** Lo emite el backend al terminar un refresco automático de estado Git. */
   const GIT_REFRESHED = 'git-status-refreshed';
@@ -21,6 +20,9 @@
   type View = 'dashboard' | 'settings';
 
   let view = $state<View>('dashboard');
+
+  /** Sin rutas configuradas no hay nada que escanear. */
+  let canScan = $derived($scanPaths.length > 0);
 
   // Carga inicial: lo que ya está en la base de datos, sin tocar el disco.
   onMount(() => {
@@ -34,7 +36,10 @@
   });
 
   async function scan() {
-    await runScan();
+    const summary = await runScan();
+    // El resultado de escanear son los proyectos: si el usuario lo lanzó desde
+    // Ajustes, quedarse ahí hace que la acción parezca no haber hecho nada.
+    if (summary !== null) view = 'dashboard';
   }
 </script>
 
@@ -75,21 +80,10 @@
     </nav>
 
     <div class="ml-auto flex items-center gap-4">
-      {#if $lastScan}
-        <p class="text-xs text-content-muted">
-          {$lastScan.projects_found}
-          {$lastScan.projects_found === 1 ? 'proyecto' : 'proyectos'} en
-          {formatDuration($lastScan.elapsed_ms)}
-          {#if $lastScan.truncated}
-            · escaneo truncado
-          {/if}
-        </p>
-      {:else}
-        <p class="text-xs text-content-muted">
-          {$projects.length}
-          {$projects.length === 1 ? 'proyecto' : 'proyectos'}
-        </p>
-      {/if}
+      <p class="text-xs text-content-muted">
+        {$projects.length}
+        {$projects.length === 1 ? 'proyecto' : 'proyectos'}
+      </p>
 
       <button
         type="button"
@@ -107,7 +101,10 @@
       <button
         type="button"
         onclick={scan}
-        disabled={$scanning}
+        disabled={$scanning || !canScan}
+        title={canScan
+          ? 'Recorrer las rutas configuradas y actualizar la lista de proyectos'
+          : 'Añade una carpeta en Ajustes para poder escanear'}
         class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
                text-sm text-content transition hover:bg-surface-2 disabled:opacity-60
                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
