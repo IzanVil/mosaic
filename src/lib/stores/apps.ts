@@ -1,0 +1,54 @@
+/** Estado global de las aplicaciones externas detectadas. */
+
+import { derived, writable } from 'svelte/store';
+
+import * as api from '../api/system';
+import type { AppKind, DetectedApp } from '../types';
+
+export const detectedApps = writable<DetectedApp[]>([]);
+export const preferredIde = writable('');
+export const preferredTerminal = writable('');
+/** Último error al abrir un proyecto o al detectar aplicaciones. */
+export const appsError = writable<string | null>(null);
+
+export const ides = derived(detectedApps, (apps) => apps.filter((app) => app.kind === 'ide'));
+export const terminals = derived(detectedApps, (apps) =>
+  apps.filter((app) => app.kind === 'terminal'),
+);
+
+/** Detecta las aplicaciones instaladas y lee las preferencias guardadas. */
+export async function loadApps(): Promise<void> {
+  appsError.set(null);
+  try {
+    detectedApps.set(await api.listDetectedApps());
+    const preferred = await api.getPreferredApps();
+    preferredIde.set(preferred.ide);
+    preferredTerminal.set(preferred.terminal);
+  } catch (error) {
+    appsError.set(String(error));
+  }
+}
+
+/** Abre un proyecto. Devuelve `true` si la aplicación se lanzó. */
+export async function openProject(kind: AppKind, projectId: number): Promise<boolean> {
+  appsError.set(null);
+  try {
+    await api.openIn(kind, projectId);
+    return true;
+  } catch (error) {
+    appsError.set(String(error));
+    return false;
+  }
+}
+
+/** Guarda la aplicación preferida de un tipo. */
+export async function setPreferredApp(kind: AppKind, appId: string): Promise<void> {
+  appsError.set(null);
+  try {
+    await api.setPreferredApp(kind, appId);
+    if (kind === 'ide') preferredIde.set(appId);
+    if (kind === 'terminal') preferredTerminal.set(appId);
+  } catch (error) {
+    appsError.set(String(error));
+  }
+}

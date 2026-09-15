@@ -5,6 +5,7 @@
 
   import Dashboard from './lib/views/Dashboard.svelte';
   import Settings from './lib/views/Settings.svelte';
+  import { loadApps } from './lib/stores/apps';
   import {
     gitError,
     loadGitStatus,
@@ -29,6 +30,7 @@
     void loadProjects();
     void loadScanPaths();
     void loadGitStatus();
+    void loadApps();
 
     // El refresco automático corre en el backend; aquí solo recogemos el aviso.
     const unlisten = listen(GIT_REFRESHED, () => void loadGitStatus());

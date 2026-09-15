@@ -80,3 +80,20 @@ export interface GitRefreshSummary {
   failed: number;
   elapsed_ms: number;
 }
+
+/** Espejo de `core::launcher::AppKind`. */
+export type AppKind = 'ide' | 'terminal' | 'file_manager';
+
+/** Espejo de `core::launcher::DetectedApp`. */
+export interface DetectedApp {
+  /** Nombre del ejecutable; es el identificador que se guarda en los ajustes. */
+  id: string;
+  name: string;
+  kind: AppKind;
+}
+
+/** Espejo de `commands::system::PreferredApps`. Cadena vacía = el primero disponible. */
+export interface PreferredApps {
+  ide: string;
+  terminal: string;
+}

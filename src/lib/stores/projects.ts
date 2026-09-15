@@ -2,7 +2,7 @@
 
 import { writable } from 'svelte/store';
 
-import { listProjects } from '../api/projects';
+import { listProjects, setProjectPinned } from '../api/projects';
 import { scanAllPaths } from '../api/scanner';
 import type { Project, ScanSummary } from '../types';
 import { refreshAllGitStatus } from './gitStatus';
@@ -48,5 +48,26 @@ export async function runScan(): Promise<ScanSummary | null> {
     return null;
   } finally {
     scanning.set(false);
+  }
+}
+
+/**
+ * Fija o deja de fijar un proyecto.
+ *
+ * Actualiza la lista en local antes de esperar al backend para que la tarjeta
+ * responda al instante, y recarga si la escritura falla.
+ */
+export async function togglePinned(id: number, pinned: boolean): Promise<void> {
+  projects.update((current) =>
+    current.map((project) => (project.id === id ? { ...project, pinned } : project)),
+  );
+
+  try {
+    await setProjectPinned(id, pinned);
+    // El orden depende de `pinned`, así que se relee para reordenar la rejilla.
+    projects.set(await listProjects());
+  } catch (error) {
+    projectsError.set(String(error));
+    await loadProjects();
   }
 }

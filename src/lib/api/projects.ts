@@ -13,3 +13,8 @@ export function listProjects(): Promise<Project[]> {
 export function getProject(id: number): Promise<Project> {
   return invoke<Project>('get_project', { id });
 }
+
+/** Fija o quita la marca de favorito de un proyecto. */
+export function setProjectPinned(id: number, pinned: boolean): Promise<void> {
+  return invoke<void>('set_project_pinned', { id, pinned });
+}

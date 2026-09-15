@@ -4,6 +4,14 @@
 
   import EmptyState from '../components/EmptyState.svelte';
   import ScanSummaryBar from '../components/ScanSummaryBar.svelte';
+  import {
+    appsError,
+    ides,
+    preferredIde,
+    preferredTerminal,
+    setPreferredApp,
+    terminals,
+  } from '../stores/apps';
   import { lastScan } from '../stores/projects';
   import {
     addScanPath,
@@ -16,6 +24,19 @@
   import { formatRelativeTime } from '../utils/format';
 
   let picking = $state(false);
+
+  const APP_SECTIONS = [
+    {
+      kind: 'ide',
+      title: 'Editor',
+      empty: 'No se ha encontrado ningún editor reconocido en el PATH.',
+    },
+    {
+      kind: 'terminal',
+      title: 'Terminal',
+      empty: 'No se ha encontrado ningún emulador de terminal reconocido en el PATH.',
+    },
+  ] as const;
 
   /** Abre el selector nativo de carpetas y registra la ruta elegida. */
   async function pickFolder() {
@@ -124,5 +145,54 @@
         proyectos ya descubiertos: conservan sus etiquetas y notas.
       </p>
     {/if}
+
+    <section class="flex flex-col gap-3 border-t border-surface-border pt-6">
+      <div>
+        <h2 class="text-base font-medium text-content-strong">Aplicaciones</h2>
+        <p class="text-sm text-content-muted">
+          Con qué se abren los proyectos. Mosaic detecta lo que hay instalado; si no eliges nada,
+          usa el primero de la lista.
+        </p>
+      </div>
+
+      {#if $appsError}
+        <p
+          class="rounded-md border border-surface-border bg-surface-1 px-4 py-3 text-sm text-content"
+          role="alert"
+        >
+          {$appsError}
+        </p>
+      {/if}
+
+      {#each APP_SECTIONS as section (section.kind)}
+        {@const available = section.kind === 'ide' ? $ides : $terminals}
+        {@const selected = section.kind === 'ide' ? $preferredIde : $preferredTerminal}
+
+        <label class="flex items-center gap-4">
+          <span class="w-24 shrink-0 text-sm text-content">{section.title}</span>
+
+          {#if available.length === 0}
+            <span class="text-sm text-content-muted">{section.empty}</span>
+          {:else}
+            <select
+              value={selected}
+              onchange={(event) => setPreferredApp(section.kind, event.currentTarget.value)}
+              class="rounded-md border border-surface-border bg-surface-0 px-3 py-1.5 text-sm
+                     text-content focus-visible:outline-2 focus-visible:outline-offset-2
+                     focus-visible:outline-accent"
+            >
+              <option value="">Automático ({available[0]?.name})</option>
+              {#each available as app (app.id)}
+                <option value={app.id}>{app.name}</option>
+              {/each}
+            </select>
+          {/if}
+        </label>
+      {/each}
+
+      <p class="text-xs text-content-muted">
+        El explorador de archivos no se configura aquí: se usa el que tenga asociado el sistema.
+      </p>
+    </section>
   </div>
 </section>
