@@ -26,6 +26,39 @@ export interface Project {
   updated_at: number;
 }
 
+/** Espejo de `core::tag::Tag`. */
+export interface Tag {
+  id: number;
+  /** Nombre tal y como lo escribió el usuario. Único ignorando mayúsculas. */
+  name: string;
+  /** Color en formato `#RRGGBB`, siempre en mayúsculas. */
+  color: string;
+  created_at: number;
+}
+
+/**
+ * Espejo de `core::tag::TagWithCount`.
+ *
+ * El backend serializa el `Tag` aplanado, así que `project_count` llega al
+ * mismo nivel que sus campos.
+ */
+export interface TagWithCount extends Tag {
+  /** Proyectos que tienen la etiqueta asignada. */
+  project_count: number;
+}
+
+/**
+ * Espejo de `db::repositories::projects::ProjectWithTags`.
+ *
+ * El `Project` llega aplanado. Es la única lectura que necesita el tablero.
+ */
+export interface ProjectWithTags extends Project {
+  /** Etiquetas asignadas, ordenadas por nombre. Vacío si no tiene ninguna. */
+  tags: Tag[];
+  /** `null` si el proyecto no es repositorio o si nunca se refrescó. */
+  git_status: GitStatusEntry | null;
+}
+
 /** Espejo de `db::repositories::scan_paths::ScanPath`. */
 export interface ScanPath {
   id: number;
@@ -96,4 +129,43 @@ export interface DetectedApp {
 export interface PreferredApps {
   ide: string;
   terminal: string;
+}
+
+/*
+ * Los tipos de aquí abajo son estado de la interfaz: no tienen struct
+ * equivalente en Rust. El backend guarda [`ViewState`] como un JSON opaco en
+ * la clave `ui.view_state` y solo comprueba que sea JSON válido.
+ */
+
+/** Estado Git por el que se puede filtrar el tablero. */
+export type GitStateFilter = 'all' | 'dirty' | 'clean' | 'no_repo';
+
+/** Criterio de ordenación del tablero. */
+export type SortOption = 'name' | 'last_opened' | 'created' | 'updated';
+
+export type SortDirection = 'asc' | 'desc';
+
+/**
+ * Búsqueda, filtros y ordenación activos.
+ *
+ * Las etiquetas de `tag_ids` se combinan en OR entre sí (un proyecto vale si
+ * tiene cualquiera de ellas), igual que los lenguajes de `languages`. Todo lo
+ * demás se combina en AND.
+ */
+export interface FilterState {
+  query: string;
+  tag_ids: number[];
+  languages: string[];
+  git_state: GitStateFilter;
+  pinned_only: boolean;
+  /** `false` oculta los proyectos que el escáner ya no encuentra en disco. */
+  include_missing: boolean;
+  sort: SortOption;
+  sort_dir: SortDirection;
+}
+
+/** Lo que se persiste entre sesiones para recuperar la última vista. */
+export interface ViewState {
+  filters: FilterState;
+  sidebar_collapsed: boolean;
 }

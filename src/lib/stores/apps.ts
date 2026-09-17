@@ -4,6 +4,7 @@ import { derived, writable } from 'svelte/store';
 
 import * as api from '../api/system';
 import type { AppKind, DetectedApp } from '../types';
+import { markProjectOpened } from './projects';
 
 export const detectedApps = writable<DetectedApp[]>([]);
 export const preferredIde = writable('');
@@ -34,6 +35,7 @@ export async function openProject(kind: AppKind, projectId: number): Promise<boo
   appsError.set(null);
   try {
     await api.openIn(kind, projectId);
+    markProjectOpened(projectId, Math.floor(Date.now() / 1000));
     return true;
   } catch (error) {
     appsError.set(String(error));

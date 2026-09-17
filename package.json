@@ -9,13 +9,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.app.json",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json --fail-on-warnings",
     "tauri": "tauri"
   },
   "dependencies": {
     "@lucide/svelte": "^1.45.0",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-dialog": "^2"
+    "@tauri-apps/plugin-dialog": "^2",
+    "fuse.js": "^7.5.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
