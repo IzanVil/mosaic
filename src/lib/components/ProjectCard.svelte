@@ -6,6 +6,7 @@
   import TagPicker from './TagPicker.svelte';
   import { openProject } from '../stores/apps';
   import { togglePinned } from '../stores/projects';
+  import { unassignTagFromProject } from '../stores/tags';
   import type { ProjectWithTags } from '../types';
   import { formatRelativeTime, shortenPath } from '../utils/format';
 
@@ -68,7 +69,12 @@
 
   <div class="flex flex-wrap items-center gap-1">
     {#each shownTags as tag (tag.id)}
-      <TagChip {tag} />
+      <TagChip
+        {tag}
+        removable
+        revealOnHover
+        onRemove={() => unassignTagFromProject(project.id, tag.id)}
+      />
     {/each}
 
     {#if hiddenTags.length > 0}

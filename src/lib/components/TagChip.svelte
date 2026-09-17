@@ -12,6 +12,7 @@
     onClick?: () => void;
     count?: number | null;
     title?: string;
+    revealOnHover?: boolean;
   }
 
   let {
@@ -22,6 +23,7 @@
     onClick,
     count = null,
     title,
+    revealOnHover = false,
   }: Props = $props();
 
   let style = $derived(
@@ -62,8 +64,12 @@
         onclick={onRemove}
         aria-label="Quitar la etiqueta {tag.name}"
         title="Quitar la etiqueta {tag.name}"
-        class="-mr-1 rounded-full p-0.5 transition hover:bg-black/10 focus-visible:outline-2
-               focus-visible:outline-offset-1 focus-visible:outline-accent dark:hover:bg-white/20"
+        class="-mr-1 rounded-full p-0.5 transition hover:bg-black/10 focus-visible:opacity-100
+               focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent
+               dark:hover:bg-white/20"
+        class:opacity-0={revealOnHover}
+        class:group-hover:opacity-100={revealOnHover}
+        class:group-focus-within:opacity-100={revealOnHover}
       >
         <X size={10} />
       </button>
