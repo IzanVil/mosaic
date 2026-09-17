@@ -23,8 +23,13 @@ use std::collections::HashSet;
 use std::path::Path;
 
 use rusqlite::{params, Connection, OptionalExtension, Row};
+use serde::{Deserialize, Serialize};
 
+use crate::core::git::GitStatus;
 use crate::core::project::{DiscoveredProject, Project};
+use crate::core::tag::Tag;
+use crate::db::repositories::git_status::GitStatusEntry;
+use crate::db::repositories::project_tags;
 use crate::errors::{AppError, Result};
 
 /// Resultado de un upsert, para que el escáner pueda construir su resumen.
@@ -81,6 +86,83 @@ pub fn list_all(conn: &Connection) -> Result<Vec<Project>> {
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt.query_map([], row_to_project)?;
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
+}
+
+/// Proyecto con todo lo que el tablero necesita para pintar una tarjeta.
+///
+/// Se serializa aplanado: el frontend recibe los campos de [`Project`] al mismo
+/// nivel que `tags` y `git_status`, igual que declara `ProjectWithTags` en
+/// `src/lib/types/index.ts`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProjectWithTags {
+    #[serde(flatten)]
+    pub project: Project,
+    /// Etiquetas asignadas, ordenadas por nombre. Vacío si no tiene ninguna.
+    pub tags: Vec<Tag>,
+    /// Estado Git cacheado, o `None` si no hay repositorio o nunca se refrescó.
+    pub git_status: Option<GitStatusEntry>,
+}
+
+/// Columnas de `git_status_cache` que acompañan a las de [`COLUMNS`].
+///
+/// Ninguna choca con las de `projects`, así que el `LEFT JOIN` no necesita
+/// cualificarlas.
+const GIT_COLUMNS: &str = "branch, ahead, behind, is_dirty, last_commit_sha,
+     last_commit_msg, last_commit_at, remote_url, refreshed_at";
+
+/// Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
+///
+/// Son exactamente **dos** consultas: una para los proyectos con su caché Git
+/// mediante `LEFT JOIN`, y otra para todas las asignaciones de etiquetas. Un
+/// `SELECT` por proyecto convertiría el arranque con 500 proyectos en 501
+/// viajes a SQLite.
+///
+/// Incluye los proyectos ausentes: filtrarlos es una decisión de la vista, que
+/// el frontend toma con el filtro «incluir ausentes».
+pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
+    let sql = format!(
+        "SELECT {COLUMNS}, {GIT_COLUMNS}
+           FROM projects
+           LEFT JOIN git_status_cache ON git_status_cache.project_id = projects.id
+          ORDER BY pinned DESC, name COLLATE NOCASE ASC"
+    );
+    let mut stmt = conn.prepare(&sql)?;
+    let rows = stmt.query_map([], |row| {
+        let project = row_to_project(row)?;
+        // `refreshed_at` es NOT NULL en la caché, así que solo llega vacío
+        // cuando el LEFT JOIN no encontró fila.
+        let refreshed_at: Option<i64> = row.get(20)?;
+        let git_status = match refreshed_at {
+            Some(refreshed_at) => Some(GitStatusEntry {
+                project_id: project.id,
+                refreshed_at,
+                status: GitStatus {
+                    branch: row.get(12)?,
+                    ahead: row.get(13)?,
+                    behind: row.get(14)?,
+                    is_dirty: row.get(15)?,
+                    last_commit_sha: row.get(16)?,
+                    last_commit_msg: row.get(17)?,
+                    last_commit_at: row.get(18)?,
+                    remote_url: row.get(19)?,
+                },
+            }),
+            None => None,
+        };
+        Ok((project, git_status))
+    })?;
+    let base = rows.collect::<rusqlite::Result<Vec<_>>>()?;
+
+    let mut grouped = project_tags::list_all_grouped(conn)?;
+
+    Ok(base
+        .into_iter()
+        .map(|(project, git_status)| ProjectWithTags {
+            tags: grouped.remove(&project.id).unwrap_or_default(),
+            project,
+            git_status,
+        })
+        .collect())
 }
 
 /// Número total de proyectos registrados.
@@ -521,5 +603,120 @@ mod tests {
         let db = Db::open_in_memory().unwrap();
         let err = db.with_conn(|conn| get_by_id(conn, 42)).unwrap_err();
         assert!(matches!(err, AppError::NotFound(_)));
+    }
+
+    #[test]
+    fn list_all_with_tags_returns_an_empty_vector_for_untagged_projects() {
+        let db = Db::open_in_memory().unwrap();
+        db.with_conn(|conn| upsert_by_path(conn, &discovered("/code/uno", None), 1))
+            .unwrap();
+
+        let rows = db.with_conn(list_all_with_tags).unwrap();
+        assert_eq!(rows.len(), 1);
+        assert!(
+            rows[0].tags.is_empty(),
+            "sin etiquetas debe ser una lista vacía, no ausente"
+        );
+        assert!(
+            rows[0].git_status.is_none(),
+            "sin fila en la caché el estado Git es null"
+        );
+    }
+
+    #[test]
+    fn list_all_with_tags_attaches_tags_and_cached_git_status() {
+        use crate::core::git::GitStatus;
+        use crate::db::repositories::{git_status, project_tags, tags};
+
+        let db = Db::open_in_memory().unwrap();
+        let uno = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/uno", None), 1))
+            .unwrap()
+            .id;
+        db.with_conn(|conn| upsert_by_path(conn, &discovered("/code/dos", None), 1))
+            .unwrap();
+
+        let cliente = db
+            .with_conn(|conn| tags::create(conn, "cliente", "#3B82F6", 0))
+            .unwrap();
+        db.with_conn(|conn| project_tags::assign(conn, uno, cliente.id))
+            .unwrap();
+
+        let status = GitStatus {
+            branch: Some("main".into()),
+            ahead: Some(2),
+            behind: None,
+            is_dirty: true,
+            last_commit_sha: Some("abc1234".into()),
+            last_commit_msg: Some("mensaje".into()),
+            last_commit_at: Some(500),
+            remote_url: None,
+        };
+        db.with_conn(|conn| git_status::upsert(conn, uno, &status, 900))
+            .unwrap();
+
+        let rows = db.with_conn(list_all_with_tags).unwrap();
+        let con_etiqueta = rows.iter().find(|r| r.project.id == uno).unwrap();
+        let sin_etiqueta = rows.iter().find(|r| r.project.id != uno).unwrap();
+
+        assert_eq!(con_etiqueta.tags, vec![cliente]);
+        let entry = con_etiqueta.git_status.as_ref().unwrap();
+        assert_eq!(entry.project_id, uno);
+        assert_eq!(entry.refreshed_at, 900);
+        assert_eq!(
+            entry.status, status,
+            "el estado llega completo, sin recortes"
+        );
+
+        assert!(sin_etiqueta.tags.is_empty());
+        assert!(sin_etiqueta.git_status.is_none());
+    }
+
+    #[test]
+    fn list_all_with_tags_keeps_the_same_order_as_list_all() {
+        let db = Db::open_in_memory().unwrap();
+        for path in ["/code/zeta", "/code/alfa", "/code/beta"] {
+            db.with_conn(|conn| upsert_by_path(conn, &discovered(path, None), 1))
+                .unwrap();
+        }
+        let beta = db
+            .with_conn(|conn| find_by_path(conn, "/code/beta"))
+            .unwrap()
+            .unwrap();
+        db.with_conn(|conn| set_pinned(conn, beta.id, true))
+            .unwrap();
+
+        let esperado: Vec<i64> = db
+            .with_conn(list_all)
+            .unwrap()
+            .into_iter()
+            .map(|p| p.id)
+            .collect();
+        let obtenido: Vec<i64> = db
+            .with_conn(list_all_with_tags)
+            .unwrap()
+            .into_iter()
+            .map(|r| r.project.id)
+            .collect();
+
+        assert_eq!(obtenido, esperado, "fijados primero y luego por nombre");
+    }
+
+    #[test]
+    fn list_all_with_tags_includes_missing_projects() {
+        let db = Db::open_in_memory().unwrap();
+        db.with_conn(|conn| upsert_by_path(conn, &discovered("/code/uno", None), 1))
+            .unwrap();
+        db.with_conn(|conn| {
+            mark_missing_under_roots(conn, &[PathBuf::from("/code")], &HashSet::new())
+        })
+        .unwrap();
+
+        let rows = db.with_conn(list_all_with_tags).unwrap();
+        assert_eq!(rows.len(), 1);
+        assert!(
+            rows[0].project.missing,
+            "filtrar ausentes es decisión de la vista, no del repositorio"
+        );
     }
 }
