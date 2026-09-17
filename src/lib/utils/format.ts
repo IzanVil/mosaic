@@ -4,6 +4,10 @@ const DAY = 24 * HOUR;
 const MONTH = 30 * DAY;
 const YEAR = 365 * DAY;
 
+export function now_ts(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
 export function formatRelativeTime(timestamp: number | null): string {
   if (timestamp === null) return 'nunca';
   const seconds = Math.floor(Date.now() / 1000) - timestamp;

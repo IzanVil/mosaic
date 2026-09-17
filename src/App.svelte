@@ -9,6 +9,7 @@
   import { loadViewState, startPersistingViewState } from './lib/stores/filters';
   import {
     gitError,
+    lastGitRefresh,
     loadGitStatus,
     refreshAllGitStatus,
     refreshingGit,
@@ -16,19 +17,52 @@
   import { loadProjects, projects, runScan, scanning } from './lib/stores/projects';
   import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
   import { loadTags } from './lib/stores/tags';
+  import { formatRelativeTime, now_ts } from './lib/utils/format';
 
   const GIT_REFRESHED = 'git-status-refreshed';
+  const GIT_BUTTON_HINT =
+    'Relee del disco la rama, los cambios sin commitear y el último commit de cada ' +
+    'repositorio. No hace fetch: no toca la red. También se refresca solo cada 5 minutos.';
+  const OUTCOME_VISIBLE_SECONDS = 8;
+  const CLOCK_TICK_MS = 30_000;
 
   type View = 'dashboard' | 'settings';
 
   let view = $state<View>('dashboard');
   let ready = $state(false);
+  let tick = $state(now_ts());
 
   let canScan = $derived($scanPaths.length > 0);
+
+  let gitLabel = $derived.by(() => {
+    if ($refreshingGit) return 'Leyendo los repositorios…';
+
+    const last = $lastGitRefresh;
+    if (last === null) return '';
+
+    const age = tick - last.at;
+    if (last.manual && age <= OUTCOME_VISIBLE_SECONDS) {
+      const read = `${last.read} ${last.read === 1 ? 'repositorio leído' : 'repositorios leídos'}`;
+      const parts = [read];
+      if (last.changed === 0) {
+        parts.push('sin cambios');
+      } else {
+        parts.push(`${last.changed} ${last.changed === 1 ? 'actualizado' : 'actualizados'}`);
+      }
+      if (last.failed > 0) {
+        parts.push(`${last.failed} ${last.failed === 1 ? 'ilegible' : 'ilegibles'}`);
+      }
+      return parts.join(' · ');
+    }
+
+    return `Git leído ${formatRelativeTime(last.at)}`;
+  });
 
   onMount(() => {
     const stopListening = listen(GIT_REFRESHED, () => void loadGitStatus());
     let stopPersisting: (() => void) | null = null;
+
+    const clock = setInterval(() => (tick = now_ts()), CLOCK_TICK_MS);
 
     void (async () => {
       await loadViewState();
@@ -40,10 +74,16 @@
     })();
 
     return () => {
+      clearInterval(clock);
       stopPersisting?.();
       void stopListening.then((stop) => stop());
     };
   });
+
+  async function refreshGit() {
+    await refreshAllGitStatus();
+    tick = now_ts();
+  }
 
   async function scan() {
     const summary = await runScan();
@@ -95,11 +135,15 @@
         {$projects.length === 1 ? 'proyecto' : 'proyectos'}
       </p>
 
+      {#if gitLabel !== ''}
+        <p class="text-xs text-content-muted" aria-live="polite">{gitLabel}</p>
+      {/if}
+
       <button
         type="button"
-        onclick={refreshAllGitStatus}
+        onclick={refreshGit}
         disabled={$refreshingGit}
-        title="Releer el estado Git de todos los repositorios"
+        title={GIT_BUTTON_HINT}
         class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
                text-sm text-content transition hover:bg-surface-2 disabled:opacity-60
                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

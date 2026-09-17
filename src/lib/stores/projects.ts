@@ -146,14 +146,18 @@ export async function togglePinned(id: number, pinned: boolean): Promise<void> {
 export function markProjectOpened(id: number, openedAt: number): void {
   patchProject(id, (project) => ({ ...project, last_opened_at: openedAt }));
 }
-export function mergeGitStatus(entries: GitStatusEntry[]): void {
+export function mergeGitStatus(entries: GitStatusEntry[]): number {
   const byProject = new Map(entries.map((entry) => [entry.project_id, entry]));
+  let changed = 0;
   projects.update((current) =>
     current.map((project) => {
       const next = byProject.get(project.id) ?? null;
-      return sameGitStatus(project.git_status, next) ? project : { ...project, git_status: next };
+      if (sameGitStatus(project.git_status, next)) return project;
+      changed += 1;
+      return { ...project, git_status: next };
     }),
   );
+  return changed;
 }
 export function mergeOneGitStatus(projectId: number, entry: GitStatusEntry | null): void {
   patchProject(projectId, (project) =>
