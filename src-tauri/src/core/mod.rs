@@ -4,8 +4,10 @@ pub mod git;
 pub mod launcher;
 pub mod project;
 pub mod scanner;
+pub mod tag;
 
 pub use project::{DiscoveredProject, Project};
+pub use tag::{Tag, TagWithCount};
 
 /// Marca de tiempo actual en segundos desde el epoch Unix.
 ///

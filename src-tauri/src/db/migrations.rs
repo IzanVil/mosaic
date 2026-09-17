@@ -12,15 +12,23 @@ use rusqlite_migration::{Migrations, M};
 use crate::errors::Result;
 
 static MIGRATIONS: LazyLock<Migrations<'static>> = LazyLock::new(|| {
-    Migrations::new(vec![M::up(include_str!(
-        "../../migrations/001_initial.sql"
-    ))])
+    Migrations::new(vec![
+        M::up(include_str!("../../migrations/001_initial.sql")),
+        M::up(include_str!("../../migrations/002_tags_name_ci_unique.sql")),
+    ])
 });
 
 /// Lleva el esquema de `conn` a la última versión conocida.
 pub fn apply(conn: &mut Connection) -> Result<()> {
     let before = MIGRATIONS.current_version(conn)?;
-    MIGRATIONS.to_latest(conn)?;
+    MIGRATIONS.to_latest(conn).map_err(|err| {
+        // Sin este log la aplicación moriría en `setup` sin decir qué migración
+        // falló. El caso realista es el índice único de la 002 sobre nombres de
+        // etiqueta: una base antigua con dos nombres que solo difieren en
+        // mayúsculas lo rechaza y hay que renombrar una a mano.
+        tracing::error!(from = ?before, error = %err, "migración fallida: el esquema queda sin tocar");
+        err
+    })?;
     let after = MIGRATIONS.current_version(conn)?;
 
     if before == after {
@@ -58,6 +66,27 @@ mod tests {
         assert_eq!(
             count, 6,
             "deben existir las seis tablas del esquema inicial"
+        );
+    }
+
+    #[test]
+    fn tags_name_is_unique_case_insensitively() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        apply(&mut conn).unwrap();
+
+        conn.execute(
+            "INSERT INTO tags (name, color, created_at) VALUES ('Cliente', '#FFFFFF', 0)",
+            [],
+        )
+        .unwrap();
+
+        let dup = conn.execute(
+            "INSERT INTO tags (name, color, created_at) VALUES ('cliente', '#FFFFFF', 0)",
+            [],
+        );
+        assert!(
+            dup.is_err(),
+            "el índice de la migración 002 debe rechazar el mismo nombre en otra caja"
         );
     }
 

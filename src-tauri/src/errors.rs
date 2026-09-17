@@ -33,6 +33,10 @@ pub enum AppError {
     #[error("no encontrado: {0}")]
     NotFound(String),
 
+    /// La entrada del usuario no cumple una regla de negocio.
+    #[error("{0}")]
+    Validation(String),
+
     /// Invariante interna rota (por ejemplo, un mutex envenenado).
     #[error("error interno: {0}")]
     Internal(String),
