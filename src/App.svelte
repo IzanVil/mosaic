@@ -6,6 +6,7 @@
   import Dashboard from './lib/views/Dashboard.svelte';
   import Settings from './lib/views/Settings.svelte';
   import { loadApps } from './lib/stores/apps';
+  import { loadViewState, startPersistingViewState } from './lib/stores/filters';
   import {
     gitError,
     loadGitStatus,
@@ -14,34 +15,41 @@
   } from './lib/stores/gitStatus';
   import { loadProjects, projects, runScan, scanning } from './lib/stores/projects';
   import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
+  import { loadTags } from './lib/stores/tags';
 
-  /** Lo emite el backend al terminar un refresco automático de estado Git. */
   const GIT_REFRESHED = 'git-status-refreshed';
 
   type View = 'dashboard' | 'settings';
 
   let view = $state<View>('dashboard');
+  let ready = $state(false);
 
-  /** Sin rutas configuradas no hay nada que escanear. */
   let canScan = $derived($scanPaths.length > 0);
 
-  // Carga inicial: lo que ya está en la base de datos, sin tocar el disco.
   onMount(() => {
-    void loadProjects();
-    void loadScanPaths();
-    void loadGitStatus();
-    void loadApps();
+    const stopListening = listen(GIT_REFRESHED, () => void loadGitStatus());
+    let stopPersisting: (() => void) | null = null;
 
-    // El refresco automático corre en el backend; aquí solo recogemos el aviso.
-    const unlisten = listen(GIT_REFRESHED, () => void loadGitStatus());
-    return () => void unlisten.then((stop) => stop());
+    void (async () => {
+      await loadViewState();
+      ready = true;
+      stopPersisting = startPersistingViewState();
+
+      await Promise.all([loadProjects(), loadScanPaths(), loadTags(), loadApps()]);
+      await loadGitStatus();
+    })();
+
+    return () => {
+      stopPersisting?.();
+      void stopListening.then((stop) => stop());
+    };
   });
 
   async function scan() {
     const summary = await runScan();
-    // El resultado de escanear son los proyectos: si el usuario lo lanzó desde
-    // Ajustes, quedarse ahí hace que la acción parezca no haber hecho nada.
-    if (summary !== null) view = 'dashboard';
+    if (summary === null) return;
+    view = 'dashboard';
+    await refreshAllGitStatus();
   }
 </script>
 
@@ -127,11 +135,13 @@
     </p>
   {/if}
 
-  <main class="flex flex-1 flex-col overflow-y-auto">
-    {#if view === 'dashboard'}
+  <main class="flex min-h-0 flex-1 flex-col">
+    {#if !ready}
+      <p class="px-6 py-16 text-center text-sm text-content-muted">Cargando…</p>
+    {:else if view === 'dashboard'}
       <Dashboard onGoToSettings={() => (view = 'settings')} onScan={scan} />
     {:else}
-      <Settings />
+      <div class="flex-1 overflow-y-auto"><Settings /></div>
     {/if}
   </main>
 </div>

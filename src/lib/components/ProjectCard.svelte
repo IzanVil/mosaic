@@ -1,27 +1,25 @@
 <script lang="ts">
-  import {
-    FolderOpen,
-    Code,
-    Pin,
-    PinOff,
-    SquareTerminal,
-    TriangleAlert,
-  } from '@lucide/svelte';
+  import { Code, FolderOpen, Pin, PinOff, SquareTerminal, TriangleAlert } from '@lucide/svelte';
 
   import GitStatusBadge from './GitStatusBadge.svelte';
+  import TagChip from './TagChip.svelte';
+  import TagPicker from './TagPicker.svelte';
   import { openProject } from '../stores/apps';
-  import { gitStatus } from '../stores/gitStatus';
   import { togglePinned } from '../stores/projects';
-  import type { Project } from '../types';
+  import type { ProjectWithTags } from '../types';
   import { formatRelativeTime, shortenPath } from '../utils/format';
 
   interface Props {
-    project: Project;
+    project: ProjectWithTags;
   }
 
   let { project }: Props = $props();
 
-  let status = $derived($gitStatus[project.id]);
+  const VISIBLE_TAGS = 3;
+
+  let status = $derived(project.git_status ?? undefined);
+  let shownTags = $derived(project.tags.slice(0, VISIBLE_TAGS));
+  let hiddenTags = $derived(project.tags.slice(VISIBLE_TAGS));
 
   const ACTIONS = [
     { kind: 'ide', icon: Code, label: 'Abrir en el editor' },
@@ -67,6 +65,28 @@
   <p class="truncate font-mono text-xs text-content-muted" title={project.path}>
     {shortenPath(project.path, 40)}
   </p>
+
+  <div class="flex flex-wrap items-center gap-1">
+    {#each shownTags as tag (tag.id)}
+      <TagChip {tag} />
+    {/each}
+
+    {#if hiddenTags.length > 0}
+      <span
+        class="rounded-full border border-surface-border px-1.5 py-0.5 text-xs text-content-muted"
+        title={hiddenTags.map((tag) => tag.name).join(', ')}
+      >
+        +{hiddenTags.length}
+      </span>
+    {/if}
+
+    <span
+      class="transition group-hover:opacity-100 group-focus-within:opacity-100"
+      class:opacity-0={project.tags.length > 0}
+    >
+      <TagPicker projectId={project.id} assigned={project.tags} compact={project.tags.length > 0} />
+    </span>
+  </div>
 
   <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
     {#if project.primary_language}
