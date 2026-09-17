@@ -1,5 +1,3 @@
-//! Comandos de lectura y refresco del estado Git.
-
 use std::sync::Arc;
 
 use tauri::State;
@@ -9,7 +7,6 @@ use crate::db::repositories::git_status::{self as repo, GitStatusEntry};
 use crate::db::Db;
 use crate::errors::AppError;
 
-/// Devuelve toda la caché de estado Git, para que el frontend la indexe por proyecto.
 #[tauri::command]
 pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntry>, String> {
     let entries = db.with_conn(repo::list_all)?;
@@ -17,9 +14,6 @@ pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntr
     Ok(entries)
 }
 
-/// Relee el estado Git de un proyecto concreto.
-///
-/// Devuelve `null` si el proyecto no es un repositorio Git.
 #[tauri::command]
 pub async fn refresh_git_status(
     db: State<'_, Arc<Db>>,
@@ -33,10 +27,6 @@ pub async fn refresh_git_status(
         .map_err(String::from)
 }
 
-/// Relee el estado Git de todos los proyectos que son repositorios.
-///
-/// La lectura de disco es bloqueante, así que se ejecuta fuera del hilo de la
-/// interfaz.
 #[tauri::command]
 pub async fn refresh_all_git_status(db: State<'_, Arc<Db>>) -> Result<GitRefreshSummary, String> {
     let db = Arc::clone(&db);

@@ -1,5 +1,3 @@
-/** Estado global de las aplicaciones externas detectadas. */
-
 import { derived, writable } from 'svelte/store';
 
 import * as api from '../api/system';
@@ -9,7 +7,6 @@ import { markProjectOpened } from './projects';
 export const detectedApps = writable<DetectedApp[]>([]);
 export const preferredIde = writable('');
 export const preferredTerminal = writable('');
-/** Último error al abrir un proyecto o al detectar aplicaciones. */
 export const appsError = writable<string | null>(null);
 
 export const ides = derived(detectedApps, (apps) => apps.filter((app) => app.kind === 'ide'));
@@ -17,7 +14,6 @@ export const terminals = derived(detectedApps, (apps) =>
   apps.filter((app) => app.kind === 'terminal'),
 );
 
-/** Detecta las aplicaciones instaladas y lee las preferencias guardadas. */
 export async function loadApps(): Promise<void> {
   appsError.set(null);
   try {
@@ -30,7 +26,6 @@ export async function loadApps(): Promise<void> {
   }
 }
 
-/** Abre un proyecto. Devuelve `true` si la aplicación se lanzó. */
 export async function openProject(kind: AppKind, projectId: number): Promise<boolean> {
   appsError.set(null);
   try {
@@ -43,7 +38,6 @@ export async function openProject(kind: AppKind, projectId: number): Promise<boo
   }
 }
 
-/** Guarda la aplicación preferida de un tipo. */
 export async function setPreferredApp(kind: AppKind, appId: string): Promise<void> {
   appsError.set(null);
   try {

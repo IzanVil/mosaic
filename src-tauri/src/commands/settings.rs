@@ -1,9 +1,3 @@
-//! Comandos de estado persistido de la interfaz.
-//!
-//! Solo exponen la clave `ui.view_state`, no la tabla `settings` entera: un
-//! `get_setting`/`set_setting` genérico dejaría al frontend escribir cualquier
-//! ajuste del escáner o de Git sin pasar por su validación.
-
 use std::sync::Arc;
 
 use tauri::State;
@@ -12,19 +6,8 @@ use crate::config::settings::{self, KEY_VIEW_STATE};
 use crate::db::Db;
 use crate::errors::AppError;
 
-/// Tope de tamaño del JSON de la vista.
-///
-/// La vista guardada son unos cientos de bytes: query, ids de etiquetas y
-/// orden. El tope evita que un error del frontend convierta la tabla de
-/// ajustes en un vertedero.
 const MAX_VIEW_STATE_BYTES: usize = 64 * 1024;
 
-/// Devuelve la última vista guardada (búsqueda, filtros, orden) como JSON.
-///
-/// Devuelve `null` si nunca se guardó o si lo guardado ya no es JSON válido:
-/// la vista es una comodidad, así que ante un valor corrupto se arranca con
-/// los filtros por defecto en lugar de fallar. Es la misma política que aplica
-/// [`settings::load`] con el resto de claves.
 #[tauri::command]
 pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, String> {
     let raw = db.with_conn(|conn| settings::get_raw(conn, KEY_VIEW_STATE))?;
@@ -42,7 +25,6 @@ pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, St
     }
 }
 
-/// Guarda la vista actual. El frontend llama con debounce, no en cada tecla.
 #[tauri::command]
 pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), String> {
     if json.len() > MAX_VIEW_STATE_BYTES {

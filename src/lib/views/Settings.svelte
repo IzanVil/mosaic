@@ -38,7 +38,6 @@
     },
   ] as const;
 
-  /** Abre el selector nativo de carpetas y registra la ruta elegida. */
   async function pickFolder() {
     picking = true;
     try {

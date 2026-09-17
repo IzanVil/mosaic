@@ -1,21 +1,7 @@
-/**
- * Paleta de colores de etiqueta.
- *
- * Son los tonos 500 de la paleta por defecto de Tailwind: se llevan bien con
- * los tokens de `app.css` en claro y en oscuro, y al estar escritos aquí como
- * literales no dependen de que Tailwind genere ninguna clase.
- *
- * El backend guarda hexadecimal, así que el selector libre (`<input
- * type="color">`) del gestor de etiquetas admite cualquier otro valor.
- */
-
 export interface TagColor {
-  /** Nombre visible, para el `title` y el texto accesible. */
   name: string;
-  /** Hexadecimal en mayúsculas, la forma que normaliza el backend. */
   hex: string;
 }
-
 export const TAG_COLORS: readonly TagColor[] = [
   { name: 'Pizarra', hex: '#64748B' },
   { name: 'Gris', hex: '#6B7280' },
@@ -34,36 +20,19 @@ export const TAG_COLORS: readonly TagColor[] = [
   { name: 'Violeta', hex: '#8B5CF6' },
   { name: 'Fucsia', hex: '#D946EF' },
 ] as const;
-
-/** Color con el que se crea una etiqueta si el usuario no elige otro. */
 export const DEFAULT_TAG_COLOR = '#3B82F6';
-
-/** Opacidad del fondo de un chip, como sufijo hexadecimal (15 %). */
 const CHIP_BACKGROUND_ALPHA = '26';
-/** Opacidad del borde de un chip (30 %). */
 const CHIP_BORDER_ALPHA = '4D';
 
-/**
- * Añade canal alfa a un `#RRGGBB`.
- *
- * Si el color no tiene la forma esperada se devuelve tal cual: es mejor pintar
- * un chip opaco que romper el estilo con un valor CSS inválido.
- */
 function withAlpha(hex: string, alpha: string): string {
   return /^#[0-9A-Fa-f]{6}$/.test(hex) ? `${hex}${alpha}` : hex;
 }
-
-/** Fondo translúcido de un chip. */
 export function chipBackground(hex: string): string {
   return withAlpha(hex, CHIP_BACKGROUND_ALPHA);
 }
-
-/** Borde semitranslúcido de un chip. */
 export function chipBorder(hex: string): string {
   return withAlpha(hex, CHIP_BORDER_ALPHA);
 }
-
-/** Valor válido para `<input type="color">`, que solo acepta `#rrggbb`. */
 export function colorInputValue(hex: string): string {
   return /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex.toLowerCase() : DEFAULT_TAG_COLOR.toLowerCase();
 }

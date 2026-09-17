@@ -1,9 +1,3 @@
-//! Repositorio de la relación N:M entre proyectos y etiquetas.
-//!
-//! Asignar no es un cambio de metadatos del proyecto: aquí nunca se escribe en
-//! la tabla `projects`, así que `updated_at` no avanza al etiquetar. Lo fija el
-//! test `assigning_tags_never_touches_the_projects_table`.
-
 use std::collections::HashMap;
 
 use rusqlite::{params, Connection};
@@ -11,10 +5,6 @@ use rusqlite::{params, Connection};
 use crate::core::tag::Tag;
 use crate::errors::{AppError, Result};
 
-/// Traduce una violación de clave ajena en un «no encontrado» legible.
-///
-/// `INSERT OR IGNORE` silencia los conflictos de unicidad, pero no los de
-/// clave ajena: si el proyecto o la etiqueta no existen, SQLite falla.
 fn map_missing_reference(err: rusqlite::Error, project_id: i64, tag_id: i64) -> AppError {
     match &err {
         rusqlite::Error::SqliteFailure(failure, _)
@@ -26,9 +16,6 @@ fn map_missing_reference(err: rusqlite::Error, project_id: i64, tag_id: i64) -> 
     }
 }
 
-/// Asigna una etiqueta a un proyecto.
-///
-/// Es idempotente: repetir la asignación no falla ni duplica la fila.
 pub fn assign(conn: &Connection, project_id: i64, tag_id: i64) -> Result<()> {
     conn.execute(
         "INSERT OR IGNORE INTO project_tags (project_id, tag_id) VALUES (?1, ?2)",
@@ -38,10 +25,6 @@ pub fn assign(conn: &Connection, project_id: i64, tag_id: i64) -> Result<()> {
     Ok(())
 }
 
-/// Quita una etiqueta de un proyecto.
-///
-/// Quitar algo que no estaba asignado no es un error: el resultado que pedía
-/// quien llama —que la etiqueta no esté— ya se cumple.
 pub fn unassign(conn: &Connection, project_id: i64, tag_id: i64) -> Result<()> {
     conn.execute(
         "DELETE FROM project_tags WHERE project_id = ?1 AND tag_id = ?2",
@@ -50,7 +33,6 @@ pub fn unassign(conn: &Connection, project_id: i64, tag_id: i64) -> Result<()> {
     Ok(())
 }
 
-/// Devuelve las etiquetas de un proyecto, ordenadas por nombre.
 pub fn list_tags_for_project(conn: &Connection, project_id: i64) -> Result<Vec<Tag>> {
     let mut stmt = conn.prepare(
         "SELECT t.id, t.name, t.color, t.created_at
@@ -70,19 +52,12 @@ pub fn list_tags_for_project(conn: &Connection, project_id: i64) -> Result<Vec<T
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
-/// Devuelve los identificadores de los proyectos que tienen una etiqueta.
 pub fn list_projects_for_tag(conn: &Connection, tag_id: i64) -> Result<Vec<i64>> {
     let mut stmt = conn.prepare("SELECT project_id FROM project_tags WHERE tag_id = ?1")?;
     let rows = stmt.query_map(params![tag_id], |row| row.get(0))?;
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
-/// Devuelve todas las asignaciones agrupadas por proyecto.
-///
-/// Es la segunda —y última— consulta de
-/// [`crate::db::repositories::projects::list_all_with_tags`]: trae las
-/// etiquetas de todos los proyectos de una vez para no hacer una consulta por
-/// tarjeta del tablero.
 pub fn list_all_grouped(conn: &Connection) -> Result<HashMap<i64, Vec<Tag>>> {
     let mut stmt = conn.prepare(
         "SELECT pt.project_id, t.id, t.name, t.color, t.created_at
@@ -110,10 +85,6 @@ pub fn list_all_grouped(conn: &Connection) -> Result<HashMap<i64, Vec<Tag>>> {
     Ok(grouped)
 }
 
-/// Asigna una etiqueta a varios proyectos y devuelve cuántas asignaciones son nuevas.
-///
-/// Preparado para la selección múltiple de la Fase 6. Va en una transacción
-/// para que un identificador inválido no deje el lote a medias.
 pub fn bulk_assign(conn: &mut Connection, project_ids: &[i64], tag_id: i64) -> Result<usize> {
     let tx = conn.transaction()?;
     let mut inserted = 0;
@@ -309,8 +280,6 @@ mod tests {
         db.with_conn(|conn| assign(conn, uno, cliente)).unwrap();
         db.with_conn(|conn| assign(conn, dos, cliente)).unwrap();
 
-        // Mosaic nunca borra proyectos (los marca `missing`), pero si algún día
-        // lo hiciera, el CASCADE no puede dejar asignaciones huérfanas.
         db.with_conn(|conn| {
             conn.execute("DELETE FROM projects WHERE id = ?1", params![uno])?;
             Ok(())

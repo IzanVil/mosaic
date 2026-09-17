@@ -5,13 +5,11 @@
   import { formatRelativeTime } from '../utils/format';
 
   interface Props {
-    /** `undefined` mientras la caché no tenga entrada para este proyecto. */
     status: GitStatusEntry | undefined;
   }
 
   let { status }: Props = $props();
 
-  /** Rama, o los siete primeros caracteres del sha si el HEAD está separado. */
   let label = $derived(
     status?.branch ?? (status?.last_commit_sha ? status.last_commit_sha.slice(0, 7) : '—'),
   );

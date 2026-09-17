@@ -1,6 +1,3 @@
-//! Comandos de integración con el sistema: abrir proyectos en aplicaciones
-//! externas y descubrir cuáles hay instaladas.
-
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -12,7 +9,6 @@ use crate::db::repositories::projects as projects_repo;
 use crate::db::Db;
 use crate::errors::AppError;
 
-/// Devuelve los IDEs y terminales reconocidos que hay en el sistema.
 #[tauri::command]
 pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, String> {
     let mut apps = detect(AppKind::Ide);
@@ -22,10 +18,6 @@ pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, String> {
     Ok(apps)
 }
 
-/// Abre un proyecto en el IDE, la terminal o el explorador de archivos.
-///
-/// Registra el momento de apertura en `last_opened_at`, pero solo si el
-/// lanzamiento ha tenido éxito.
 #[tauri::command]
 pub async fn open_in(db: State<'_, Arc<Db>>, kind: AppKind, project_id: i64) -> Result<(), String> {
     let db = Arc::clone(&db);
@@ -54,16 +46,12 @@ pub async fn open_in(db: State<'_, Arc<Db>>, kind: AppKind, project_id: i64) -> 
     .map_err(String::from)
 }
 
-/// Aplicaciones preferidas actualmente guardadas.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PreferredApps {
-    /// Ejecutable del IDE preferido; vacío significa "el primero disponible".
     pub ide: String,
-    /// Ejecutable del terminal preferido; vacío significa "el primero disponible".
     pub terminal: String,
 }
 
-/// Devuelve las aplicaciones preferidas, para poder marcarlas en los ajustes.
 #[tauri::command]
 pub async fn get_preferred_apps(db: State<'_, Arc<Db>>) -> Result<PreferredApps, String> {
     let config = db.with_conn(settings::load)?;
@@ -73,8 +61,6 @@ pub async fn get_preferred_apps(db: State<'_, Arc<Db>>) -> Result<PreferredApps,
     })
 }
 
-/// Guarda el IDE o el terminal preferido. Una cadena vacía vuelve a "el primero
-/// que se detecte".
 #[tauri::command]
 pub async fn set_preferred_app(
     db: State<'_, Arc<Db>>,

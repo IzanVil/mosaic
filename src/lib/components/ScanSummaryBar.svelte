@@ -10,7 +10,6 @@
 
   let { summary }: Props = $props();
 
-  /** Detalles que solo merece la pena mostrar si no son cero. */
   let details = $derived(
     [
       summary.projects_new > 0 ? `${summary.projects_new} nuevos` : null,

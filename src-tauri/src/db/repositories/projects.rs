@@ -1,24 +1,3 @@
-//! Repositorio de proyectos.
-//!
-//! # Semántica de marcas de tiempo
-//!
-//! - `created_at`: se fija en la inserción y no se modifica jamás.
-//! - `updated_at`: solo avanza si cambian metadatos propios del proyecto, es
-//!   decir columnas de `projects`. Hoy [`upsert_by_path`] compara `name`,
-//!   `primary_language` e `is_git_repo`; `notes` entrará en la comparación
-//!   cuando la Fase 5 permita editarlas, porque nada las escribe todavía.
-//! - `last_seen_at`: avanza cada vez que el escáner ve el proyecto en disco.
-//! - `missing`: `0` cuando el escáner lo ve, `1` cuando deja de verlo.
-//!
-//! `is_git_repo` es la columna de `projects` —si la carpeta tiene o no un
-//! repositorio—, **no** el estado vivo de `git_status_cache`. El refresco
-//! automático de Git escribe únicamente en la caché, así que no puede hacer
-//! avanzar `updated_at`; lo fija el test de integración
-//! `refreshing_git_status_never_touches_the_projects_table`.
-//!
-//! Ver `missing` nunca borra datos: las etiquetas y notas del usuario
-//! sobreviven a que el proyecto desaparezca del disco.
-
 use std::collections::HashSet;
 use std::path::Path;
 
@@ -32,17 +11,13 @@ use crate::db::repositories::git_status::GitStatusEntry;
 use crate::db::repositories::project_tags;
 use crate::errors::{AppError, Result};
 
-/// Resultado de un upsert, para que el escáner pueda construir su resumen.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct UpsertOutcome {
     pub id: i64,
-    /// El proyecto no existía y se ha insertado.
     pub created: bool,
-    /// Cambió algún metadato propio, de modo que `updated_at` ha avanzado.
     pub metadata_changed: bool,
 }
 
-/// Columnas de `projects` en el orden que espera [`row_to_project`].
 const COLUMNS: &str = "id, name, path, is_git_repo, primary_language, last_opened_at,
      pinned, notes, missing, last_seen_at, created_at, updated_at";
 
@@ -63,7 +38,6 @@ fn row_to_project(row: &Row<'_>) -> rusqlite::Result<Project> {
     })
 }
 
-/// Busca un proyecto por su ruta absoluta.
 pub fn find_by_path(conn: &Connection, path: &str) -> Result<Option<Project>> {
     let sql = format!("SELECT {COLUMNS} FROM projects WHERE path = ?1");
     Ok(conn
@@ -71,7 +45,6 @@ pub fn find_by_path(conn: &Connection, path: &str) -> Result<Option<Project>> {
         .optional()?)
 }
 
-/// Recupera un proyecto por su identificador.
 pub fn get_by_id(conn: &Connection, id: i64) -> Result<Project> {
     let sql = format!("SELECT {COLUMNS} FROM projects WHERE id = ?1");
     conn.query_row(&sql, params![id], row_to_project)
@@ -79,7 +52,6 @@ pub fn get_by_id(conn: &Connection, id: i64) -> Result<Project> {
         .ok_or_else(|| AppError::NotFound(format!("proyecto {id}")))
 }
 
-/// Devuelve todos los proyectos: primero los fijados, luego por nombre.
 pub fn list_all(conn: &Connection) -> Result<Vec<Project>> {
     let sql =
         format!("SELECT {COLUMNS} FROM projects ORDER BY pinned DESC, name COLLATE NOCASE ASC");
@@ -88,37 +60,17 @@ pub fn list_all(conn: &Connection) -> Result<Vec<Project>> {
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
-/// Proyecto con todo lo que el tablero necesita para pintar una tarjeta.
-///
-/// Se serializa aplanado: el frontend recibe los campos de [`Project`] al mismo
-/// nivel que `tags` y `git_status`, igual que declara `ProjectWithTags` en
-/// `src/lib/types/index.ts`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProjectWithTags {
     #[serde(flatten)]
     pub project: Project,
-    /// Etiquetas asignadas, ordenadas por nombre. Vacío si no tiene ninguna.
     pub tags: Vec<Tag>,
-    /// Estado Git cacheado, o `None` si no hay repositorio o nunca se refrescó.
     pub git_status: Option<GitStatusEntry>,
 }
 
-/// Columnas de `git_status_cache` que acompañan a las de [`COLUMNS`].
-///
-/// Ninguna choca con las de `projects`, así que el `LEFT JOIN` no necesita
-/// cualificarlas.
 const GIT_COLUMNS: &str = "branch, ahead, behind, is_dirty, last_commit_sha,
      last_commit_msg, last_commit_at, remote_url, refreshed_at";
 
-/// Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
-///
-/// Son exactamente **dos** consultas: una para los proyectos con su caché Git
-/// mediante `LEFT JOIN`, y otra para todas las asignaciones de etiquetas. Un
-/// `SELECT` por proyecto convertiría el arranque con 500 proyectos en 501
-/// viajes a SQLite.
-///
-/// Incluye los proyectos ausentes: filtrarlos es una decisión de la vista, que
-/// el frontend toma con el filtro «incluir ausentes».
 pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
     let sql = format!(
         "SELECT {COLUMNS}, {GIT_COLUMNS}
@@ -129,8 +81,6 @@ pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt.query_map([], |row| {
         let project = row_to_project(row)?;
-        // `refreshed_at` es NOT NULL en la caché, así que solo llega vacío
-        // cuando el LEFT JOIN no encontró fila.
         let refreshed_at: Option<i64> = row.get(20)?;
         let git_status = match refreshed_at {
             Some(refreshed_at) => Some(GitStatusEntry {
@@ -165,15 +115,10 @@ pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
         .collect())
 }
 
-/// Número total de proyectos registrados.
 pub fn count(conn: &Connection) -> Result<i64> {
     Ok(conn.query_row("SELECT count(*) FROM projects", [], |row| row.get(0))?)
 }
 
-/// Inserta o actualiza un proyecto descubierto, usando la ruta como clave.
-///
-/// Respeta la semántica de marcas de tiempo documentada en el módulo: el
-/// escaneo de un proyecto sin cambios no toca `updated_at`.
 pub fn upsert_by_path(
     conn: &Connection,
     discovered: &DiscoveredProject,
@@ -237,10 +182,6 @@ pub fn upsert_by_path(
     })
 }
 
-/// Fija o quita la marca de favorito de un proyecto.
-///
-/// No toca `updated_at`: fijar un proyecto es una preferencia de presentación,
-/// no un cambio en los metadatos que describen la carpeta.
 pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
     let affected = conn.execute(
         "UPDATE projects SET pinned = ?2 WHERE id = ?1",
@@ -252,9 +193,6 @@ pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
     Ok(())
 }
 
-/// Registra que el proyecto se acaba de abrir.
-///
-/// Tampoco toca `updated_at`, por el mismo motivo que [`set_pinned`].
 pub fn touch_last_opened(conn: &Connection, id: i64, now: i64) -> Result<()> {
     let affected = conn.execute(
         "UPDATE projects SET last_opened_at = ?2 WHERE id = ?1",
@@ -266,19 +204,6 @@ pub fn touch_last_opened(conn: &Connection, id: i64, now: i64) -> Result<()> {
     Ok(())
 }
 
-/// Marca como ausentes los proyectos bajo `roots` que el escaneo no ha visto.
-///
-/// `seen` contiene los identificadores que el escáner acaba de encontrar en
-/// disco. Se comparan identificadores y no marcas de tiempo porque la
-/// resolución de `last_seen_at` es de un segundo y dos escaneos consecutivos
-/// pueden compartir instante.
-///
-/// Solo se consideran proyectos que cuelgan de alguna de las raíces recién
-/// escaneadas: los que viven bajo una ruta deshabilitada o eliminada conservan
-/// su estado. `updated_at` no se toca, porque `missing` no es un metadato
-/// propio del proyecto sino una observación del escáner.
-///
-/// Devuelve cuántos proyectos han pasado a `missing = 1`.
 pub fn mark_missing_under_roots(
     conn: &Connection,
     roots: &[std::path::PathBuf],
@@ -394,7 +319,6 @@ mod tests {
             .unwrap()
             .id;
 
-        // Segundo escaneo sin cambios: updated_at se queda quieto.
         let unchanged = db
             .with_conn(|conn| upsert_by_path(conn, &project, 2_000))
             .unwrap();
@@ -402,7 +326,6 @@ mod tests {
         assert!(!unchanged.metadata_changed);
         assert_eq!(stored.updated_at, 1_000);
 
-        // Cambia el lenguaje: updated_at avanza.
         project.primary_language = Some("TypeScript".into());
         let changed = db
             .with_conn(|conn| upsert_by_path(conn, &project, 3_000))
@@ -411,14 +334,12 @@ mod tests {
         assert!(changed.metadata_changed);
         assert_eq!(stored.updated_at, 3_000);
 
-        // Cambia el nombre: updated_at avanza.
         project.name = "mosaic-renombrado".into();
         db.with_conn(|conn| upsert_by_path(conn, &project, 4_000))
             .unwrap();
         let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
         assert_eq!(stored.updated_at, 4_000);
 
-        // Cambia is_git_repo: updated_at avanza.
         project.is_git_repo = false;
         db.with_conn(|conn| upsert_by_path(conn, &project, 5_000))
             .unwrap();
@@ -457,7 +378,6 @@ mod tests {
             .unwrap()
             .id;
 
-        // Segundo escaneo: solo se vuelve a ver uno.
         let visto_id = db
             .with_conn(|conn| upsert_by_path(conn, &visto, 2_100))
             .unwrap()

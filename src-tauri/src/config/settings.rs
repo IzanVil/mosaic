@@ -1,48 +1,21 @@
-//! Ajustes de la aplicación, persistidos en la tabla clave-valor `settings`.
-//!
-//! Todas las claves tienen un valor por defecto: una base de datos recién
-//! creada es válida sin necesidad de precargar nada.
-
 use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 
 use crate::errors::Result;
 
-/// Profundidad máxima de escaneo, contando la raíz como nivel 0.
 pub const KEY_MAX_DEPTH: &str = "scan.max_depth";
-/// Directorios que el escáner nunca recorre, separados por `\n`.
 pub const KEY_EXCLUDED_DIRS: &str = "scan.excluded_dirs";
-/// Tope de entradas visitadas por escaneo antes de abortar con aviso.
 pub const KEY_MAX_ENTRIES_PER_SCAN: &str = "scan.max_entries_per_scan";
-/// Si el escaneo se lanza automáticamente al arrancar la aplicación.
 pub const KEY_SCAN_ON_STARTUP: &str = "scan.on_startup";
-/// Minutos entre refrescos automáticos del estado Git.
 pub const KEY_GIT_REFRESH_MINUTES: &str = "git.refresh_interval_minutes";
-/// Ejecutable del IDE preferido. Vacío = usar el primero que se detecte.
 pub const KEY_PREFERRED_IDE: &str = "apps.preferred_ide";
-/// Ejecutable del terminal preferido. Vacío = usar el primero que se detecte.
 pub const KEY_PREFERRED_TERMINAL: &str = "apps.preferred_terminal";
-/// Última vista del tablero (búsqueda, filtros, orden, sidebar) en JSON.
-///
-/// No forma parte de [`Settings`]: es estado de la interfaz, con una forma que
-/// solo entiende el frontend, y el backend no lo interpreta más allá de
-/// comprobar que es JSON válido. Se lee y escribe con [`get_raw`] y [`set_raw`]
-/// desde `commands::settings`.
 pub const KEY_VIEW_STATE: &str = "ui.view_state";
 
-/// Profundidad máxima por defecto (la raíz es el nivel 0).
 pub const DEFAULT_MAX_DEPTH: usize = 4;
-/// Tope de entradas por defecto.
 pub const DEFAULT_MAX_ENTRIES_PER_SCAN: usize = 50_000;
-/// Intervalo por defecto entre refrescos automáticos del estado Git.
 pub const DEFAULT_GIT_REFRESH_MINUTES: u64 = 5;
 
-/// Directorios excluidos por defecto: dependencias, artefactos de build y
-/// cachés de herramientas.
-///
-/// `.vscode` se excluye siempre: nunca contiene ficheros marcadores, así que
-/// limitar la exclusión a "dentro de proyectos detectados" no cambiaría el
-/// resultado y sí complicaría el recorrido.
 pub const DEFAULT_EXCLUDED_DIRS: &[&str] = &[
     ".git",
     "node_modules",
@@ -72,18 +45,14 @@ pub const DEFAULT_EXCLUDED_DIRS: &[&str] = &[
     ".dart_tool",
 ];
 
-/// Preferencias de la aplicación resueltas (valor guardado o valor por defecto).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Settings {
     pub max_depth: usize,
     pub excluded_dirs: Vec<String>,
     pub max_entries_per_scan: usize,
     pub scan_on_startup: bool,
-    /// Minutos entre refrescos automáticos del estado Git. `0` los desactiva.
     pub git_refresh_interval_minutes: u64,
-    /// Ejecutable del IDE preferido; vacío significa "el primero disponible".
     pub preferred_ide: String,
-    /// Ejecutable del terminal preferido; vacío significa "el primero disponible".
     pub preferred_terminal: String,
 }
 
@@ -104,7 +73,6 @@ impl Default for Settings {
     }
 }
 
-/// Lee un valor crudo de la tabla `settings`.
 pub fn get_raw(conn: &Connection, key: &str) -> Result<Option<String>> {
     Ok(conn
         .query_row(
@@ -115,7 +83,6 @@ pub fn get_raw(conn: &Connection, key: &str) -> Result<Option<String>> {
         .optional()?)
 }
 
-/// Escribe (o sobrescribe) un valor crudo en la tabla `settings`.
 pub fn set_raw(conn: &Connection, key: &str, value: &str) -> Result<()> {
     conn.execute(
         "INSERT INTO settings (key, value) VALUES (?1, ?2)
@@ -125,8 +92,6 @@ pub fn set_raw(conn: &Connection, key: &str, value: &str) -> Result<()> {
     Ok(())
 }
 
-/// Carga los ajustes, sustituyendo por el valor por defecto cualquier clave
-/// ausente o con contenido no parseable.
 pub fn load(conn: &Connection) -> Result<Settings> {
     let defaults = Settings::default();
 
@@ -171,7 +136,6 @@ pub fn load(conn: &Connection) -> Result<Settings> {
     })
 }
 
-/// Persiste todos los ajustes.
 pub fn save(conn: &Connection, settings: &Settings) -> Result<()> {
     set_raw(conn, KEY_MAX_DEPTH, &settings.max_depth.to_string())?;
     set_raw(conn, KEY_EXCLUDED_DIRS, &settings.excluded_dirs.join("\n"))?;

@@ -1,7 +1,3 @@
-//! Test de integración de la Fase 4: escanear un árbol real, etiquetar los
-//! proyectos descubiertos y comprobar que el tablero los recibe con sus
-//! etiquetas, y que borrar una etiqueta no se lleva nada más por delante.
-
 use std::fs;
 use std::path::Path;
 
@@ -16,14 +12,12 @@ fn write(path: &Path, contents: &str) {
     fs::write(path, contents).unwrap();
 }
 
-/// Tres proyectos detectables por su fichero marcador.
 fn build_tree(root: &Path) {
     write(&root.join("uno/Cargo.toml"), "[package]");
     write(&root.join("dos/package.json"), "{}");
     write(&root.join("tres/pyproject.toml"), "[project]");
 }
 
-/// Escanea `root` y devuelve la base de datos ya poblada.
 fn scanned_db(root: &Path) -> Db {
     let db = Db::open_in_memory().unwrap();
     db.with_conn(|conn| scan_paths_repo::add(conn, root.to_str().unwrap(), 0))
@@ -46,7 +40,6 @@ fn tagging_projects_survives_a_rescan_and_the_tag_being_deleted() {
         .map(|p| p.id)
         .collect();
 
-    // Una etiqueta en los tres proyectos y otra solo en el primero.
     let cliente = db
         .with_conn(|conn| tags_repo::create(conn, "Cliente", "#3b82f6", 1_000))
         .unwrap();
@@ -60,7 +53,6 @@ fn tagging_projects_survives_a_rescan_and_the_tag_being_deleted() {
     db.with_conn(|conn| project_tags::assign(conn, ids[0], urgente.id))
         .unwrap();
 
-    // El tablero recibe cada proyecto con sus etiquetas ordenadas por nombre.
     let rows = db.with_conn(projects_repo::list_all_with_tags).unwrap();
     assert_eq!(rows.len(), 3);
     for row in &rows {
@@ -74,7 +66,6 @@ fn tagging_projects_survives_a_rescan_and_the_tag_being_deleted() {
     let nombres: Vec<&str> = primero.tags.iter().map(|t| t.name.as_str()).collect();
     assert_eq!(nombres, vec!["Cliente", "urgente"]);
 
-    // El conteo del sidebar sale de la misma consulta.
     let listado = db.with_conn(tags_repo::list_all).unwrap();
     let conteos: Vec<(&str, i64)> = listado
         .iter()
@@ -82,7 +73,6 @@ fn tagging_projects_survives_a_rescan_and_the_tag_being_deleted() {
         .collect();
     assert_eq!(conteos, vec![("Cliente", 3), ("urgente", 1)]);
 
-    // Un reescaneo no altera las asignaciones ni los metadatos del proyecto.
     let antes = db
         .with_conn(|conn| projects_repo::get_by_id(conn, ids[0]))
         .unwrap();
@@ -101,7 +91,6 @@ fn tagging_projects_survives_a_rescan_and_the_tag_being_deleted() {
         2
     );
 
-    // Borrar la etiqueta la retira de los proyectos, que siguen ahí.
     db.with_conn(|conn| tags_repo::delete(conn, cliente.id))
         .unwrap();
     let rows = db.with_conn(projects_repo::list_all_with_tags).unwrap();
@@ -138,7 +127,6 @@ fn tags_survive_a_project_going_missing() {
     db.with_conn(|conn| project_tags::assign(conn, uno.id, archivado.id))
         .unwrap();
 
-    // Desaparece del disco: el escáner lo marca ausente, no lo borra.
     fs::remove_dir_all(tmp.path().join("uno")).unwrap();
     let summary = run_full_scan(&db).unwrap();
     assert_eq!(summary.projects_missing, 1);

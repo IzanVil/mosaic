@@ -1,9 +1,3 @@
-//! Test de integración del flujo completo de la Fase 1:
-//! registrar una ruta -> escanear -> listar proyectos.
-//!
-//! Ejercita la API pública de `mosaic_lib` (la misma que usan los comandos
-//! Tauri), sin necesidad de levantar una ventana.
-
 use std::fs;
 use std::path::Path;
 
@@ -21,28 +15,22 @@ fn touch(path: &Path) {
     fs::write(path, "").unwrap();
 }
 
-/// Construye un árbol con tres proyectos de distinto tipo más ruido alrededor.
 fn build_tree(root: &Path) {
-    // 1. Proyecto Rust con repositorio Git.
     let rust = root.join("mosaic");
     mkdir(&rust.join(".git"));
     touch(&rust.join("Cargo.toml"));
     touch(&rust.join("src/main.rs"));
 
-    // 2. Proyecto TypeScript sin Git, dentro de una subcarpeta.
     let web = root.join("web/panel");
     touch(&web.join("package.json"));
     touch(&web.join("src/app.ts"));
     touch(&web.join("src/store.ts"));
-    // Ruido que el escáner debe ignorar por estar excluido.
     touch(&web.join("node_modules/left-pad/package.json"));
 
-    // 3. Proyecto Python.
     let python = root.join("scripts/etl");
     touch(&python.join("pyproject.toml"));
     touch(&python.join("main.py"));
 
-    // Carpeta sin marcadores: no es un proyecto.
     touch(&root.join("documentos/notas.md"));
 }
 
@@ -82,7 +70,6 @@ fn scans_a_directory_tree_and_lists_the_projects_it_finds() {
     assert_eq!(panel.primary_language.as_deref(), Some("TypeScript"));
     assert!(!panel.is_git_repo);
 
-    // La ruta raíz registra cuándo se escaneó por última vez.
     let scan_path = db.with_conn(scan_paths_repo::list).unwrap().remove(0);
     assert!(scan_path.last_scan_at.is_some());
 }
@@ -99,14 +86,12 @@ fn rescanning_is_idempotent_and_flags_projects_that_disappear() {
 
     run_full_scan(&db).unwrap();
 
-    // Segundo escaneo sin cambios: ni nuevos ni actualizados.
     let second = run_full_scan(&db).unwrap();
     assert_eq!(second.projects_found, 3);
     assert_eq!(second.projects_new, 0);
     assert_eq!(second.projects_updated, 0);
     assert_eq!(db.with_conn(projects_repo::count).unwrap(), 3);
 
-    // Desaparece un proyecto del disco.
     fs::remove_dir_all(root.join("scripts/etl")).unwrap();
     let third = run_full_scan(&db).unwrap();
 

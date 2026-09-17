@@ -1,8 +1,3 @@
-//! Núcleo de Mosaic: organizador visual local-first de proyectos de código.
-//!
-//! El binario (`main.rs`) delega aquí para que la lógica sea reutilizable
-//! desde los tests de integración y desde los distintos targets de Tauri.
-
 pub mod commands;
 pub mod config;
 pub mod core;
@@ -17,18 +12,10 @@ use tracing_subscriber::{fmt, EnvFilter};
 
 use crate::db::Db;
 
-/// Evento que recibe el frontend cuando termina un refresco automático del
-/// estado Git. Su carga útil es un [`core::git::GitRefreshSummary`].
 pub const EVENT_GIT_STATUS_REFRESHED: &str = "git-status-refreshed";
 
-/// Espera antes del primer refresco automático, para no competir con el arranque
-/// de la ventana pero dejar los indicadores al día cuanto antes.
 const FIRST_REFRESH_DELAY: Duration = Duration::from_secs(5);
 
-/// Inicializa el logging a stdout.
-///
-/// El nivel se controla con la variable de entorno `MOSAIC_LOG`
-/// (sintaxis de `tracing_subscriber::EnvFilter`); por defecto `info`.
 fn init_tracing() {
     let filter = EnvFilter::try_from_env("MOSAIC_LOG").unwrap_or_else(|_| EnvFilter::new("info"));
 
@@ -39,13 +26,6 @@ fn init_tracing() {
         .init();
 }
 
-/// Lanza la tarea que refresca el estado Git en segundo plano.
-///
-/// Hace un primer refresco poco después del arranque, porque la caché que quedó
-/// de la sesión anterior puede estar muy desactualizada, y a partir de ahí
-/// respeta el intervalo configurado. El intervalo se relee en cada vuelta, de
-/// modo que un cambio en los ajustes surte efecto sin reiniciar; el valor `0`
-/// desactiva el refresco automático sin detener la tarea.
 fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_REFRESH_DELAY).await;
@@ -60,7 +40,6 @@ fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
             };
 
             if minutes == 0 {
-                // Desactivado: se sigue consultando por si el usuario lo reactiva.
                 tokio::time::sleep(Duration::from_secs(60)).await;
                 continue;
             }
@@ -85,13 +64,6 @@ fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
     });
 }
 
-/// Punto de entrada compartido: configura y arranca la aplicación Tauri.
-///
-/// # Panics
-///
-/// Si la base de datos no se puede abrir o migrar, o si Tauri no consigue
-/// construir la ventana principal: en ambos casos la aplicación no puede
-/// continuar de ninguna forma útil.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
