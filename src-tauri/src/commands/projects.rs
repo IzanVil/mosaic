@@ -5,7 +5,7 @@ use std::sync::Arc;
 use tauri::State;
 
 use crate::core::Project;
-use crate::db::repositories::projects as repo;
+use crate::db::repositories::projects::{self as repo, ProjectWithTags};
 use crate::db::Db;
 
 /// Devuelve todos los proyectos: primero los fijados, luego por nombre.
@@ -13,6 +13,19 @@ use crate::db::Db;
 pub async fn list_projects(db: State<'_, Arc<Db>>) -> Result<Vec<Project>, String> {
     let projects = db.with_conn(repo::list_all)?;
     tracing::debug!(count = projects.len(), "list_projects");
+    Ok(projects)
+}
+
+/// Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
+///
+/// Es la única lectura que necesita el tablero para pintarse: `list_projects`
+/// sigue disponible para quien no necesite etiquetas.
+#[tauri::command]
+pub async fn list_projects_with_tags(
+    db: State<'_, Arc<Db>>,
+) -> Result<Vec<ProjectWithTags>, String> {
+    let projects = db.with_conn(repo::list_all_with_tags)?;
+    tracing::debug!(count = projects.len(), "list_projects_with_tags");
     Ok(projects)
 }
 

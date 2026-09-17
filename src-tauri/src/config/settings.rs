@@ -22,6 +22,13 @@ pub const KEY_GIT_REFRESH_MINUTES: &str = "git.refresh_interval_minutes";
 pub const KEY_PREFERRED_IDE: &str = "apps.preferred_ide";
 /// Ejecutable del terminal preferido. Vacío = usar el primero que se detecte.
 pub const KEY_PREFERRED_TERMINAL: &str = "apps.preferred_terminal";
+/// Última vista del tablero (búsqueda, filtros, orden, sidebar) en JSON.
+///
+/// No forma parte de [`Settings`]: es estado de la interfaz, con una forma que
+/// solo entiende el frontend, y el backend no lo interpreta más allá de
+/// comprobar que es JSON válido. Se lee y escribe con [`get_raw`] y [`set_raw`]
+/// desde `commands::settings`.
+pub const KEY_VIEW_STATE: &str = "ui.view_state";
 
 /// Profundidad máxima por defecto (la raíz es el nivel 0).
 pub const DEFAULT_MAX_DEPTH: usize = 4;

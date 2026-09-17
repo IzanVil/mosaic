@@ -122,6 +122,16 @@ pub fn run() {
             commands::git::list_git_status,
             commands::git::refresh_git_status,
             commands::git::refresh_all_git_status,
+            commands::projects::list_projects_with_tags,
+            commands::tags::create_tag,
+            commands::tags::list_tags,
+            commands::tags::update_tag,
+            commands::tags::delete_tag,
+            commands::tags::assign_tag,
+            commands::tags::unassign_tag,
+            commands::tags::list_tags_for_project,
+            commands::settings::get_view_state,
+            commands::settings::set_view_state,
         ])
         .run(tauri::generate_context!())
         .expect("error al arrancar la aplicación Tauri");
