@@ -70,16 +70,34 @@ se deshabilitan en los proyectos que ya no están en el disco.
 
 ---
 
-## Fase 4 — Etiquetas, búsqueda y filtros
+## Fase 4 — Etiquetas, búsqueda y filtros ✅
 
 Objetivo: organizar cientos de proyectos.
 
-- [ ] CRUD de etiquetas
-- [ ] Asignar y quitar etiquetas a proyectos (N:M)
-- [ ] `TagPicker.svelte` con autocompletado y creación en línea
-- [ ] Búsqueda difusa en el frontend
-- [ ] Filtros por etiqueta, lenguaje, estado Git y favoritos
-- [ ] Ordenación por nombre, última apertura y fecha de creación
+- [x] CRUD de etiquetas con paleta de 16 colores y hexadecimal libre
+- [x] Asignar y quitar etiquetas a proyectos (N:M)
+- [x] `TagPicker.svelte` con autocompletado y creación en línea
+- [x] Búsqueda difusa en el frontend con `fuse.js`, sobre el nombre y la ruta
+- [x] Filtros por etiqueta, lenguaje, estado Git, destacados y ausentes
+- [x] Ordenación por nombre, última apertura, fecha de alta y última
+      actualización, con dirección invertible
+- [x] `Sidebar.svelte` con las vistas y las etiquetas, plegable
+- [x] `TagManager.svelte`: renombrar, recolorear y borrar con confirmación
+- [x] La última vista (búsqueda, filtros, orden, sidebar) se recuerda entre
+      sesiones
+
+**Decisiones:** las etiquetas de un filtro múltiple se combinan en OR y el resto
+de filtros en AND; el filtrado vive entero en el frontend, sobre la lista que ya
+está en memoria, y se revisará en la Fase 7 si con miles de proyectos duele.
+
+**Extras sobre lo planeado:** migración `002` con un índice único sobre
+`lower(name)`, porque el `UNIQUE` de la `001` es sensible a mayúsculas y
+«Cliente» y «cliente» habrían convivido; `list_projects_with_tags`, que trae
+proyectos, etiquetas y estado Git en dos consultas para que el tablero se pinte
+con una sola llamada; `get_view_state` / `set_view_state` para persistir la
+vista; y el estado Git del tablero, que ahora se mezcla por proyecto en lugar de
+reemplazar la lista, para que el refresco automático no haga parpadear las
+tarjetas.
 
 ---
 

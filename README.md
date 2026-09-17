@@ -10,7 +10,7 @@ sin cuentas, sin telemetría, sin IA.
 
 ## Estado
 
-**En construcción.** Las fases 1, 2 y 3 están terminadas:
+**En construcción.** Las fases 1, 2, 3 y 4 están terminadas:
 
 - Esquema SQLite con migraciones.
 - Escaneo de rutas configurables con detección de proyectos por ficheros
@@ -24,8 +24,15 @@ sin cuentas, sin telemetría, sin IA.
   plano.
 - Tablero de tarjetas con acciones rápidas: abrir el proyecto en el editor, en la
   terminal o en el explorador de archivos, y destacar los que más uses.
+- Etiquetas con color, asignables desde la propia tarjeta, con gestor para
+  renombrarlas, recolorearlas y borrarlas.
+- Búsqueda difusa por nombre y ruta, insensible a acentos y mayúsculas.
+- Filtros por etiqueta, lenguaje, estado Git, destacados y proyectos ausentes,
+  con ordenación por nombre, última apertura, alta o última actualización.
+- La última vista se recuerda: al volver a abrir la aplicación están la misma
+  búsqueda, los mismos filtros y el mismo orden.
 
-Pendiente: las etiquetas, la búsqueda y los filtros (Fase 4).
+Pendiente: la vista de detalle de cada proyecto (Fase 5).
 
 ## Documentación
 
