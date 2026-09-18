@@ -39,6 +39,8 @@ Pendiente: la vista de detalle de cada proyecto (Fase 5).
 - [Arquitectura](docs/ARCHITECTURE.md) — capas, escáner, modelo de datos y
   decisiones de diseño.
 - [Roadmap](docs/ROADMAP.md) — qué está hecho y qué viene después.
+- [Página de presentación](web/index.html) — un único fichero HTML, sin build ni
+  dependencias: se abre en el navegador tal cual.
 
 ## Stack
 
