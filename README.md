@@ -45,7 +45,35 @@ Pendiente: la vista de detalle de cada proyecto (Fase 5).
 ## Stack
 
 Rust + Tauri 2 en el backend; Svelte 5 con TypeScript, Vite y Tailwind 4 en el
-frontend. SQLite vía `rusqlite`.
+frontend. SQLite vía `rusqlite`, lectura de repositorios con `git2` (compilado
+sin soporte de red) y búsqueda difusa con `fuse.js`.
+
+## Primeros pasos
+
+1. Abre **Ajustes** y añade la carpeta donde guardas tus proyectos. Puedes añadir
+   varias raíces y desactivar temporalmente las que no quieras mirar.
+2. Pulsa **Escanear**. Mosaic recorre el disco y rellena el tablero.
+3. Etiqueta, destaca y filtra. La vista que dejes puesta es la que te encuentras
+   la próxima vez que abras la aplicación.
+
+El estado de Git se refresca solo a los cinco segundos de arrancar y luego cada
+cinco minutos. El botón **Git** de la cabecera fuerza una relectura y dice cuántos
+repositorios ha leído y cuántos han cambiado.
+
+## Cómo decide qué es un proyecto
+
+Una carpeta entra en el tablero si tiene alguno de los ficheros marcadores de la
+lista de arriba y, además, o bien tiene su propio `.git`, o bien ninguna carpeta
+por encima está ya registrada. En la práctica: un monorepo es una tarjeta, y dos
+repositorios anidados son dos.
+
+El recorrido baja cuatro niveles por defecto, no sigue enlaces simbólicos y se
+salta las carpetas de dependencias y de compilación (`node_modules`, `target`,
+`dist`, `.venv` y unas cuantas más). Si una raíz alcanza el tope de entradas por
+escaneo, el resumen avisa de que se quedó incompleta en vez de fallar en silencio.
+
+Un proyecto que desaparece del disco **se marca como ausente, no se borra**: así
+conserva sus etiquetas y sus notas por si vuelve.
 
 ## Compilar
 
@@ -66,6 +94,13 @@ pnpm tauri dev        # app en modo desarrollo
 pnpm tauri build      # binario de release
 ```
 
+Comprobaciones del frontend:
+
+```bash
+pnpm check            # svelte-check, falla también con avisos
+pnpm build            # build de producción
+```
+
 Tests y comprobaciones del backend:
 
 ```bash
@@ -73,7 +108,11 @@ cd src-tauri
 cargo test
 cargo clippy --all-targets -- -D warnings
 cargo fmt --check
+cargo llvm-cov --summary-only   # cobertura
 ```
+
+La lógica de dominio vive en `src-tauri/src/core/`, que es lo que cubren los
+tests unitarios; los de integración están en `src-tauri/tests/`.
 
 El nivel de logs se controla con la variable `MOSAIC_LOG` (por ejemplo
 `MOSAIC_LOG=debug pnpm tauri dev`).
