@@ -8,6 +8,9 @@ explorador de archivos.
 Local-first: todo se guarda en una base de datos SQLite en tu máquina. Sin red,
 sin cuentas, sin telemetría, sin IA.
 
+![El tablero de Mosaic: seis proyectos con sus etiquetas de color, su lenguaje y
+su estado de Git, con el panel de vistas y etiquetas a la izquierda](web/captura.png)
+
 ## Estado
 
 **En construcción.** Las fases 1, 2, 3 y 4 están terminadas:

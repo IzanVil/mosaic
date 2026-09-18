@@ -207,79 +207,15 @@
   /* Vista de la interfaz */
   .lienzo {
     position: relative;
-    margin-top: clamp(46px, 7vh, 78px);
+    margin: clamp(46px, 7vh, 78px) 0 0;
     border: 1px solid var(--linea);
     border-radius: 10px;
-    background: linear-gradient(180deg, var(--panel-alto), var(--panel));
+    background: var(--panel);
     box-shadow: 0 40px 120px rgba(3, 8, 20, .75), inset 0 1px 0 rgba(255, 255, 255, .04);
     overflow: hidden;
   }
-  .lienzo__barra {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--linea);
-    font-size: 12px;
-    color: var(--tenue);
-    background: rgba(5, 8, 14, .4);
-  }
-  .lienzo__buscador {
-    flex: 1;
-    min-width: 0;
-    border: 1px solid var(--linea);
-    border-radius: var(--r);
-    padding: 6px 10px;
-    font-family: var(--mono);
-    font-size: 11.5px;
-    color: var(--suave);
-    background: rgba(5, 8, 14, .55);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .lienzo__cuerpo { display: grid; grid-template-columns: 132px minmax(0, 1fr); }
-  .lienzo__lado {
-    border-right: 1px solid var(--linea);
-    padding: 14px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    font-size: 12px;
-    color: var(--tenue);
-  }
-  .lado__fila { display: flex; align-items: center; gap: 7px; }
-  .lado__fila b { font-weight: 500; color: var(--suave); }
-  .lado__fila span { margin-left: auto; font-family: var(--mono); font-size: 10.5px; }
-  .punto { width: 8px; height: 8px; border-radius: 999px; flex: none; }
-  .lienzo__rejilla {
-    padding: 14px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
-    gap: 12px;
-  }
+  .lienzo img { display: block; width: 100%; height: auto; }
 
-  .ficha {
-    border: 1px solid var(--linea);
-    border-radius: var(--r);
-    background: rgba(5, 8, 14, .45);
-    padding: 13px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-  }
-  .ficha--fijada { border-color: rgba(77, 159, 255, .45); }
-  .ficha__nombre { font-size: 13.5px; font-weight: 600; color: var(--texto); letter-spacing: -.015em; }
-  .ficha__ruta {
-    font-family: var(--mono);
-    font-size: 10.5px;
-    color: var(--tenue);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .fila { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .etiqueta {
     font-size: 10.5px;
     line-height: 1.5;
@@ -287,13 +223,6 @@
     border-radius: 999px;
     border: 1px solid;
     white-space: nowrap;
-  }
-  .leng {
-    font-size: 10.5px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--linea);
-    color: var(--tenue);
   }
   .git { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--tenue); }
   .git b { font-weight: 500; color: var(--suave); }
@@ -492,8 +421,6 @@
 
   @media (max-width: 620px) {
     .barra nav a:not(.btn) { display: none; }
-    .lienzo__cuerpo { grid-template-columns: minmax(0, 1fr); }
-    .lienzo__lado { display: none; }
     .titular { max-width: none; }
   }
 </style>
@@ -534,57 +461,14 @@
         <a class="btn btn--fantasma btn--grande" href="#como-trabaja">Cómo trabaja</a>
       </div>
 
-      <div class="lienzo" role="img" aria-label="Tablero de Mosaic con tres proyectos, sus etiquetas de color y su estado de Git">
-        <div class="lienzo__barra">
-          <span class="lienzo__buscador">buscar por nombre o ruta</span>
-          <span>3 de 3</span>
-        </div>
-        <div class="lienzo__cuerpo">
-          <div class="lienzo__lado">
-            <div class="lado__fila"><b>Todos</b><span>3</span></div>
-            <div class="lado__fila"><b>Fijados</b><span>1</span></div>
-            <div class="lado__fila" style="margin-top:8px"><span class="punto" style="background:#4d9fff"></span>cliente<span>2</span></div>
-            <div class="lado__fila"><span class="punto" style="background:#ef4444"></span>urgente<span>1</span></div>
-            <div class="lado__fila"><span class="punto" style="background:#10b981"></span>personal<span>1</span></div>
-          </div>
-          <div class="lienzo__rejilla">
-            <article class="ficha ficha--fijada">
-              <span class="ficha__nombre">mosaic</span>
-              <span class="ficha__ruta">~/Documentos/Poyects/mosaic</span>
-              <div class="fila">
-                <span class="etiqueta" style="background:rgba(77,159,255,.15);border-color:rgba(77,159,255,.4);color:#8cc2ff">cliente</span>
-              </div>
-              <div class="fila">
-                <span class="leng">Rust</span>
-                <span class="git"><span class="marca-git"></span><b>main</b> 2 sin commitear</span>
-              </div>
-            </article>
-            <article class="ficha">
-              <span class="ficha__nombre">cleantech</span>
-              <span class="ficha__ruta">~/Documentos/Poyects/cleantech</span>
-              <div class="fila">
-                <span class="etiqueta" style="background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.4);color:#ff9090">urgente</span>
-                <span class="etiqueta" style="background:rgba(77,159,255,.15);border-color:rgba(77,159,255,.4);color:#8cc2ff">cliente</span>
-              </div>
-              <div class="fila">
-                <span class="leng">TypeScript</span>
-                <span class="git"><span class="marca-git limpio"></span><b>main</b> limpio</span>
-              </div>
-            </article>
-            <article class="ficha">
-              <span class="ficha__nombre">api-recetas</span>
-              <span class="ficha__ruta">~/Documentos/Poyects/api-recetas</span>
-              <div class="fila">
-                <span class="etiqueta" style="background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.4);color:#5fe0ad">personal</span>
-              </div>
-              <div class="fila">
-                <span class="leng">Python</span>
-                <span class="git"><span class="marca-git limpio"></span><b>main</b> 3 por delante</span>
-              </div>
-            </article>
-          </div>
-        </div>
-      </div>
+      <figure class="lienzo">
+        <img
+          src="captura.png"
+          width="1282"
+          height="648"
+          alt="El tablero de Mosaic con seis proyectos, sus etiquetas de color y el estado de Git de cada uno"
+        >
+      </figure>
     </div>
   </section>
 
