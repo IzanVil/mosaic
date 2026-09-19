@@ -17,7 +17,7 @@
     projects,
     projectsError,
     scanning,
-    visibleProjects,
+    visibleGroups,
   } from '../stores/projects';
   import { scanPaths } from '../stores/scanPaths';
   import { tagsError } from '../stores/tags';
@@ -94,7 +94,7 @@
         {/snippet}
       </EmptyState>
     {:else}
-      <ProjectGrid projects={$visibleProjects} />
+      <ProjectGrid pinned={$visibleGroups.pinned} rest={$visibleGroups.rest} />
     {/if}
   </div>
 </section>

@@ -151,6 +151,18 @@ export const visibleProjects = derived([projects, filters], ([source, current]) 
   });
 });
 
+/**
+ * La misma lista, partida en los dos grupos que pinta el tablero.
+ *
+ * Los fijados van siempre arriba, en su propio bloque y con la ordenación
+ * elegida aplicada dentro de cada grupo. Nunca se mezclan: así «ordenar por
+ * nombre descendente» no tiene una excepción inexplicable en la primera fila.
+ */
+export const visibleGroups = derived(visibleProjects, (list) => ({
+  pinned: list.filter((project) => project.pinned),
+  rest: list.filter((project) => !project.pinned),
+}));
+
 /** Lenguajes presentes en los proyectos, para el desplegable de filtros. */
 export const availableLanguages = derived(projects, (source) => {
   const languages = new Set<string>();
