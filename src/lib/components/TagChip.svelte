@@ -6,12 +6,20 @@
 
   interface Props {
     tag: Tag;
+    /** Pinta el chip con el color pleno, para cuando actúa como filtro activo. */
     selected?: boolean;
     removable?: boolean;
     onRemove?: () => void;
     onClick?: () => void;
     count?: number | null;
     title?: string;
+    /**
+     * Oculta la X hasta que el chip recibe el ratón o el foco.
+     *
+     * Es lo que usan las tarjetas del tablero: con tres etiquetas por tarjeta y
+     * cientos de tarjetas, una X permanente en cada una es ruido. Ocupa su
+     * hueco igualmente, así que los chips no se mueven al pasar el cursor.
+     */
     revealOnHover?: boolean;
   }
 

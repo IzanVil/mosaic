@@ -1,12 +1,23 @@
+//! Repositorio de la caché de estado Git.
+//!
+//! La caché es reconstruible: si se borra, el siguiente refresco la repuebla
+//! leyendo los repositorios. Por eso aquí no hay reglas de conservación como
+//! las de `projects`.
+
 use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
 use crate::core::git::GitStatus;
 use crate::errors::Result;
 
+/// Una fila de `git_status_cache`: el estado leído más cuándo se leyó.
+///
+/// Se serializa aplanado, de modo que el frontend recibe todos los campos al
+/// mismo nivel.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitStatusEntry {
     pub project_id: i64,
+    /// Cuándo se leyó el repositorio, en segundos desde el epoch Unix.
     pub refreshed_at: i64,
     #[serde(flatten)]
     pub status: GitStatus,
@@ -32,6 +43,7 @@ fn row_to_entry(row: &Row<'_>) -> rusqlite::Result<GitStatusEntry> {
     })
 }
 
+/// Inserta o reemplaza el estado Git cacheado de un proyecto.
 pub fn upsert(
     conn: &Connection,
     project_id: i64,
@@ -69,6 +81,7 @@ pub fn upsert(
     Ok(())
 }
 
+/// Devuelve el estado cacheado de un proyecto, si lo hay.
 pub fn get(conn: &Connection, project_id: i64) -> Result<Option<GitStatusEntry>> {
     let sql = format!("SELECT {COLUMNS} FROM git_status_cache WHERE project_id = ?1");
     Ok(conn
@@ -76,6 +89,7 @@ pub fn get(conn: &Connection, project_id: i64) -> Result<Option<GitStatusEntry>>
         .optional()?)
 }
 
+/// Devuelve toda la caché de estado Git.
 pub fn list_all(conn: &Connection) -> Result<Vec<GitStatusEntry>> {
     let sql = format!("SELECT {COLUMNS} FROM git_status_cache");
     let mut stmt = conn.prepare(&sql)?;
@@ -83,6 +97,7 @@ pub fn list_all(conn: &Connection) -> Result<Vec<GitStatusEntry>> {
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
+/// Elimina el estado cacheado de un proyecto que ha dejado de ser leíble.
 pub fn delete(conn: &Connection, project_id: i64) -> Result<bool> {
     let affected = conn.execute(
         "DELETE FROM git_status_cache WHERE project_id = ?1",

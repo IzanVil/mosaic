@@ -1,3 +1,5 @@
+//! Lógica de negocio de Mosaic, independiente de Tauri.
+
 pub mod git;
 pub mod launcher;
 pub mod project;
@@ -7,6 +9,16 @@ pub mod tag;
 pub use project::{DiscoveredProject, Project};
 pub use tag::{Tag, TagWithCount};
 
+/// Quita el prefijo verbatim que Windows pone en las rutas canónicas.
+///
+/// `std::fs::canonicalize` devuelve en Windows rutas como `\\?\C:\proyectos`,
+/// que funcionan para el sistema de ficheros pero se guardarían tal cual en
+/// `projects.path` y se verían en cada tarjeta. El caso UNC
+/// (`\\?\UNC\servidor\recurso`) se reescribe a su forma normal.
+///
+/// No va tras `#[cfg(windows)]` a propósito: trabajando sobre el texto, la
+/// función es comprobable desde cualquier plataforma y en Linux no encuentra
+/// nunca esos prefijos.
 pub fn strip_verbatim_prefix(path: std::path::PathBuf) -> std::path::PathBuf {
     let Some(texto) = path.to_str() else {
         return path;
@@ -21,6 +33,10 @@ pub fn strip_verbatim_prefix(path: std::path::PathBuf) -> std::path::PathBuf {
     path
 }
 
+/// Marca de tiempo actual en segundos desde el epoch Unix.
+///
+/// Si el reloj del sistema estuviese antes del epoch se devuelve `0`, que es
+/// preferible a propagar un error por algo que no puede corregir el usuario.
 pub fn now_ts() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

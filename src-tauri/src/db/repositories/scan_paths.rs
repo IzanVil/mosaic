@@ -1,11 +1,15 @@
+//! Repositorio de rutas raíz de escaneo.
+
 use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
 use crate::errors::{AppError, Result};
 
+/// Ruta raíz que el usuario ha configurado para escanear.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ScanPath {
     pub id: i64,
+    /// Ruta absoluta y canónica.
     pub path: String,
     pub enabled: bool,
     pub created_at: i64,
@@ -24,6 +28,10 @@ fn row_to_scan_path(row: &Row<'_>) -> rusqlite::Result<ScanPath> {
     })
 }
 
+/// Registra una ruta de escaneo.
+///
+/// Es idempotente: si la ruta ya existe devuelve la fila existente en lugar de
+/// fallar por la restricción `UNIQUE`.
 pub fn add(conn: &Connection, path: &str, now: i64) -> Result<ScanPath> {
     conn.execute(
         "INSERT INTO scan_paths (path, enabled, created_at) VALUES (?1, 1, ?2)
@@ -35,6 +43,7 @@ pub fn add(conn: &Connection, path: &str, now: i64) -> Result<ScanPath> {
         .ok_or_else(|| AppError::Internal(format!("no se pudo registrar la ruta {path}")))
 }
 
+/// Busca una ruta de escaneo por su valor.
 pub fn find_by_path(conn: &Connection, path: &str) -> Result<Option<ScanPath>> {
     let sql = format!("SELECT {COLUMNS} FROM scan_paths WHERE path = ?1");
     Ok(conn
@@ -42,6 +51,7 @@ pub fn find_by_path(conn: &Connection, path: &str) -> Result<Option<ScanPath>> {
         .optional()?)
 }
 
+/// Devuelve todas las rutas configuradas, de la más antigua a la más reciente.
 pub fn list(conn: &Connection) -> Result<Vec<ScanPath>> {
     let sql = format!("SELECT {COLUMNS} FROM scan_paths ORDER BY created_at ASC, id ASC");
     let mut stmt = conn.prepare(&sql)?;
@@ -49,15 +59,21 @@ pub fn list(conn: &Connection) -> Result<Vec<ScanPath>> {
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
+/// Devuelve solo las rutas habilitadas.
 pub fn list_enabled(conn: &Connection) -> Result<Vec<ScanPath>> {
     Ok(list(conn)?.into_iter().filter(|p| p.enabled).collect())
 }
 
+/// Elimina una ruta de escaneo. Devuelve `true` si existía.
+///
+/// Los proyectos ya descubiertos bajo esa ruta se conservan: borrarlos haría
+/// perder etiquetas y notas del usuario.
 pub fn delete(conn: &Connection, id: i64) -> Result<bool> {
     let affected = conn.execute("DELETE FROM scan_paths WHERE id = ?1", params![id])?;
     Ok(affected > 0)
 }
 
+/// Habilita o deshabilita una ruta sin borrarla.
 pub fn set_enabled(conn: &Connection, id: i64, enabled: bool) -> Result<()> {
     let affected = conn.execute(
         "UPDATE scan_paths SET enabled = ?2 WHERE id = ?1",
@@ -69,6 +85,7 @@ pub fn set_enabled(conn: &Connection, id: i64, enabled: bool) -> Result<()> {
     Ok(())
 }
 
+/// Registra el instante en que terminó el último escaneo de esta ruta.
 pub fn set_last_scan_at(conn: &Connection, id: i64, ts: i64) -> Result<()> {
     let affected = conn.execute(
         "UPDATE scan_paths SET last_scan_at = ?2 WHERE id = ?1",

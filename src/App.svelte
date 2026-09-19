@@ -19,11 +19,20 @@
   import { loadTags } from './lib/stores/tags';
   import { formatRelativeTime, now_ts } from './lib/utils/format';
 
+  /** Lo emite el backend al terminar un refresco automático de estado Git. */
   const GIT_REFRESHED = 'git-status-refreshed';
   const GIT_BUTTON_HINT =
     'Relee del disco la rama, los cambios sin commitear y el último commit de cada ' +
     'repositorio. No hace fetch: no toca la red. También se refresca solo cada 5 minutos.';
+  /** Segundos que el resultado de un refresco manual desplaza al «hace X». */
   const OUTCOME_VISIBLE_SECONDS = 8;
+  /**
+   * Cada cuánto se recalcula el «hace X».
+   *
+   * Treinta segundos deja el texto con hasta medio minuto de retraso, que es
+   * preferible a despertar el render cada segundo para contar algo que al
+   * usuario le da igual con esa precisión.
+   */
   const CLOCK_TICK_MS = 30_000;
 
   type View = 'dashboard' | 'settings';

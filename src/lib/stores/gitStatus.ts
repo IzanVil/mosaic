@@ -1,17 +1,37 @@
+/**
+ * Refresco del estado Git y resultado del último intento.
+ *
+ * Este módulo ya no guarda una copia de la caché: la fuente de verdad del
+ * tablero es `stores/projects.ts`, y aquí solo se orquesta la relectura y se
+ * mezcla el resultado por `project_id`.
+ */
+
 import { writable } from 'svelte/store';
 
 import * as api from '../api/git';
 import { now_ts } from '../utils/format';
 import { mergeGitStatus, mergeOneGitStatus } from './projects';
 
+/** Qué pasó en el último refresco, para poder contarlo en la interfaz. */
 export interface GitRefreshOutcome {
+  /** Cuándo terminó, en segundos desde el epoch Unix. */
   at: number;
+  /** Repositorios leídos. */
   read: number;
+  /** Repositorios que no se pudieron leer. */
   failed: number;
+  /** Proyectos cuyo estado cambió de verdad respecto a lo que había en pantalla. */
   changed: number;
+  /** `true` si lo pidió el usuario, `false` si fue el refresco automático. */
   manual: boolean;
 }
 
+/**
+ * Duración mínima del indicador de carga.
+ *
+ * Leer tres repositorios tarda 40 ms: sin este suelo, el usuario pulsa el botón
+ * y no ve absolutamente nada, que es exactamente el bug que hubo que arreglar.
+ */
 const MIN_SPINNER_MS = 450;
 
 export const refreshingGit = writable(false);
@@ -22,6 +42,12 @@ function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+/**
+ * Lee la caché tal y como está, sin releer los repositorios.
+ *
+ * La llama el arranque y el evento `git-status-refreshed` del backend, de ahí
+ * que `manual` sea `false` por defecto.
+ */
 export async function loadGitStatus(manual = false): Promise<void> {
   gitError.set(null);
   try {
@@ -39,6 +65,7 @@ export async function loadGitStatus(manual = false): Promise<void> {
   }
 }
 
+/** Relee todos los repositorios del disco y mezcla el resultado. */
 export async function refreshAllGitStatus(): Promise<void> {
   refreshingGit.set(true);
   gitError.set(null);
@@ -62,6 +89,7 @@ export async function refreshAllGitStatus(): Promise<void> {
   }
 }
 
+/** Relee un único proyecto. Devuelve `null` en la caché si dejó de ser repositorio. */
 export async function refreshOneGitStatus(projectId: number): Promise<void> {
   gitError.set(null);
   try {

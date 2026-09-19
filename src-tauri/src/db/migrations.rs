@@ -1,3 +1,9 @@
+//! Migraciones de esquema, embebidas en el binario.
+//!
+//! Para añadir una migración: crear `migrations/NNN_nombre.sql` e incluirla en
+//! [`MIGRATIONS`]. El orden del vector es el orden de aplicación y no debe
+//! reordenarse nunca, solo crecer por el final.
+
 use std::sync::LazyLock;
 
 use rusqlite::Connection;
@@ -12,9 +18,14 @@ static MIGRATIONS: LazyLock<Migrations<'static>> = LazyLock::new(|| {
     ])
 });
 
+/// Lleva el esquema de `conn` a la última versión conocida.
 pub fn apply(conn: &mut Connection) -> Result<()> {
     let before = MIGRATIONS.current_version(conn)?;
     MIGRATIONS.to_latest(conn).map_err(|err| {
+        // Sin este log la aplicación moriría en `setup` sin decir qué migración
+        // falló. El caso realista es el índice único de la 002 sobre nombres de
+        // etiqueta: una base antigua con dos nombres que solo difieren en
+        // mayúsculas lo rechaza y hay que renombrar una a mano.
         tracing::error!(from = ?before, error = %err, "migración fallida: el esquema queda sin tocar");
         err
     })?;

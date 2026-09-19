@@ -2,9 +2,11 @@
   import type { Snippet } from 'svelte';
 
   interface Props {
+    /** Icono opcional, renderizado sobre el título. */
     icon?: Snippet;
     title: string;
     description: string;
+    /** Si se indican ambos, se muestra un botón de acción. */
     actionLabel?: string;
     onAction?: () => void;
   }

@@ -1,3 +1,6 @@
+//! Test de integración de la Fase 2: escanear un árbol con repositorios reales
+//! y refrescar su estado Git hasta la caché.
+
 use std::fs;
 use std::path::Path;
 
@@ -45,6 +48,7 @@ fn write(path: &Path, contents: &str) {
     fs::write(path, contents).unwrap();
 }
 
+/// Un repositorio limpio, uno sucio y un proyecto que no usa Git.
 fn build_tree(root: &Path) {
     let limpio = root.join("limpio");
     let repo = init_repo(&limpio);
@@ -108,6 +112,7 @@ fn refreshes_the_git_status_of_every_repository_it_finds() {
         Some("feat: arranque del proyecto")
     );
 
+    // El proyecto sin Git no entra en la caché.
     assert!(!entries
         .iter()
         .any(|entry| entry.project_id == id_of("sin-git")));
@@ -122,6 +127,7 @@ fn refreshing_twice_updates_the_cache_without_duplicating_it() {
     let db = scanned_db(&root);
     refresh_all(&db).unwrap();
 
+    // Se limpia el repositorio sucio y se vuelve a refrescar.
     fs::remove_file(root.join("sucio/pendiente.ts")).unwrap();
     let segundo = refresh_all(&db).unwrap();
 
@@ -141,6 +147,8 @@ fn a_repository_that_disappears_drops_out_of_the_cache() {
     refresh_all(&db).unwrap();
     assert_eq!(db.with_conn(cache::list_all).unwrap().len(), 2);
 
+    // Se borra el repositorio pero el proyecto sigue registrado: el refresco
+    // no puede leerlo y retira su entrada en vez de dejar datos rancios.
     fs::remove_dir_all(root.join("sucio")).unwrap();
     let summary = refresh_all(&db).unwrap();
 
@@ -149,6 +157,11 @@ fn a_repository_that_disappears_drops_out_of_the_cache() {
     assert_eq!(db.with_conn(cache::list_all).unwrap().len(), 1);
 }
 
+/// El refresco automático corre cada pocos minutos: si tocara `updated_at`,
+/// la fecha de modificación de todos los proyectos avanzaría sola para siempre.
+/// `upsert_by_path` solo compara metadatos propios de `projects` —entre ellos la
+/// columna `is_git_repo`, no el estado vivo de la caché—, y la ruta de refresco
+/// solo escribe en `git_status_cache`.
 #[test]
 fn refreshing_git_status_never_touches_the_projects_table() {
     let tmp = tempfile::tempdir().unwrap();
@@ -158,6 +171,7 @@ fn refreshing_git_status_never_touches_the_projects_table() {
     let db = scanned_db(&root);
     let antes = db.with_conn(projects_repo::list_all).unwrap();
 
+    // Varios refrescos seguidos, con cambios reales en el repositorio entre medias.
     refresh_all(&db).unwrap();
     write(&root.join("sucio/otro.ts"), "// más cambios");
     refresh_all(&db).unwrap();
@@ -179,6 +193,7 @@ fn refreshing_git_status_never_touches_the_projects_table() {
         assert_eq!(antes.missing, despues.missing);
     }
 
+    // Y sí ha actualizado la caché, que es lo suyo.
     assert!(db.with_conn(cache::list_all).unwrap().len() == 2);
 }
 

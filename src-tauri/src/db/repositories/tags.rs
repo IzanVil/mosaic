@@ -1,8 +1,17 @@
+//! Repositorio de etiquetas.
+//!
+//! Las reglas de validación viven en [`crate::core::tag`]; aquí solo se
+//! aplican antes de tocar SQL. La unicidad del nombre está garantizada por el
+//! índice `idx_tags_name_ci` de la migración 002: la comprobación previa de
+//! [`create`] y [`update`] existe para poder devolver un mensaje legible en vez
+//! del error crudo de SQLite.
+
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use crate::core::tag::{self, Tag, TagWithCount};
 use crate::errors::{AppError, Result};
 
+/// Columnas de `tags` en el orden que espera [`row_to_tag`].
 const COLUMNS: &str = "id, name, color, created_at";
 
 fn row_to_tag(row: &Row<'_>) -> rusqlite::Result<Tag> {
@@ -14,6 +23,11 @@ fn row_to_tag(row: &Row<'_>) -> rusqlite::Result<Tag> {
     })
 }
 
+/// Traduce la violación del índice único de nombres a un error de validación.
+///
+/// Solo puede saltar si dos escrituras se cruzan entre la comprobación previa y
+/// el `INSERT`. Hoy no puede pasar (una única conexión bajo mutex), pero el
+/// mensaje tiene que seguir siendo legible si eso cambia.
 fn map_name_conflict(err: rusqlite::Error, name: &str) -> AppError {
     match &err {
         rusqlite::Error::SqliteFailure(failure, _)
@@ -25,6 +39,7 @@ fn map_name_conflict(err: rusqlite::Error, name: &str) -> AppError {
     }
 }
 
+/// Recupera una etiqueta por su identificador.
 pub fn get_by_id(conn: &Connection, id: i64) -> Result<Tag> {
     let sql = format!("SELECT {COLUMNS} FROM tags WHERE id = ?1");
     conn.query_row(&sql, params![id], row_to_tag)
@@ -32,6 +47,10 @@ pub fn get_by_id(conn: &Connection, id: i64) -> Result<Tag> {
         .ok_or_else(|| AppError::NotFound(format!("etiqueta {id}")))
 }
 
+/// Busca una etiqueta por nombre, ignorando mayúsculas y espacios de los extremos.
+///
+/// Es lo que consulta el autocompletado del `TagPicker` para decidir si ofrece
+/// asignar una etiqueta existente o crear una nueva.
 pub fn get_by_name_ci(conn: &Connection, name: &str) -> Result<Option<Tag>> {
     let sql = format!("SELECT {COLUMNS} FROM tags WHERE lower(name) = ?1");
     Ok(conn
@@ -39,6 +58,7 @@ pub fn get_by_name_ci(conn: &Connection, name: &str) -> Result<Option<Tag>> {
         .optional()?)
 }
 
+/// Crea una etiqueta con el nombre y el color ya normalizados.
 pub fn create(conn: &Connection, name: &str, color: &str, now: i64) -> Result<Tag> {
     let name = tag::validate_name(name)?;
     let color = tag::normalize_color(color)?;
@@ -66,6 +86,10 @@ pub fn create(conn: &Connection, name: &str, color: &str, now: i64) -> Result<Ta
     Ok(tag)
 }
 
+/// Devuelve todas las etiquetas con su número de proyectos, ordenadas por nombre.
+///
+/// El conteo sale de un `LEFT JOIN`, así que una etiqueta sin asignar aparece
+/// con `project_count = 0` en lugar de desaparecer del listado.
 pub fn list_all(conn: &Connection) -> Result<Vec<TagWithCount>> {
     let mut stmt = conn.prepare(
         "SELECT t.id, t.name, t.color, t.created_at, count(pt.project_id)
@@ -83,10 +107,13 @@ pub fn list_all(conn: &Connection) -> Result<Vec<TagWithCount>> {
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
+/// Renombra una etiqueta y/o le cambia el color.
 pub fn update(conn: &Connection, id: i64, name: &str, color: &str) -> Result<Tag> {
     let name = tag::validate_name(name)?;
     let color = tag::normalize_color(color)?;
 
+    // Que una etiqueta choque consigo misma no es un conflicto: renombrar
+    // «cliente» a «Cliente» tiene que funcionar.
     if let Some(existing) = get_by_name_ci(conn, &name)? {
         if existing.id != id {
             return Err(AppError::Validation(format!(
@@ -109,6 +136,11 @@ pub fn update(conn: &Connection, id: i64, name: &str, color: &str) -> Result<Tag
     get_by_id(conn, id)
 }
 
+/// Borra una etiqueta.
+///
+/// El `ON DELETE CASCADE` de `project_tags` retira sus asignaciones; los
+/// proyectos no se tocan. El frontend confirma antes de llegar aquí, porque
+/// esto no se puede deshacer.
 pub fn delete(conn: &Connection, id: i64) -> Result<()> {
     let affected = conn.execute("DELETE FROM tags WHERE id = ?1", params![id])?;
     if affected == 0 {
@@ -125,6 +157,7 @@ mod tests {
     use crate::db::repositories::project_tags;
     use crate::db::Db;
 
+    /// Inserta un proyecto mínimo y devuelve su id.
     fn project(db: &Db, path: &str) -> i64 {
         db.with_conn(|conn| {
             conn.execute(
@@ -294,6 +327,7 @@ mod tests {
 
         let tags = db.with_conn(list_all).unwrap();
         assert_eq!(tags.len(), 2);
+        // Ordenadas por nombre: «archivado» antes que «cliente».
         assert_eq!(tags[0].tag.id, vacia.id);
         assert_eq!(tags[0].project_count, 0, "una etiqueta sin usar sale con 0");
         assert_eq!(tags[1].tag.id, cliente.id);

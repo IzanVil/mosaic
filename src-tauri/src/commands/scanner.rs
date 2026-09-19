@@ -1,3 +1,5 @@
+//! Comandos de configuración de rutas y lanzamiento de escaneos.
+
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -8,6 +10,7 @@ use crate::db::repositories::scan_paths as repo;
 use crate::db::Db;
 use crate::errors::AppError;
 
+/// Normaliza una ruta recibida del frontend: debe existir y ser un directorio.
 fn canonical_dir(raw: &str) -> Result<PathBuf, AppError> {
     let path = PathBuf::from(raw);
     let canonical = crate::core::strip_verbatim_prefix(
@@ -21,6 +24,7 @@ fn canonical_dir(raw: &str) -> Result<PathBuf, AppError> {
     Ok(canonical)
 }
 
+/// Registra una ruta raíz de escaneo.
 #[tauri::command]
 pub async fn add_scan_path(db: State<'_, Arc<Db>>, path: String) -> Result<repo::ScanPath, String> {
     let canonical = canonical_dir(&path)?;
@@ -34,6 +38,7 @@ pub async fn add_scan_path(db: State<'_, Arc<Db>>, path: String) -> Result<repo:
     Ok(added)
 }
 
+/// Devuelve todas las rutas raíz configuradas.
 #[tauri::command]
 pub async fn list_scan_paths(db: State<'_, Arc<Db>>) -> Result<Vec<repo::ScanPath>, String> {
     let paths = db.with_conn(repo::list)?;
@@ -41,6 +46,7 @@ pub async fn list_scan_paths(db: State<'_, Arc<Db>>) -> Result<Vec<repo::ScanPat
     Ok(paths)
 }
 
+/// Elimina una ruta raíz. Los proyectos ya descubiertos se conservan.
 #[tauri::command]
 pub async fn remove_scan_path(db: State<'_, Arc<Db>>, id: i64) -> Result<bool, String> {
     let removed = db.with_conn(|conn| repo::delete(conn, id))?;
@@ -48,6 +54,7 @@ pub async fn remove_scan_path(db: State<'_, Arc<Db>>, id: i64) -> Result<bool, S
     Ok(removed)
 }
 
+/// Habilita o deshabilita una ruta raíz sin borrarla.
 #[tauri::command]
 pub async fn set_scan_path_enabled(
     db: State<'_, Arc<Db>>,
@@ -58,6 +65,10 @@ pub async fn set_scan_path_enabled(
     Ok(())
 }
 
+/// Escanea todas las rutas habilitadas y sincroniza la lista de proyectos.
+///
+/// El recorrido del sistema de ficheros es bloqueante, así que se ejecuta en el
+/// pool de tareas bloqueantes para no congelar la interfaz.
 #[tauri::command]
 pub async fn scan_all_paths(db: State<'_, Arc<Db>>) -> Result<ScanSummary, String> {
     let db = Arc::clone(&db);
