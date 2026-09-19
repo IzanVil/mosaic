@@ -3,6 +3,7 @@
 pub mod git;
 pub mod launcher;
 pub mod project;
+pub mod readme;
 pub mod scanner;
 pub mod tag;
 

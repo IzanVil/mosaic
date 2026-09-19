@@ -34,6 +34,9 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 tauri-plugin-dialog = "2.7.3"
 git2 = { version = "0.21.0", default-features = false, features = ["vendored-libgit2"] }
 open = "5.4.4"
+pulldown-cmark = "0.13"
+ammonia = "4"
+url = "2"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
