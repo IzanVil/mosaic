@@ -4,9 +4,14 @@
 //!
 //! - `created_at`: se fija en la inserción y no se modifica jamás.
 //! - `updated_at`: solo avanza si cambian metadatos propios del proyecto, es
-//!   decir columnas de `projects`. Hoy [`upsert_by_path`] compara `name`,
-//!   `primary_language` e `is_git_repo`; `notes` entrará en la comparación
-//!   cuando la Fase 5 permita editarlas, porque nada las escribe todavía.
+//!   decir columnas de `projects`. La regla de **hoy** es exactamente esta:
+//!   [`upsert_by_path`] compara `name`, `primary_language` e `is_git_repo`, y
+//!   nada más.
+//!
+//!   `notes` **no** está en la comparación porque no hay forma de editarlas:
+//!   ningún comando las escribe. Cuando la Fase 5 añada esa edición, hay que
+//!   meter `notes` en la comparación **y corregir esta lista en el mismo
+//!   commit**; la documentación describe el comportamiento, no la intención.
 //! - `last_seen_at`: avanza cada vez que el escáner ve el proyecto en disco.
 //! - `missing`: `0` cuando el escáner lo ve, `1` cuando deja de verlo.
 //!

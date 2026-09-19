@@ -109,7 +109,9 @@ Objetivo: vista en profundidad.
 - [ ] Preview del README renderizado
 - [ ] Historial de los últimos 10 commits
 - [ ] Ramas locales y remotas
-- [ ] Notas personales guardadas en `projects.notes`
+- [ ] Notas personales guardadas en `projects.notes`, que pasan a contar en la
+      comparación de `updated_at`: al hacerlo hay que corregir su documentación
+      en `db/repositories/projects.rs` y en `ARCHITECTURE.md`, en el mismo commit
 - [ ] Etiquetas asignadas y acciones rápidas ampliadas
 
 ---
