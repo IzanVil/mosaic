@@ -36,6 +36,108 @@ pub struct GitStatus {
     pub remote_url: Option<String>,
 }
 
+/// Un commit del historial, con lo justo para pintar una fila.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CommitInfo {
+    pub sha: String,
+    /// Los siete primeros caracteres del sha, que es como se citan a mano.
+    pub short_sha: String,
+    /// Primera línea del mensaje. El cuerpo no se lee: no cabe en una fila.
+    pub summary: String,
+    pub author_name: String,
+    /// Fecha del commit, en segundos desde el epoch Unix.
+    pub committed_at: i64,
+}
+
+/// Una rama del repositorio.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BranchInfo {
+    /// Nombre corto: `main`, o `origin/main` para las remotas.
+    pub name: String,
+    /// Es la rama a la que apunta HEAD. Siempre `false` en las remotas.
+    pub is_head: bool,
+}
+
+/// Ramas de un repositorio, separadas por tipo.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Branches {
+    pub local: Vec<BranchInfo>,
+    /// Ramas remotas **conocidas localmente**: las que dejó el último `fetch`
+    /// o `clone` que hiciera el usuario. Mosaic no habla con la red, así que
+    /// una rama creada en el servidor después de eso no aparece aquí. La
+    /// interfaz lo advierte junto al listado.
+    pub remote: Vec<BranchInfo>,
+}
+
+/// Lee los últimos `limit` commits accesibles desde HEAD, del más reciente al
+/// más antiguo.
+///
+/// Devuelve una lista vacía, y no un error, cuando la rama todavía no tiene
+/// commits: un repositorio recién inicializado es un caso normal.
+pub fn read_history(path: &Path, limit: usize) -> Result<Vec<CommitInfo>> {
+    let repo = Repository::open(path)?;
+
+    if repo.head().is_err() {
+        return Ok(Vec::new());
+    }
+
+    let mut walk = repo.revwalk()?;
+    walk.push_head()?;
+    // TIME a secas no basta: las marcas de tiempo de Git tienen resolución de
+    // un segundo, así que varios commits del mismo segundo salen en un orden
+    // arbitrario. TOPOLOGICAL garantiza que un commit vaya siempre antes que
+    // sus padres, que es el orden que espera quien lee un historial.
+    walk.set_sorting(git2::Sort::TIME | git2::Sort::TOPOLOGICAL)?;
+
+    let mut commits = Vec::with_capacity(limit.min(64));
+    for oid in walk.take(limit) {
+        let commit = repo.find_commit(oid?)?;
+        let sha = commit.id().to_string();
+        commits.push(CommitInfo {
+            short_sha: sha.chars().take(7).collect(),
+            sha,
+            summary: commit.summary().ok().flatten().unwrap_or("").to_string(),
+            author_name: commit.author().name().unwrap_or("").to_string(),
+            committed_at: commit.time().seconds(),
+        });
+    }
+    Ok(commits)
+}
+
+/// Lista las ramas locales y las remotas que hay en disco.
+pub fn read_branches(path: &Path) -> Result<Branches> {
+    let repo = Repository::open(path)?;
+    let mut branches = Branches::default();
+
+    for tipo in [BranchType::Local, BranchType::Remote] {
+        for entrada in repo.branches(Some(tipo))? {
+            let (branch, _) = entrada?;
+            let Some(name) = branch.name()?.map(str::to_string) else {
+                // Un nombre que no es UTF-8 válido no se puede mostrar, y
+                // descartarlo es mejor que abortar el listado entero.
+                continue;
+            };
+
+            // `origin/HEAD` es un puntero simbólico a la rama por defecto del
+            // remoto, no una rama que el usuario reconozca como tal.
+            if name.ends_with("/HEAD") {
+                continue;
+            }
+
+            let info = BranchInfo {
+                name,
+                is_head: tipo == BranchType::Local && branch.is_head(),
+            };
+            match tipo {
+                BranchType::Local => branches.local.push(info),
+                BranchType::Remote => branches.remote.push(info),
+            }
+        }
+    }
+
+    Ok(branches)
+}
+
 /// Lee el estado del repositorio que hay en `path`.
 ///
 /// `path` debe ser la raíz del repositorio: no se busca hacia arriba, de modo
@@ -498,5 +600,129 @@ mod tests {
 
         let status = read_git_status(&inner_path).unwrap();
         assert_eq!(status.last_commit_msg.as_deref(), Some("commit de dentro"));
+    }
+
+    #[test]
+    fn read_history_returns_commits_from_newest_to_oldest() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo = init_repo(tmp.path());
+        write(&tmp.path().join("a.txt"), "uno");
+        commit_all(&repo, "feat: primero");
+        write(&tmp.path().join("b.txt"), "dos");
+        commit_all(&repo, "feat: segundo");
+        write(&tmp.path().join("c.txt"), "tres");
+        commit_all(&repo, "feat: tercero");
+
+        let historial = read_history(tmp.path(), 10).unwrap();
+        let mensajes: Vec<&str> = historial.iter().map(|c| c.summary.as_str()).collect();
+        assert_eq!(
+            mensajes,
+            vec!["feat: tercero", "feat: segundo", "feat: primero"]
+        );
+
+        let primero = &historial[0];
+        assert_eq!(primero.short_sha.len(), 7);
+        assert!(primero.sha.starts_with(&primero.short_sha));
+        assert_eq!(primero.author_name, "Test");
+        assert!(primero.committed_at > 0);
+    }
+
+    #[test]
+    fn read_history_respects_the_limit() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo = init_repo(tmp.path());
+        for n in 0..5 {
+            write(&tmp.path().join(format!("{n}.txt")), "x");
+            commit_all(&repo, &format!("commit {n}"));
+        }
+
+        assert_eq!(read_history(tmp.path(), 2).unwrap().len(), 2);
+        assert_eq!(read_history(tmp.path(), 99).unwrap().len(), 5);
+    }
+
+    #[test]
+    fn read_history_is_empty_on_an_unborn_branch() {
+        let tmp = tempfile::tempdir().unwrap();
+        init_repo(tmp.path());
+
+        assert!(read_history(tmp.path(), 10).unwrap().is_empty());
+    }
+
+    #[test]
+    fn read_history_works_with_a_detached_head() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo = init_repo(tmp.path());
+        write(&tmp.path().join("a.txt"), "uno");
+        let primero = commit_all(&repo, "feat: primero");
+        write(&tmp.path().join("b.txt"), "dos");
+        commit_all(&repo, "feat: segundo");
+        repo.set_head_detached(primero).unwrap();
+
+        let historial = read_history(tmp.path(), 10).unwrap();
+        assert_eq!(
+            historial.len(),
+            1,
+            "solo lo accesible desde el HEAD separado"
+        );
+        assert_eq!(historial[0].summary, "feat: primero");
+    }
+
+    #[test]
+    fn read_branches_marks_the_current_one() {
+        let tmp = tempfile::tempdir().unwrap();
+        let repo = init_repo(tmp.path());
+        write(&tmp.path().join("a.txt"), "uno");
+        commit_all(&repo, "feat: primero");
+        let commit = repo.head().unwrap().peel_to_commit().unwrap();
+        repo.branch("feat/etiquetas", &commit, false).unwrap();
+
+        let ramas = read_branches(tmp.path()).unwrap();
+        let nombres: Vec<&str> = ramas.local.iter().map(|b| b.name.as_str()).collect();
+        assert!(nombres.contains(&"main"));
+        assert!(nombres.contains(&"feat/etiquetas"));
+
+        let actual: Vec<&str> = ramas
+            .local
+            .iter()
+            .filter(|b| b.is_head)
+            .map(|b| b.name.as_str())
+            .collect();
+        assert_eq!(actual, vec!["main"], "solo una rama es HEAD");
+        assert!(ramas.remote.is_empty(), "sin remoto no hay ramas remotas");
+    }
+
+    #[test]
+    fn read_branches_lists_remote_branches_without_touching_the_network() {
+        let origen = tempfile::tempdir().unwrap();
+        let repo_origen = init_repo(origen.path());
+        write(&origen.path().join("a.txt"), "uno");
+        commit_all(&repo_origen, "feat: primero");
+
+        let clon = tempfile::tempdir().unwrap();
+        let destino = clon.path().join("copia");
+        let repo = Repository::clone(origen.path().to_str().unwrap(), &destino).unwrap();
+        drop(repo);
+
+        let ramas = read_branches(&destino).unwrap();
+        let remotas: Vec<&str> = ramas.remote.iter().map(|b| b.name.as_str()).collect();
+        assert!(
+            remotas.contains(&"origin/main"),
+            "las ramas remotas conocidas en disco se listan: {remotas:?}"
+        );
+        assert!(
+            !remotas.iter().any(|n| n.ends_with("/HEAD")),
+            "origin/HEAD es un puntero simbólico, no una rama: {remotas:?}"
+        );
+        assert!(ramas.remote.iter().all(|b| !b.is_head));
+    }
+
+    #[test]
+    fn read_branches_is_empty_on_an_unborn_branch() {
+        let tmp = tempfile::tempdir().unwrap();
+        init_repo(tmp.path());
+
+        let ramas = read_branches(tmp.path()).unwrap();
+        assert!(ramas.local.is_empty(), "sin commits no hay ramas todavía");
+        assert!(ramas.remote.is_empty());
     }
 }

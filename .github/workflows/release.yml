@@ -23,7 +23,10 @@ jobs:
           - nombre: macOS (Intel y Apple Silicon)
             so: macos-latest
             targets: aarch64-apple-darwin,x86_64-apple-darwin
-            args: --target universal-apple-darwin
+            # Solo el .dmg: al encontrar el .app, tauri-action añade además un
+            # `.tar.gz` pensado para el actualizador automático, que Mosaic no
+            # tiene, y que en la página de descargas solo genera dudas.
+            args: --target universal-apple-darwin --bundles dmg
           - nombre: Windows
             so: windows-latest
             targets: ''
