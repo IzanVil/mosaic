@@ -10,8 +10,10 @@ use crate::errors::AppError;
 
 fn canonical_dir(raw: &str) -> Result<PathBuf, AppError> {
     let path = PathBuf::from(raw);
-    let canonical = std::fs::canonicalize(&path)
-        .map_err(|err| AppError::invalid_path(&path, &err.to_string()))?;
+    let canonical = crate::core::strip_verbatim_prefix(
+        std::fs::canonicalize(&path)
+            .map_err(|err| AppError::invalid_path(&path, &err.to_string()))?,
+    );
 
     if !canonical.is_dir() {
         return Err(AppError::invalid_path(&canonical, "no es un directorio"));

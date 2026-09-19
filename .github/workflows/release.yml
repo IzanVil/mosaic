@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.nombre }}
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nombre: macOS (Intel y Apple Silicon)
+            so: macos-latest
+            targets: aarch64-apple-darwin,x86_64-apple-darwin
+            args: --target universal-apple-darwin
+          - nombre: Windows
+            so: windows-latest
+            targets: ''
+            args: ''
+          - nombre: Linux
+            so: ubuntu-22.04
+            targets: ''
+            args: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias de sistema de Tauri
+        if: matrix.so == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libsoup-3.0-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.targets }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.so }}
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - uses: tauri-apps/tauri-action@v0
+        id: bundles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          releaseName: ${{ github.ref_type == 'tag' && format('Mosaic {0}', github.ref_name) || '' }}
+          releaseBody: |
+            Binarios compilados por el CI para las tres plataformas.
+
+            Mosaic no va firmado: macOS pedirá permiso en Ajustes, Privacidad y
+            seguridad la primera vez que lo abras, y Windows mostrará el aviso de
+            SmartScreen.
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+      - name: Guardar los binarios como artefacto
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mosaic-${{ matrix.so }}
+          path: ${{ join(fromJSON(steps.bundles.outputs.artifactPaths), '\n') }}
+          if-no-files-found: error

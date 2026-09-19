@@ -127,9 +127,17 @@ Objetivo: vista en profundidad.
 
 ## Fase 7 — Empaquetado y distribución
 
-- [ ] Metadatos completos en `tauri.conf.json`
-- [ ] Iconos para todas las plataformas
-- [ ] Builds para Linux (`.deb`, `.AppImage`), macOS (`.dmg`) y Windows (`.msi`)
-- [ ] `release.yml`: publicar binarios al etiquetar
-- [ ] README con capturas e instrucciones de instalación
+- [x] Metadatos completos en `tauri.conf.json`
+- [x] Iconos propios para todas las plataformas, generados con `tauri icon`
+      a partir de `icons/source.png`
+- [x] `release.yml`: compila en macOS, Windows y Linux, publica un borrador de
+      release al etiquetar y deja artefactos descargables en las ejecuciones
+      manuales
+- [x] README con captura e instrucciones de instalación
+- [x] Rutas verbatim de Windows (`\\?\C:\...`) normalizadas antes de guardarlas
+- [ ] **Verificar los tres binarios en su sistema**: nadie ha ejecutado todavía
+      el `.dmg` ni el `.msi`
+- [ ] Firma de código en macOS y Windows, que requiere certificados de pago
+- [ ] CI multiplataforma para los tests, no solo para los builds
+- [ ] Validar la CSP en un build de release de cada plataforma
 - [ ] `CONTRIBUTING.md`

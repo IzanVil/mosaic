@@ -78,6 +78,23 @@ escaneo, el resumen avisa de que se quedó incompleta en vez de fallar en silenc
 Un proyecto que desaparece del disco **se marca como ausente, no se borra**: así
 conserva sus etiquetas y sus notas por si vuelve.
 
+## Descargas
+
+No hay versiones publicadas todavía. Al etiquetar una (`git tag v0.1.0 && git push
+origin v0.1.0`), el workflow de release compila en los runners de GitHub y deja en
+la página de releases, como borrador:
+
+| Plataforma | Formatos |
+|---|---|
+| macOS (Intel y Apple Silicon) | `.dmg` y `.app`, en un binario universal |
+| Windows | `.msi` y instalador `.exe` |
+| Linux | `.deb`, `.rpm` y `.AppImage` |
+
+Los binarios **no van firmados**, que cuesta dinero en las dos plataformas de
+escritorio con certificado. macOS pedirá permiso en Ajustes, Privacidad y
+seguridad la primera vez, y Windows mostrará el aviso de SmartScreen. Mientras no
+haya versión publicada, lo que hay es compilarlo, que son dos órdenes.
+
 ## Compilar
 
 Requisitos: Rust estable, Node 20+, pnpm y las dependencias de sistema de
