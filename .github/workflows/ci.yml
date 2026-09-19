@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # El crate `tauri` enlaza contra webkit2gtk vía pkg-config, así que las
+      # cabeceras de desarrollo hacen falta incluso para `cargo check`.
       - name: Instalar dependencias de sistema de Tauri
         run: |
           sudo apt-get update
