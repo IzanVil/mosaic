@@ -5,6 +5,12 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+# El GITHUB_TOKEN nace de solo lectura, que es el valor por defecto del
+# repositorio. Sin esto, la compilación termina bien y `tauri-action` falla al
+# crear el release con «Resource not accessible by integration».
+permissions:
+  contents: write
+
 jobs:
   build:
     name: ${{ matrix.nombre }}
