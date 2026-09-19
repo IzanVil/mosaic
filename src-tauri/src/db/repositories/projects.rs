@@ -399,7 +399,6 @@ mod tests {
             .unwrap()
             .id;
 
-        // Segundo escaneo sin cambios: updated_at se queda quieto.
         let unchanged = db
             .with_conn(|conn| upsert_by_path(conn, &project, 2_000))
             .unwrap();
@@ -407,7 +406,6 @@ mod tests {
         assert!(!unchanged.metadata_changed);
         assert_eq!(stored.updated_at, 1_000);
 
-        // Cambia el lenguaje: updated_at avanza.
         project.primary_language = Some("TypeScript".into());
         let changed = db
             .with_conn(|conn| upsert_by_path(conn, &project, 3_000))
@@ -416,14 +414,12 @@ mod tests {
         assert!(changed.metadata_changed);
         assert_eq!(stored.updated_at, 3_000);
 
-        // Cambia el nombre: updated_at avanza.
         project.name = "mosaic-renombrado".into();
         db.with_conn(|conn| upsert_by_path(conn, &project, 4_000))
             .unwrap();
         let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
         assert_eq!(stored.updated_at, 4_000);
 
-        // Cambia is_git_repo: updated_at avanza.
         project.is_git_repo = false;
         db.with_conn(|conn| upsert_by_path(conn, &project, 5_000))
             .unwrap();
@@ -462,7 +458,6 @@ mod tests {
             .unwrap()
             .id;
 
-        // Segundo escaneo: solo se vuelve a ver uno.
         let visto_id = db
             .with_conn(|conn| upsert_by_path(conn, &visto, 2_100))
             .unwrap()

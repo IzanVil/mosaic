@@ -60,7 +60,6 @@ fn tagging_projects_survives_a_rescan_and_the_tag_being_deleted() {
     db.with_conn(|conn| project_tags::assign(conn, ids[0], urgente.id))
         .unwrap();
 
-    // El tablero recibe cada proyecto con sus etiquetas ordenadas por nombre.
     let rows = db.with_conn(projects_repo::list_all_with_tags).unwrap();
     assert_eq!(rows.len(), 3);
     for row in &rows {

@@ -127,7 +127,6 @@ fn refreshing_twice_updates_the_cache_without_duplicating_it() {
     let db = scanned_db(&root);
     refresh_all(&db).unwrap();
 
-    // Se limpia el repositorio sucio y se vuelve a refrescar.
     fs::remove_file(root.join("sucio/pendiente.ts")).unwrap();
     let segundo = refresh_all(&db).unwrap();
 
@@ -193,7 +192,6 @@ fn refreshing_git_status_never_touches_the_projects_table() {
         assert_eq!(antes.missing, despues.missing);
     }
 
-    // Y sí ha actualizado la caché, que es lo suyo.
     assert!(db.with_conn(cache::list_all).unwrap().len() == 2);
 }
 

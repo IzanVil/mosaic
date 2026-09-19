@@ -4,7 +4,6 @@ import { defineConfig } from 'vite'
 
 const host = process.env.TAURI_DEV_HOST
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [svelte(), tailwindcss()],
 

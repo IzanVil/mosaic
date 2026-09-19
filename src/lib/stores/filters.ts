@@ -59,8 +59,6 @@ export function activeFilterCount(current: FilterState): number {
   );
 }
 
-// --- Acciones ---------------------------------------------------------------
-
 export function setQuery(query: string): void {
   filters.update((current) => ({ ...current, query }));
 }
@@ -144,8 +142,6 @@ export function toggleSidebar(): void {
 function defaultDirectionFor(sort: SortOption): SortDirection {
   return sort === 'name' ? 'asc' : 'desc';
 }
-
-// --- Persistencia -----------------------------------------------------------
 
 /**
  * Lee la vista guardada. Hay que llamarla (y esperarla) antes del primer

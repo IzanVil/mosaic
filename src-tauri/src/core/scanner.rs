@@ -691,8 +691,6 @@ mod tests {
         assert!(outcome.entries_visited <= 6);
     }
 
-    // --- Detección de lenguaje primario ---
-
     fn excluded() -> HashSet<String> {
         options().excluded_dirs
     }

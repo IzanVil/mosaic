@@ -177,8 +177,6 @@ export const pinnedProjects = derived(projects, (source) =>
   source.filter((project) => project.pinned),
 );
 
-// --- Acciones ---------------------------------------------------------------
-
 /** Recarga la lista de proyectos, con etiquetas y estado Git, desde la base de datos. */
 export async function loadProjects(): Promise<void> {
   loadingProjects.set(true);
