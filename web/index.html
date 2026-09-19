@@ -1,561 +1,445 @@
 <title>Mosaic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
+  /*
+   * Los colores son los tokens de `src/app.css` en su tema oscuro, copiados en
+   * oklch tal cual. La página y la aplicación comparten paleta por definición,
+   * no por parecido: si un día cambian los tokens, esta hoja se actualiza con
+   * los mismos valores.
+   */
   :root {
-    --fondo: #05080e;
-    --panel: #101624;
-    --panel-alto: #141b2c;
-    --texto: #e6edfa;
-    --suave: #b7c7e0;
-    --tenue: #8fa3c4;
-    --acento: #4d9fff;
-    --acento-claro: #48c2ff;
-    --linea: rgba(140, 170, 220, .16);
-    --linea2: rgba(150, 185, 240, .3);
-    --verde: #49d18b;
-    --ambar: #f0b45a;
-    --tipo: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-    --mono: "JetBrains Mono", "Cascadia Code", ui-monospace, Consolas, monospace;
-    --r: 6px;
+    --surface-0: oklch(19% 0.008 260);
+    --surface-1: oklch(23% 0.01 260);
+    --surface-2: oklch(27% 0.012 260);
+    --border: oklch(34% 0.014 260);
+    --border-soft: oklch(30% 0.012 260);
+    --strong: oklch(97% 0.002 260);
+    --content: oklch(85% 0.006 260);
+    --muted: oklch(65% 0.01 260);
+    --accent: oklch(70% 0.15 258);
+    --accent-strong: oklch(78% 0.14 258);
+    --dirty: oklch(75% 0.14 60);
+    --clean: oklch(72% 0.13 155);
+
+    --sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+    /* El mismo par de radios que usan las tarjetas y los botones de la app. */
+    --radius-card: 8px;
+    --radius-control: 6px;
+
     color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
   body {
     margin: 0;
-    background: var(--fondo);
-    color: var(--suave);
-    font-family: var(--tipo);
+    background: var(--surface-0);
+    color: var(--content);
+    font-family: var(--sans);
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
-  .caja {
+  .marco {
     width: 100%;
-    max-width: 1220px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding-inline: clamp(18px, 4vw, 54px);
+    padding-inline: 20px;
   }
 
   h1, h2, h3 {
     margin: 0;
-    color: var(--texto);
+    color: var(--strong);
     font-weight: 600;
-    letter-spacing: -.028em;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
   p { margin: 0; }
   a { color: inherit; }
-  code { font-family: var(--mono); font-size: .92em; color: var(--suave); }
-
-  .rotulo {
+  code {
     font-family: var(--mono);
-    font-size: 11.5px;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--tenue);
+    font-size: 0.9em;
+    color: var(--content);
   }
 
-  /* Botones */
-  .btn {
-    position: relative;
+  .boton {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    padding: 12px 20px;
-    border-radius: var(--r);
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-control);
     border: 1px solid transparent;
-    font: 500 14.5px/1 var(--tipo);
+    font: 500 14.5px/1 var(--sans);
     text-decoration: none;
     white-space: nowrap;
-    overflow: hidden;
-    isolation: isolate;
-    transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    transition: background 0.18s ease, border-color 0.18s ease;
   }
-  .btn:before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity .25s ease;
-    background: radial-gradient(130px circle at var(--raton-x, 50%) var(--raton-y, 50%), rgba(120, 180, 255, .4), transparent 60%);
-  }
-  .btn:hover:before, .btn:focus-visible:before { opacity: 1; }
-  .btn--claro {
-    background: var(--texto);
-    color: #070b12;
+  .boton--solido {
+    background: var(--accent);
+    color: oklch(19% 0.008 260);
     font-weight: 600;
   }
-  .btn--claro:hover { transform: translateY(-2px); }
-  .btn--claro:active { transform: translateY(0); }
-  .btn--fantasma {
-    border-color: var(--linea2);
-    color: var(--texto);
-    background: transparent;
+  .boton--solido:hover { background: var(--accent-strong); }
+  .boton--borde {
+    border-color: var(--border);
+    color: var(--strong);
   }
-  .btn--fantasma:hover { background: #ffffff0f; transform: translateY(-2px); }
-  .btn--fantasma:active { transform: translateY(0); }
-  .btn--grande { padding: 15px 26px; font-size: 15.5px; }
-  .btn i {
+  .boton--borde:hover { background: var(--surface-1); }
+  .boton small {
     font-family: var(--mono);
-    font-style: normal;
-    font-size: 12.5px;
+    font-size: 11.5px;
     font-weight: 400;
-    opacity: .62;
+    opacity: 0.7;
   }
-  .btn--claro i { opacity: .55; }
 
-  a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--acento-claro);
+  a:focus-visible {
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
   }
 
   /* Cabecera */
-  .barra {
+  .cabecera {
     position: sticky;
     top: env(safe-area-inset-top, 0px);
-    z-index: 30;
-    border-bottom: 1px solid var(--linea);
-    background: rgba(5, 8, 14, .78);
-    backdrop-filter: blur(14px);
+    z-index: 10;
+    border-bottom: 1px solid var(--border-soft);
+    background: color-mix(in oklab, var(--surface-0) 85%, transparent);
+    backdrop-filter: blur(12px);
   }
-  .barra__caja {
-    height: 66px;
-    display: flex;
-    align-items: center;
-    gap: 30px;
-  }
-  .marca {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--texto);
-    font-weight: 600;
-    letter-spacing: -.015em;
-  }
-  .marca__glifo {
-    display: grid;
-    grid-template-columns: repeat(3, 5px);
-    grid-auto-rows: 5px;
-    gap: 2.5px;
-  }
-  .marca__glifo i { background: #3c4a66; border-radius: 1px; }
-  .marca__glifo i:nth-child(1) { background: var(--acento-claro); }
-  .marca__glifo i:nth-child(5) { background: var(--acento); }
-  .marca__glifo i:nth-child(6) { background: #2f9df3; }
-  .barra nav {
-    margin-left: auto;
+  .cabecera__fila {
+    height: 60px;
     display: flex;
     align-items: center;
     gap: 26px;
+  }
+  .logotipo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--strong);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .logotipo img { width: 22px; height: 22px; border-radius: 5px; }
+  .cabecera nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 22px;
     font-size: 14px;
   }
-  .barra nav a { color: var(--tenue); text-decoration: none; white-space: nowrap; transition: color .18s ease; }
-  .barra nav a:hover { color: var(--texto); }
+  .cabecera nav a {
+    color: var(--muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.18s ease;
+  }
+  .cabecera nav a:hover { color: var(--strong); }
 
-  /* Hero */
-  .haz {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    padding: clamp(84px, 13vh, 150px) 0 clamp(56px, 8vh, 92px);
+  /* Portada */
+  .portada { padding-block: clamp(56px, 9vh, 104px) clamp(40px, 6vh, 64px); }
+  .portada h1 {
+    font-size: clamp(2.1rem, 1.3rem + 2.6vw, 3.4rem);
+    line-height: 1.08;
+    max-width: 22ch;
   }
-  .haz__cielo { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-  .haz__nube { position: absolute; border-radius: 50%; filter: blur(90px); }
-  .haz__nube--a {
-    left: -8%; top: -18%; width: 64%; height: 72%;
-    background: radial-gradient(circle, rgba(38, 74, 140, .3), transparent 66%);
+  .portada__texto {
+    margin-top: 18px;
+    max-width: 54ch;
+    font-size: clamp(1rem, 0.96rem + 0.3vw, 1.12rem);
   }
-  .haz__nube--b {
-    right: -14%; top: -6%; width: 58%; height: 66%;
-    background: radial-gradient(circle, rgba(77, 159, 255, .18), transparent 64%);
-  }
-  .haz__nube--c {
-    left: 30%; bottom: -34%; width: 48%; height: 60%;
-    background: radial-gradient(circle, rgba(72, 194, 255, .1), transparent 62%);
-  }
-  .haz__caja { position: relative; z-index: 2; }
+  .portada__acciones { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; }
 
-  .titular {
-    font-size: clamp(2.4rem, 1.1rem + 4.4vw, 4.6rem);
-    line-height: 1.03;
-    letter-spacing: -.03em;
-    max-width: 17ch;
-  }
-  .titular span {
-    background: linear-gradient(90deg, var(--acento-claro), #2f9df3);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .entradilla {
-    margin-top: 22px;
-    max-width: 52ch;
-    font-size: clamp(1.02rem, .97rem + .35vw, 1.18rem);
-    color: var(--suave);
-  }
-  .acciones { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
-
-  /* Vista de la interfaz */
-  .lienzo {
-    position: relative;
-    margin: clamp(46px, 7vh, 78px) 0 0;
-    border: 1px solid var(--linea);
-    border-radius: 10px;
-    background: var(--panel);
-    box-shadow: 0 40px 120px rgba(3, 8, 20, .75), inset 0 1px 0 rgba(255, 255, 255, .04);
+  .pantalla {
+    margin: clamp(40px, 6vh, 68px) 0 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-1);
     overflow: hidden;
   }
-  .lienzo img { display: block; width: 100%; height: auto; }
+  .pantalla img { display: block; width: 100%; height: auto; }
+  .pantalla figcaption {
+    border-top: 1px solid var(--border-soft);
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
 
+  /* Marcadores que detecta el escáner */
+  .marcadores {
+    border-block: 1px solid var(--border-soft);
+    padding-block: 22px;
+  }
+  .marcadores__fila { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .marcadores p { font-size: 14px; color: var(--muted); margin-right: 6px; }
+  .marcadores code {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    padding: 4px 9px;
+    font-size: 12px;
+    color: var(--content);
+    background: var(--surface-1);
+  }
+
+  section { padding-block: clamp(56px, 8vh, 96px); }
+  .titulo { max-width: 56ch; display: flex; flex-direction: column; gap: 12px; }
+  .titulo h2 {
+    font-size: clamp(1.5rem, 1.15rem + 1.3vw, 2.1rem);
+    line-height: 1.15;
+  }
+  .titulo p { color: var(--muted); }
+
+  /*
+   * La sección de capacidades usa la rejilla de tarjetas de la propia
+   * aplicación, incluidos sus badges: es el objeto que el producto ya tiene,
+   * así que la página no necesita inventarse otro lenguaje.
+   */
+  .rejilla {
+    margin-top: clamp(32px, 5vh, 52px);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+  }
+  .pieza {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-1);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .pieza--ancha { grid-column: span 4; }
+  .pieza--corta { grid-column: span 2; }
+  .pieza--media { grid-column: span 3; }
+  .pieza--acento {
+    background: color-mix(in oklab, var(--accent) 12%, var(--surface-1));
+    border-color: color-mix(in oklab, var(--accent) 40%, var(--border));
+  }
+  .pieza h3 { font-size: 1.05rem; }
+  .pieza p { color: var(--muted); font-size: 14.5px; }
+
+  .muestra { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
   .etiqueta {
-    font-size: 10.5px;
+    font-size: 11px;
     line-height: 1.5;
     padding: 1px 8px;
     border-radius: 999px;
     border: 1px solid;
     white-space: nowrap;
   }
-  .git { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--tenue); }
-  .git b { font-weight: 500; color: var(--suave); }
-  .git .marca-git { width: 5px; height: 5px; border-radius: 999px; background: var(--ambar); }
-  .git .marca-git.limpio { background: var(--verde); }
-
-  /* Cinta */
-  .cinta {
-    position: relative;
-    z-index: 4;
-    border-top: 1px solid var(--linea);
-    border-bottom: 1px solid var(--linea);
-    background: linear-gradient(180deg, rgba(16, 22, 36, .55), rgba(5, 8, 14, .85));
-    padding: 24px 0 22px;
-    overflow: hidden;
+  .rama {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
   }
-  .cinta__caja { display: flex; align-items: center; gap: 40px; }
-  .cinta__rotulo { flex: none; max-width: 26ch; color: var(--tenue); font-size: 14.5px; line-height: 1.45; }
-  .cinta__rotulo b { color: var(--suave); font-weight: 600; }
-  .cinta__pista { position: relative; flex: 1; min-width: 0; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-  .cinta__tira { display: flex; gap: 12px; width: max-content; animation: desfile 46s linear infinite; }
-  .cinta__pista:hover .cinta__tira { animation-play-state: paused; }
-  .cinta__marcador {
+  .rama b { font-weight: 500; color: var(--content); }
+  .rama i { width: 5px; height: 5px; border-radius: 999px; background: var(--dirty); }
+  .rama i.limpio { background: var(--clean); }
+  .consola {
     font-family: var(--mono);
     font-size: 12.5px;
-    color: var(--suave);
-    border: 1px solid var(--linea);
-    border-radius: var(--r);
-    padding: 7px 12px;
-    background: rgba(5, 8, 14, .5);
-    white-space: nowrap;
-  }
-  @keyframes desfile { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
-  @media (prefers-reduced-motion: reduce) { .cinta__tira { animation: none; } }
-
-  /* Secciones */
-  section { padding: clamp(70px, 11vh, 130px) 0; }
-  .seccion__cabeza { max-width: 58ch; display: flex; flex-direction: column; gap: 14px; }
-  .seccion__cabeza h2 {
-    font-size: clamp(1.75rem, .95rem + 2.3vw, 3rem);
-    line-height: 1.1;
-  }
-  .seccion__cabeza p { color: var(--tenue); font-size: clamp(1rem, .96rem + .3vw, 1.12rem); }
-
-  /* Pasos numerados */
-  .pasos { margin-top: clamp(40px, 6vh, 64px); display: grid; gap: 1px; background: var(--linea); border-block: 1px solid var(--linea); }
-  .paso {
-    background: var(--fondo);
-    display: grid;
-    grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1.05fr);
-    gap: 28px;
-    align-items: start;
-    padding: 30px 4px;
-  }
-  .paso__num { font-family: var(--mono); font-size: 13px; color: var(--acento); padding-top: 4px; }
-  .paso h3 { font-size: clamp(1.12rem, 1rem + .5vw, 1.4rem); }
-  .paso p { color: var(--tenue); font-size: 15px; }
-  .paso__dato {
-    margin-top: 12px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--suave);
-    border-left: 2px solid var(--acento);
-    padding-left: 12px;
-  }
-
-  /* Capacidades */
-  .rejilla { margin-top: clamp(40px, 6vh, 64px); display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
-  .bloque {
-    border: 1px solid var(--linea);
-    border-radius: var(--r);
-    background: linear-gradient(180deg, rgba(16, 22, 36, .75), rgba(16, 22, 36, .35));
-    padding: clamp(20px, 2.4vw, 30px);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-  }
-  .bloque h3 { font-size: 1.16rem; }
-  .bloque p { color: var(--tenue); font-size: 14.5px; }
-  .bloque--ancho { grid-column: span 4; }
-  .bloque--estrecho { grid-column: span 2; }
-  .bloque--medio { grid-column: span 3; }
-  .bloque--acento {
-    background: linear-gradient(180deg, rgba(77, 159, 255, .16), rgba(77, 159, 255, .04));
-    border-color: rgba(77, 159, 255, .34);
-  }
-  .muestra { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
-  .teclado {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    color: var(--suave);
-    border: 1px solid var(--linea);
-    border-radius: var(--r);
-    background: rgba(5, 8, 14, .5);
+    color: var(--content);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-0);
     padding: 12px 14px;
     line-height: 1.9;
   }
-  .teclado u { text-decoration: none; color: var(--acento-claro); }
+  .consola u { text-decoration: none; color: var(--accent); }
 
-  /* Principios */
-  .principios { margin-top: clamp(40px, 6vh, 64px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 60px; }
-  .principio { padding-block: 26px; border-top: 1px solid var(--linea); display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 18px; align-items: baseline; }
-  .principio h3 { font-size: 15.5px; letter-spacing: -.015em; }
-  .principio p { color: var(--tenue); font-size: 14.5px; }
-
-  /* Fases */
-  .fases { margin-top: clamp(40px, 6vh, 64px); display: grid; gap: 1px; background: var(--linea); border: 1px solid var(--linea); border-radius: var(--r); overflow: hidden; }
-  .fase {
-    background: var(--fondo);
-    display: grid;
-    grid-template-columns: 220px minmax(0, 1fr) auto;
-    gap: 20px;
-    align-items: center;
-    padding: 15px clamp(14px, 2vw, 22px);
-    font-size: 14.5px;
+  .pasos { margin-top: clamp(32px, 5vh, 52px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
+  .paso { display: flex; flex-direction: column; gap: 10px; }
+  .paso h3 { font-size: 1.05rem; }
+  .paso p { color: var(--muted); font-size: 14.5px; }
+  .paso__medida {
+    margin-top: 2px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--content);
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
   }
-  .fase__nombre { color: var(--texto); font-weight: 500; }
-  .fase--pendiente .fase__nombre { color: var(--suave); font-weight: 400; }
-  .fase__que { color: var(--tenue); font-size: 13.5px; }
-  .estado {
+
+  .reglas { margin-top: clamp(32px, 5vh, 52px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 56px; }
+  .regla {
+    padding-block: 24px;
+    border-top: 1px solid var(--border-soft);
+    display: grid;
+    grid-template-columns: 124px minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+  }
+  .regla h3 { font-size: 15px; }
+  .regla p { color: var(--muted); font-size: 14.5px; }
+
+  .fases {
+    margin-top: clamp(32px, 5vh, 52px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+  .fase {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding: 14px 18px;
+    font-size: 14.5px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .fase:first-child { border-top: 0; }
+  .fase__nombre { color: var(--strong); font-weight: 500; }
+  .fase--futura .fase__nombre { color: var(--content); font-weight: 400; }
+  .fase__detalle { color: var(--muted); font-size: 13.5px; }
+  .sello {
     font-family: var(--mono);
     font-size: 11px;
-    letter-spacing: .04em;
-    padding: 3px 10px;
+    padding: 3px 9px;
     border-radius: 999px;
-    border: 1px solid var(--linea);
-    color: var(--tenue);
+    border: 1px solid var(--border);
+    color: var(--muted);
     white-space: nowrap;
   }
-  .estado--hecha { color: var(--verde); border-color: rgba(73, 209, 139, .38); background: rgba(73, 209, 139, .1); }
-  .estado--curso { color: var(--acento-claro); border-color: rgba(72, 194, 255, .4); background: rgba(72, 194, 255, .1); }
+  .sello--lista { color: var(--clean); border-color: color-mix(in oklab, var(--clean) 40%, transparent); }
+  .sello--ahora { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 45%, transparent); }
 
-  /* Preguntas */
-  .preguntas { margin-top: clamp(40px, 6vh, 64px); display: grid; gap: 1px; background: var(--linea); border-block: 1px solid var(--linea); }
-  .pregunta { background: var(--fondo); padding: 24px 4px; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 28px; }
-  .pregunta h3 { font-size: 1.02rem; letter-spacing: -.015em; }
-  .pregunta p { color: var(--tenue); font-size: 14.5px; }
+  .dudas { margin-top: clamp(32px, 5vh, 52px); display: grid; gap: 1px; }
+  .duda {
+    border-top: 1px solid var(--border-soft);
+    padding-block: 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 26px;
+  }
+  .duda h3 { font-size: 1rem; }
+  .duda p { color: var(--muted); font-size: 14.5px; }
 
-  /* Cierre */
   .cierre {
-    border: 1px solid var(--linea);
-    border-radius: 10px;
-    background: linear-gradient(180deg, rgba(16, 22, 36, .8), rgba(5, 8, 14, .4));
-    padding: clamp(34px, 5vw, 58px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-1);
+    padding: clamp(28px, 4vw, 44px);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 26px;
-    margin-bottom: clamp(70px, 11vh, 130px);
+    gap: 22px;
+    margin-bottom: clamp(56px, 8vh, 96px);
   }
-  .cierre h2 { font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.3rem); }
-  .cierre p { margin-top: 12px; color: var(--tenue); max-width: 46ch; }
-  .cierre code { color: var(--acento-claro); }
+  .cierre h2 { font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); }
+  .cierre p { margin-top: 10px; color: var(--muted); max-width: 46ch; }
 
   footer {
-    border-top: 1px solid var(--linea);
-    padding-block: 26px 40px;
+    border-top: 1px solid var(--border-soft);
+    padding-block: 24px 36px;
     display: flex;
     flex-wrap: wrap;
-    gap: 14px 30px;
+    gap: 12px 26px;
     align-items: center;
     font-size: 13px;
-    color: var(--tenue);
+    color: var(--muted);
   }
-  footer a { color: var(--tenue); text-decoration: none; }
-  footer a:hover { color: var(--texto); }
-  footer .final { margin-left: auto; font-family: var(--mono); font-size: 11.5px; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--strong); }
+  footer .cola { margin-left: auto; font-family: var(--mono); font-size: 11.5px; }
 
-  /* Aparición */
-  .js [data-aparece] { opacity: 0; transform: translateY(16px); }
-  .js [data-aparece].visible {
-    opacity: 1;
-    transform: none;
-    transition: opacity .7s cubic-bezier(.16, 1, .3, 1), transform .7s cubic-bezier(.16, 1, .3, 1);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .js [data-aparece] { opacity: 1; transform: none; }
-    .btn, .btn:before { transition: none; }
-  }
-
-  @media (max-width: 980px) {
+  @media (max-width: 900px) {
     .rejilla { grid-template-columns: repeat(2, 1fr); }
-    .bloque--ancho, .bloque--estrecho, .bloque--medio { grid-column: span 2; }
-    .principios { grid-template-columns: minmax(0, 1fr); gap: 0; }
-    .paso { grid-template-columns: 52px minmax(0, 1fr); gap: 18px; }
-    .paso > div:last-child { grid-column: 2; }
+    .pieza--ancha, .pieza--corta, .pieza--media { grid-column: span 2; }
+    .pasos { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+    .reglas { grid-template-columns: minmax(0, 1fr); gap: 0; }
     .fase { grid-template-columns: minmax(0, 1fr) auto; }
-    .fase__que { display: none; }
-    .pregunta { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-    .cinta__caja { flex-direction: column; align-items: flex-start; gap: 18px; }
-    .cinta__rotulo { max-width: none; }
-    .cinta__pista { width: 100%; }
+    .fase__detalle { display: none; }
+    .duda { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   }
 
-  @media (max-width: 620px) {
-    .barra nav a:not(.btn) { display: none; }
-    .titular { max-width: none; }
+  @media (max-width: 560px) {
+    .cabecera nav a:not(.boton) { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
   }
 </style>
 
-<header class="barra">
-  <div class="caja barra__caja">
-    <a class="marca" href="#arriba">
-      <span class="marca__glifo" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+<header class="cabecera">
+  <div class="marco cabecera__fila">
+    <a class="logotipo" href="#inicio">
+      <img src="icono.png" width="22" height="22" alt="" aria-hidden="true">
       Mosaic
     </a>
     <nav>
-      <a href="#como-trabaja">Cómo trabaja</a>
-      <a href="#que-hace">Qué hace</a>
+      <a href="#capacidades">Qué hace</a>
+      <a href="#reglas">Principios</a>
       <a href="#estado">Estado</a>
-      <a class="btn btn--fantasma" href="https://github.com/IzanVil/mosaic">GitHub</a>
+      <a class="boton boton--borde" href="https://github.com/IzanVil/mosaic">GitHub</a>
     </nav>
   </div>
 </header>
 
-<main id="arriba">
-  <section class="haz">
-    <div class="haz__cielo" aria-hidden="true">
-      <span class="haz__nube haz__nube--a"></span>
-      <span class="haz__nube haz__nube--b"></span>
-      <span class="haz__nube haz__nube--c"></span>
-    </div>
-
-    <div class="caja haz__caja">
-      <h1 class="titular">Todos tus proyectos, <span>en una sola pantalla</span>.</h1>
-      <p class="entradilla">
-        Mosaic recorre las carpetas que le señales y las muestra con su estado de Git en
-        vivo, etiquetas y accesos directos. Corre entero en tu máquina.
+<main id="inicio">
+  <div class="marco">
+    <section class="portada">
+      <h1>Todos tus proyectos de código, en una pantalla.</h1>
+      <p class="portada__texto">
+        Mosaic recorre las carpetas que le señales y las presenta como un tablero, con el
+        estado de Git de cada repositorio, etiquetas propias y un clic para abrir cada
+        proyecto donde trabajas. Corre entero en tu máquina.
       </p>
-      <div class="acciones">
-        <a class="btn btn--claro btn--grande" href="https://github.com/IzanVil/mosaic">
-          Compilar desde el código <i>gratis, sin cuenta</i>
+      <div class="portada__acciones">
+        <a class="boton boton--solido" href="https://github.com/IzanVil/mosaic">
+          Ver el código <small>MIT</small>
         </a>
-        <a class="btn btn--fantasma btn--grande" href="#como-trabaja">Cómo trabaja</a>
+        <a class="boton boton--borde" href="#como-funciona">Cómo funciona</a>
       </div>
 
-      <figure class="lienzo">
+      <figure class="pantalla">
         <img
           src="captura.png"
           width="1282"
           height="648"
           alt="El tablero de Mosaic con seis proyectos, sus etiquetas de color y el estado de Git de cada uno"
         >
+        <figcaption>El tablero, con seis proyectos de ejemplo y sus etiquetas.</figcaption>
       </figure>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <div class="cinta">
-    <div class="caja cinta__caja">
-      <p class="cinta__rotulo">
-        Reconoce un proyecto por su fichero marcador. <b>Nueve, sin configurar nada.</b>
-      </p>
-      <div class="cinta__pista">
-        <div class="cinta__tira">
-          <span class="cinta__marcador">.git</span>
-          <span class="cinta__marcador">package.json</span>
-          <span class="cinta__marcador">Cargo.toml</span>
-          <span class="cinta__marcador">pyproject.toml</span>
-          <span class="cinta__marcador">go.mod</span>
-          <span class="cinta__marcador">pom.xml</span>
-          <span class="cinta__marcador">build.gradle</span>
-          <span class="cinta__marcador">composer.json</span>
-          <span class="cinta__marcador">Gemfile</span>
-          <span class="cinta__marcador" aria-hidden="true">.git</span>
-          <span class="cinta__marcador" aria-hidden="true">package.json</span>
-          <span class="cinta__marcador" aria-hidden="true">Cargo.toml</span>
-          <span class="cinta__marcador" aria-hidden="true">pyproject.toml</span>
-          <span class="cinta__marcador" aria-hidden="true">go.mod</span>
-          <span class="cinta__marcador" aria-hidden="true">pom.xml</span>
-          <span class="cinta__marcador" aria-hidden="true">build.gradle</span>
-          <span class="cinta__marcador" aria-hidden="true">composer.json</span>
-          <span class="cinta__marcador" aria-hidden="true">Gemfile</span>
-        </div>
-      </div>
+  <div class="marcadores">
+    <div class="marco marcadores__fila">
+      <p>Reconoce un proyecto por su fichero marcador:</p>
+      <code>.git</code>
+      <code>package.json</code>
+      <code>Cargo.toml</code>
+      <code>pyproject.toml</code>
+      <code>go.mod</code>
+      <code>pom.xml</code>
+      <code>build.gradle</code>
+      <code>composer.json</code>
+      <code>Gemfile</code>
     </div>
   </div>
 
-  <section id="como-trabaja">
-    <div class="caja">
-      <div class="seccion__cabeza" data-aparece>
-        <span class="rotulo">Cómo trabaja</span>
-        <h2>Le das una carpeta y se encarga del resto</h2>
-      </div>
-
-      <div class="pasos">
-        <div class="paso" data-aparece>
-          <span class="paso__num">01</span>
-          <div><h3>Apuntas una raíz</h3></div>
-          <div>
-            <p>
-              La carpeta donde guardas tus proyectos. Puedes añadir varias y desactivar
-              temporalmente las que no quieras mirar, sin perder lo que encontró dentro.
-            </p>
-          </div>
-        </div>
-        <div class="paso" data-aparece>
-          <span class="paso__num">02</span>
-          <div><h3>Recorre el disco</h3></div>
-          <div>
-            <p>
-              Baja cuatro niveles buscando ficheros marcadores, deduce el lenguaje principal
-              y se salta <code>node_modules</code>, <code>target</code> y compañía. Un
-              monorepo es una tarjeta; dos repos anidados son dos.
-            </p>
-            <p class="paso__dato">2.073 carpetas en 182 ms, medido en la máquina del autor</p>
-          </div>
-        </div>
-        <div class="paso" data-aparece>
-          <span class="paso__num">03</span>
-          <div><h3>Organizas y abres</h3></div>
-          <div>
-            <p>
-              Etiquetas, destacas, filtras y abres cada proyecto en tu editor o tu terminal.
-              Si una carpeta desaparece del disco se marca como ausente en vez de borrarse,
-              así que no pierdes sus etiquetas.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="que-hace">
-    <div class="caja">
-      <div class="seccion__cabeza" data-aparece>
+  <div class="marco">
+    <section id="capacidades">
+      <div class="titulo">
         <h2>Lo que ves sin abrir una terminal</h2>
         <p>Cada tarjeta responde a lo que ibas a comprobar antes de entrar en la carpeta.</p>
       </div>
 
       <div class="rejilla">
-        <div class="bloque bloque--ancho" data-aparece>
+        <div class="pieza pieza--ancha">
           <h3>Estado de Git en vivo</h3>
           <p>
             Rama actual, si te quedan cambios sin commitear y cuántos commits llevas por
@@ -563,12 +447,12 @@
             hacer fetch y sin tocar la red.
           </p>
           <div class="muestra">
-            <span class="git"><span class="marca-git"></span><b>main</b> 2 sin commitear</span>
-            <span class="git" style="margin-left:16px"><span class="marca-git limpio"></span><b>feat/tags</b> 3 por delante</span>
+            <span class="rama"><i></i><b>main</b> 2 sin commitear</span>
+            <span class="rama"><i class="limpio"></i><b>feat/tags</b> 3 por delante</span>
           </div>
         </div>
 
-        <div class="bloque bloque--estrecho bloque--acento" data-aparece>
+        <div class="pieza pieza--corta pieza--acento">
           <h3>Abrir donde trabajas</h3>
           <p>
             Editor, terminal o explorador de archivos con un clic, en la aplicación que ya
@@ -576,31 +460,30 @@
           </p>
         </div>
 
-        <div class="bloque bloque--estrecho" data-aparece>
+        <div class="pieza pieza--corta">
           <h3>Etiquetas con color</h3>
           <p>Las creas desde la propia tarjeta y filtras por ellas.</p>
           <div class="muestra">
-            <span class="etiqueta" style="background:rgba(77,159,255,.15);border-color:rgba(77,159,255,.4);color:#8cc2ff">cliente</span>
-            <span class="etiqueta" style="background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.4);color:#ff9090">urgente</span>
-            <span class="etiqueta" style="background:rgba(240,180,90,.14);border-color:rgba(240,180,90,.4);color:#f0b45a">archivado</span>
-            <span class="etiqueta" style="background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.4);color:#5fe0ad">personal</span>
+            <span class="etiqueta" style="background:color-mix(in oklab, #4d9fff 15%, transparent);border-color:color-mix(in oklab, #4d9fff 45%, transparent);color:#8cc2ff">trabajo</span>
+            <span class="etiqueta" style="background:color-mix(in oklab, #10b981 15%, transparent);border-color:color-mix(in oklab, #10b981 45%, transparent);color:#5fe0ad">personal</span>
+            <span class="etiqueta" style="background:color-mix(in oklab, #f0b45a 15%, transparent);border-color:color-mix(in oklab, #f0b45a 45%, transparent);color:#f0b45a">archivado</span>
           </div>
         </div>
 
-        <div class="bloque bloque--medio" data-aparece>
+        <div class="pieza pieza--media">
           <h3>Búsqueda que perdona</h3>
           <p>
             Escribes el nombre a medias o con una errata y el proyecto aparece igual. Busca
             en el nombre y en la ruta, ignorando acentos y mayúsculas.
           </p>
-          <div class="teclado">
+          <div class="consola">
             <u>mosiac</u> &rarr; mosaic<br>
             <u>diseno</u> &rarr; diseño-web<br>
-            <u>Poyects</u> &rarr; los tres proyectos
+            <u>Poyects</u> &rarr; los tres proyectos de esa carpeta
           </div>
         </div>
 
-        <div class="bloque bloque--estrecho" data-aparece>
+        <div class="pieza pieza--corta">
           <h3>Filtros y orden</h3>
           <p>
             Por etiqueta, lenguaje, estado de Git o destacados. La vista que dejes puesta
@@ -608,119 +491,147 @@
           </p>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="principios">
-    <div class="caja">
-      <div class="seccion__cabeza" data-aparece>
+    <section id="como-funciona">
+      <div class="titulo">
+        <h2>Tres pasos y no vuelves a buscar una carpeta</h2>
+      </div>
+
+      <div class="pasos">
+        <div class="paso">
+          <h3>Apuntas una raíz</h3>
+          <p>
+            La carpeta donde guardas tus proyectos. Puedes añadir varias y desactivar las
+            que no quieras mirar ahora, sin perder lo que encontró dentro.
+          </p>
+        </div>
+        <div class="paso">
+          <h3>Recorre el disco</h3>
+          <p>
+            Baja cuatro niveles buscando marcadores, deduce el lenguaje principal y se salta
+            <code>node_modules</code>, <code>target</code> y compañía. Un monorepo es una
+            tarjeta; dos repositorios anidados son dos.
+          </p>
+          <p class="paso__medida">2.073 carpetas en 182 ms, medido en la máquina del autor</p>
+        </div>
+        <div class="paso">
+          <h3>Organizas y abres</h3>
+          <p>
+            Etiquetas, destacas, filtras y lanzas cada proyecto donde toque. Si una carpeta
+            desaparece del disco se marca como ausente en vez de borrarse, así que no
+            pierdes sus etiquetas.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="reglas">
+      <div class="titulo">
         <h2>Deliberadamente tonto</h2>
         <p>No sincroniza, no sugiere y no aprende de ti. Cuatro reglas que no se negocian.</p>
       </div>
 
-      <div class="principios">
-        <div class="principio" data-aparece>
+      <div class="reglas">
+        <div class="regla">
           <h3>Local-first</h3>
           <p>Todo vive en un SQLite dentro de tu carpeta de datos. Cero llamadas remotas.</p>
         </div>
-        <div class="principio" data-aparece>
+        <div class="regla">
           <h3>Privado</h3>
           <p>Sin telemetría, sin analítica, sin cuenta que crear ni sesión que iniciar.</p>
         </div>
-        <div class="principio" data-aparece>
+        <div class="regla">
           <h3>Sin IA</h3>
           <p>Ninguna API de modelos. Lo que ves es lo que hay en tu disco, sin intermediarios.</p>
         </div>
-        <div class="principio" data-aparece>
+        <div class="regla">
           <h3>Solo lectura</h3>
           <p>Lee los metadatos de tus repositorios. Nunca escribe en ellos, ni siquiera un fetch.</p>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="estado">
-    <div class="caja">
-      <div class="seccion__cabeza" data-aparece>
-        <span class="rotulo">En construcción</span>
+    <section id="estado">
+      <div class="titulo">
         <h2>Cuatro fases de siete</h2>
         <p>
-          El desarrollo va por fases cerradas, cada una verificada a mano antes de pasar a la
-          siguiente. Esto es lo que funciona hoy.
+          El desarrollo va por fases cerradas, cada una verificada a mano antes de pasar a
+          la siguiente. Esto es lo que funciona hoy.
         </p>
       </div>
 
-      <div class="fases" data-aparece>
+      <div class="fases">
         <div class="fase">
           <span class="fase__nombre">Esqueleto y escaneo</span>
-          <span class="fase__que">Rutas configurables, detección por marcadores, SQLite con migraciones</span>
-          <span class="estado estado--hecha">hecha</span>
+          <span class="fase__detalle">Rutas configurables, detección por marcadores, SQLite con migraciones</span>
+          <span class="sello sello--lista">hecha</span>
         </div>
         <div class="fase">
           <span class="fase__nombre">Integración con Git</span>
-          <span class="fase__que">Rama, cambios sin commitear, ahead y behind, refresco en segundo plano</span>
-          <span class="estado estado--hecha">hecha</span>
+          <span class="fase__detalle">Rama, cambios sin commitear, ahead y behind, refresco en segundo plano</span>
+          <span class="sello sello--lista">hecha</span>
         </div>
         <div class="fase">
           <span class="fase__nombre">Tarjetas y tablero</span>
-          <span class="fase__que">Rejilla adaptable, acciones rápidas, detección de editores y terminales</span>
-          <span class="estado estado--hecha">hecha</span>
+          <span class="fase__detalle">Rejilla adaptable, acciones rápidas, detección de editores y terminales</span>
+          <span class="sello sello--lista">hecha</span>
         </div>
         <div class="fase">
           <span class="fase__nombre">Etiquetas y filtros</span>
-          <span class="fase__que">Etiquetas con color, búsqueda difusa, filtros combinados, vista recordada</span>
-          <span class="estado estado--hecha">hecha</span>
+          <span class="fase__detalle">Etiquetas con color, búsqueda difusa, filtros combinados, vista recordada</span>
+          <span class="sello sello--lista">hecha</span>
         </div>
-        <div class="fase fase--pendiente">
+        <div class="fase fase--futura">
           <span class="fase__nombre">Detalle de proyecto</span>
-          <span class="fase__que">README renderizado, últimos commits, ramas y notas personales</span>
-          <span class="estado estado--curso">en curso</span>
+          <span class="fase__detalle">README renderizado, últimos commits, ramas y notas personales</span>
+          <span class="sello sello--ahora">siguiente</span>
         </div>
-        <div class="fase fase--pendiente">
+        <div class="fase fase--futura">
           <span class="fase__nombre">Atajos y ajustes</span>
-          <span class="fase__que">Paleta de comandos, tema claro y oscuro, exportar la configuración</span>
-          <span class="estado">pendiente</span>
+          <span class="fase__detalle">Paleta de comandos, tema claro y oscuro, exportar la configuración</span>
+          <span class="sello">pendiente</span>
         </div>
-        <div class="fase fase--pendiente">
+        <div class="fase fase--futura">
           <span class="fase__nombre">Empaquetado</span>
-          <span class="fase__que">Instaladores para Linux, macOS y Windows</span>
-          <span class="estado">pendiente</span>
+          <span class="fase__detalle">Instaladores para Linux, macOS y Windows</span>
+          <span class="sello">pendiente</span>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="preguntas">
-    <div class="caja">
-      <div class="seccion__cabeza" data-aparece>
+    <section id="dudas">
+      <div class="titulo">
         <h2>Lo que suele preguntarse</h2>
       </div>
 
-      <div class="preguntas">
-        <div class="pregunta" data-aparece>
+      <div class="dudas">
+        <div class="duda">
           <h3>¿Manda algo a internet?</h3>
           <p>
-            No. No hay cliente HTTP en el binario, ni siquiera para actualizarse. El estado de
-            Git se lee del disco, así que el contador de commits por detrás solo se mueve
-            cuando haces <code>pull</code> tú.
+            No. <code>git2</code> va compilado sin soporte de red, así que el binario no
+            sabe hablar con un remoto ni para actualizarse. El contador de commits por
+            detrás solo se mueve cuando haces <code>pull</code> tú.
           </p>
         </div>
-        <div class="pregunta" data-aparece>
+        <div class="duda">
           <h3>¿Puede romper mis repositorios?</h3>
           <p>
-            Abre cada repositorio en modo lectura y nunca ejecuta comandos de Git. Los botones
-            de abrir lanzan tu editor o tu terminal pasando la ruta como argumento suelto,
-            sin construir una línea de shell.
+            Los abre en lectura y no ejecuta comandos de Git. Los botones de abrir lanzan tu
+            editor o tu terminal pasando la ruta como argumento suelto, sin construir una
+            línea de shell.
           </p>
         </div>
-        <div class="pregunta" data-aparece>
+        <div class="duda">
           <h3>¿Hay instalador?</h3>
           <p>
-            Todavía no. Los binarios para Linux, macOS y Windows llegan en la fase 7. Hoy se
-            compila con <code>pnpm tauri build</code> y necesitas Rust estable, Node y pnpm.
+            Todavía no hay versión publicada. El workflow de release compila
+            <code>.deb</code>, <code>.rpm</code>, <code>.AppImage</code>, <code>.dmg</code>
+            universal y <code>.msi</code>, pero sin firmar: macOS y Windows avisarán la
+            primera vez.
           </p>
         </div>
-        <div class="pregunta" data-aparece>
+        <div class="duda">
           <h3>¿Aguanta muchos proyectos?</h3>
           <p>
             Está pensado para varios cientos en la misma pantalla. El escaneo tiene tope de
@@ -728,59 +639,24 @@
           </p>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <div class="caja">
-    <div class="cierre" data-aparece>
+    <div class="cierre">
       <div>
         <h2>Clónalo y compílalo</h2>
         <p>
-          Código abierto con licencia MIT. Con <code>pnpm install</code> y
-          <code>pnpm tauri dev</code> lo tienes corriendo.
+          Con <code>pnpm install</code> y <code>pnpm tauri dev</code> lo tienes corriendo.
+          Necesitas Rust estable, Node y pnpm.
         </p>
       </div>
-      <a class="btn btn--claro btn--grande" href="https://github.com/IzanVil/mosaic">
-        Ver en GitHub <i>MIT</i>
-      </a>
+      <a class="boton boton--solido" href="https://github.com/IzanVil/mosaic">Ver en GitHub</a>
     </div>
 
     <footer>
       <span>MIT</span>
       <a href="https://github.com/IzanVil/mosaic">github.com/IzanVil/mosaic</a>
       <span>Rust, Tauri 2, Svelte 5, SQLite</span>
-      <span class="final">esta página no carga analítica ni scripts de terceros</span>
+      <span class="cola">sin analítica ni scripts de terceros</span>
     </footer>
   </div>
 </main>
-
-<script>
-  document.documentElement.classList.add('js');
-
-  const suave = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  const objetivos = document.querySelectorAll('[data-aparece]');
-  if (suave.matches || !('IntersectionObserver' in window)) {
-    objetivos.forEach((el) => el.classList.add('visible'));
-  } else {
-    const vigia = new IntersectionObserver(
-      (entradas) => {
-        entradas.forEach((entrada) => {
-          if (!entrada.isIntersecting) return;
-          entrada.target.classList.add('visible');
-          vigia.unobserve(entrada.target);
-        });
-      },
-      { rootMargin: '0px 0px -12% 0px', threshold: 0.12 },
-    );
-    objetivos.forEach((el) => vigia.observe(el));
-  }
-
-  document.querySelectorAll('.btn').forEach((boton) => {
-    boton.addEventListener('pointermove', (evento) => {
-      const caja = boton.getBoundingClientRect();
-      boton.style.setProperty('--raton-x', ((evento.clientX - caja.left) / caja.width) * 100 + '%');
-      boton.style.setProperty('--raton-y', ((evento.clientY - caja.top) / caja.height) * 100 + '%');
-    });
-  });
-</script>
