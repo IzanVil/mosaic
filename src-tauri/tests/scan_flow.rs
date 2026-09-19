@@ -8,7 +8,7 @@ use std::fs;
 use std::path::Path;
 
 use mosaic_lib::core::now_ts;
-use mosaic_lib::core::scanner::run_full_scan;
+use mosaic_lib::core::scanner::{run_full_scan, run_startup_scan};
 use mosaic_lib::db::repositories::{projects as projects_repo, scan_paths as scan_paths_repo};
 use mosaic_lib::db::Db;
 
@@ -121,4 +121,72 @@ fn rescanning_is_idempotent_and_flags_projects_that_disappear() {
     let projects = db.with_conn(projects_repo::list_all).unwrap();
     let etl = projects.iter().find(|p| p.name == "etl").unwrap();
     assert!(etl.missing);
+}
+
+/// Prepara una base de datos con el árbol de prueba ya registrado como raíz.
+fn db_with_root(root: &Path) -> Db {
+    let db = Db::open_in_memory().unwrap();
+    db.with_conn(|conn| scan_paths_repo::add(conn, root.to_str().unwrap(), now_ts()))
+        .unwrap();
+    db
+}
+
+#[test]
+fn startup_scan_runs_when_the_setting_is_on() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+    let db = db_with_root(&root);
+
+    db.with_conn(|conn| {
+        mosaic_lib::config::settings::set_raw(
+            conn,
+            mosaic_lib::config::settings::KEY_SCAN_ON_STARTUP,
+            "true",
+        )
+    })
+    .unwrap();
+
+    let summary = run_startup_scan(&db)
+        .unwrap()
+        .expect("con el ajuste activado debe escanear");
+    assert_eq!(summary.projects_found, 3);
+    assert_eq!(db.with_conn(projects_repo::count).unwrap(), 3);
+}
+
+#[test]
+fn startup_scan_does_nothing_when_the_setting_is_off() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+    let db = db_with_root(&root);
+
+    db.with_conn(|conn| {
+        mosaic_lib::config::settings::set_raw(
+            conn,
+            mosaic_lib::config::settings::KEY_SCAN_ON_STARTUP,
+            "false",
+        )
+    })
+    .unwrap();
+
+    assert!(
+        run_startup_scan(&db).unwrap().is_none(),
+        "con el ajuste desactivado no debe escanear"
+    );
+    assert_eq!(db.with_conn(projects_repo::count).unwrap(), 0);
+}
+
+#[test]
+fn startup_scan_is_off_by_default() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+    let db = db_with_root(&root);
+
+    assert!(
+        run_startup_scan(&db).unwrap().is_none(),
+        "una base de datos nueva no debe escanear al arrancar"
+    );
+    assert_eq!(db.with_conn(projects_repo::count).unwrap(), 0);
 }

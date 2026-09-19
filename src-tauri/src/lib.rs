@@ -20,10 +20,17 @@ use crate::db::Db;
 /// Evento que recibe el frontend cuando termina un refresco automático del
 /// estado Git. Su carga útil es un [`core::git::GitRefreshSummary`].
 pub const EVENT_GIT_STATUS_REFRESHED: &str = "git-status-refreshed";
+/// Evento que recibe el frontend cuando el escaneo al arrancar encontró algo.
+pub const EVENT_PROJECTS_RESCANNED: &str = "projects-rescanned";
 
 /// Espera antes del primer refresco automático, para no competir con el arranque
 /// de la ventana pero dejar los indicadores al día cuanto antes.
 const FIRST_REFRESH_DELAY: Duration = Duration::from_secs(5);
+/// Espera antes del escaneo inicial, cuando el ajuste lo pide.
+///
+/// Va después del primer refresco de Git para que el tablero se pinte con la
+/// caché de la sesión anterior antes de que el disco empiece a trabajar.
+const STARTUP_SCAN_DELAY: Duration = Duration::from_secs(8);
 
 /// Inicializa el logging a stdout.
 ///
@@ -46,6 +53,53 @@ fn init_tracing() {
 /// respeta el intervalo configurado. El intervalo se relee en cada vuelta, de
 /// modo que un cambio en los ajustes surte efecto sin reiniciar; el valor `0`
 /// desactiva el refresco automático sin detener la tarea.
+/// Lanza el escaneo inicial si el ajuste `scan.on_startup` está activado.
+///
+/// Espera [`STARTUP_SCAN_DELAY`] antes de tocar el disco: al arrancar hay ya
+/// bastante trabajo entre abrir la base de datos, montar la ventana y pintar el
+/// tablero con lo que había de la sesión anterior, y el recorrido puede durar
+/// cientos de milisegundos.
+///
+/// Tras escanear refresca el estado Git, porque los proyectos recién
+/// descubiertos no tienen nada en la caché y sus tarjetas saldrían sin rama
+/// hasta el siguiente ciclo automático.
+fn spawn_startup_scan_task(app: AppHandle, db: Arc<Db>) {
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(STARTUP_SCAN_DELAY).await;
+
+        let scan_db = Arc::clone(&db);
+        let scanned =
+            tauri::async_runtime::spawn_blocking(move || core::scanner::run_startup_scan(&scan_db))
+                .await;
+
+        let summary = match scanned {
+            Ok(Ok(Some(summary))) => summary,
+            Ok(Ok(None)) => return,
+            Ok(Err(err)) => {
+                tracing::warn!(%err, "el escaneo al arrancar falló");
+                return;
+            }
+            Err(err) => {
+                tracing::warn!(%err, "la tarea de escaneo al arrancar se interrumpió");
+                return;
+            }
+        };
+
+        tracing::info!(?summary, "escaneo al arrancar terminado");
+
+        let git_db = Arc::clone(&db);
+        match tauri::async_runtime::spawn_blocking(move || core::git::refresh_all(&git_db)).await {
+            Ok(Ok(_)) => {}
+            Ok(Err(err)) => tracing::warn!(%err, "el refresco posterior al escaneo falló"),
+            Err(err) => tracing::warn!(%err, "la tarea de refresco se interrumpió"),
+        }
+
+        if let Err(err) = app.emit(EVENT_PROJECTS_RESCANNED, summary) {
+            tracing::warn!(%err, "no se pudo notificar el escaneo al frontend");
+        }
+    });
+}
+
 fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_REFRESH_DELAY).await;
@@ -103,6 +157,7 @@ pub fn run() {
             let path = db::default_db_path()?;
             let db = Arc::new(Db::open(&path)?);
             app.manage(Arc::clone(&db));
+            spawn_startup_scan_task(app.handle().clone(), Arc::clone(&db));
             spawn_git_refresh_task(app.handle().clone(), db);
             Ok(())
         })

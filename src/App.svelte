@@ -21,6 +21,8 @@
 
   /** Lo emite el backend al terminar un refresco automático de estado Git. */
   const GIT_REFRESHED = 'git-status-refreshed';
+  /** Lo emite el backend cuando el escaneo al arrancar encontró proyectos. */
+  const PROJECTS_RESCANNED = 'projects-rescanned';
   const GIT_BUTTON_HINT =
     'Relee del disco la rama, los cambios sin commitear y el último commit de cada ' +
     'repositorio. No hace fetch: no toca la red. También se refresca solo cada 5 minutos.';
@@ -68,7 +70,12 @@
   });
 
   onMount(() => {
-    const stopListening = listen(GIT_REFRESHED, () => void loadGitStatus());
+    const stopListening = Promise.all([
+      listen(GIT_REFRESHED, () => void loadGitStatus()),
+      // El escaneo al arrancar puede haber descubierto proyectos nuevos, así que
+      // la lista se relee entera en lugar de mezclar solo el estado de Git.
+      listen(PROJECTS_RESCANNED, () => void loadProjects()),
+    ]);
     let stopPersisting: (() => void) | null = null;
 
     const clock = setInterval(() => (tick = now_ts()), CLOCK_TICK_MS);
@@ -85,7 +92,7 @@
     return () => {
       clearInterval(clock);
       stopPersisting?.();
-      void stopListening.then((stop) => stop());
+      void stopListening.then((stops) => stops.forEach((stop) => stop()));
     };
   });
 

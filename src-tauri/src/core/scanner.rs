@@ -375,6 +375,23 @@ pub struct ScanSummary {
 ///
 /// Los proyectos que dejan de verse se marcan como ausentes pero nunca se
 /// borran, para no perder las etiquetas y notas que el usuario les haya puesto.
+/// Escanea al arrancar, si el usuario lo tiene activado.
+///
+/// Devuelve `None` cuando el ajuste `scan.on_startup` está desactivado, que es
+/// el valor por defecto: quien no lo pidió no paga el recorrido del disco cada
+/// vez que abre la aplicación. La decisión vive aquí, y no en el arranque de
+/// Tauri, para que se pueda comprobar con un test.
+pub fn run_startup_scan(db: &crate::db::Db) -> crate::errors::Result<Option<ScanSummary>> {
+    let settings = db.with_conn(crate::config::settings::load)?;
+    if !settings.scan_on_startup {
+        tracing::debug!("escaneo al arrancar desactivado");
+        return Ok(None);
+    }
+
+    tracing::info!("escaneo al arrancar activado");
+    run_full_scan(db).map(Some)
+}
+
 pub fn run_full_scan(db: &crate::db::Db) -> crate::errors::Result<ScanSummary> {
     use crate::db::repositories::{projects as projects_repo, scan_paths as scan_paths_repo};
 

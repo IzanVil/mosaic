@@ -63,6 +63,22 @@ El estado de Git se refresca solo a los cinco segundos de arrancar y luego cada
 cinco minutos. El botón **Git** de la cabecera fuerza una relectura y dice cuántos
 repositorios ha leído y cuántos han cambiado.
 
+### Escanear al arrancar
+
+Por defecto Mosaic no toca el disco al abrirse: pinta lo que ya tenía guardado y
+espera a que pulses **Escanear**. Si prefieres que se actualice solo, hay un
+ajuste que lanza un escaneo ocho segundos después del arranque y refresca el
+estado de Git al terminar.
+
+Todavía no tiene interfaz, que llega en la Fase 6. Hasta entonces se activa
+escribiendo en la base de datos:
+
+```bash
+sqlite3 ~/.local/share/mosaic/mosaic.db \
+  "INSERT INTO settings (key, value) VALUES ('scan.on_startup', 'true')
+   ON CONFLICT(key) DO UPDATE SET value = 'true';"
+```
+
 ## Cómo decide qué es un proyecto
 
 Una carpeta entra en el tablero si tiene alguno de los ficheros marcadores de la
