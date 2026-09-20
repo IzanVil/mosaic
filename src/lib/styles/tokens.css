@@ -1,0 +1,318 @@
+/*
+ * Sistema de diseño de Mosaic.
+ *
+ * Fuente única de verdad del color, la tipografía, el espaciado y el
+ * movimiento. Los componentes no escriben valores literales: leen de aquí.
+ *
+ * El tema oscuro es el del producto; el claro existe desde el primer día para
+ * que la Fase 6 solo tenga que añadir el conmutador, no inventar una paleta.
+ * `:root` define el claro, y el oscuro se aplica por preferencia del sistema o
+ * por la clase `.dark`, que es la que hoy fija `index.html`.
+ */
+
+:root {
+  /* --- Superficies -------------------------------------------------------
+   * Tres niveles con cinco puntos de luminosidad entre ellos. La paleta
+   * anterior los separaba cuatro puntos y el resultado era que «todo era gris
+   * oscuro»: el ojo no distinguía el fondo de la tarjeta.
+   * El matiz 75 es cálido a propósito. Es lo que separa a Mosaic del gris azul
+   * que usan Linear, Zed y media categoría.
+   */
+  --surface-base: oklch(98.5% 0.003 75);
+  --surface-raised: oklch(96% 0.004 75);
+  --surface-sunken: oklch(93% 0.005 75);
+  --surface-overlay: oklch(100% 0 0);
+
+  --border-subtle: oklch(89% 0.005 75);
+  --border-default: oklch(84% 0.006 75);
+  --border-strong: oklch(72% 0.008 75);
+
+  /* --- Texto -------------------------------------------------------------
+   * Cuatro niveles. El terciario es el suelo de lo legible: por debajo está
+   * `disabled`, que no se usa para contenido.
+   */
+  --text-primary: oklch(24% 0.008 75);
+  --text-secondary: oklch(42% 0.008 75);
+  --text-tertiary: oklch(56% 0.008 75);
+  --text-disabled: oklch(70% 0.006 75);
+  --text-on-accent: oklch(99% 0.002 195);
+
+  /* --- Acento ------------------------------------------------------------
+   * Turquesa en vez de azul. El azul es la elección por defecto de la
+   * categoría entera, y además choca con el azul de las etiquetas.
+   */
+  --accent: oklch(50% 0.15 195);
+  --accent-hover: oklch(44% 0.15 195);
+  --accent-active: oklch(38% 0.14 195);
+  --accent-surface: oklch(50% 0.15 195 / 0.1);
+  --accent-border: oklch(50% 0.15 195 / 0.38);
+
+  /* --- Semánticos --------------------------------------------------------
+   * Cada uno con su pareja de superficie, para no calcularla en el componente.
+   * No comparten matiz con el acento: un aviso no puede confundirse con un
+   * elemento activo.
+   */
+  --success: oklch(48% 0.13 155);
+  --success-surface: oklch(48% 0.13 155 / 0.12);
+  --warning: oklch(58% 0.14 70);
+  --warning-surface: oklch(58% 0.14 70 / 0.14);
+  --danger: oklch(52% 0.18 25);
+  --danger-surface: oklch(52% 0.18 25 / 0.12);
+  --info: oklch(50% 0.12 250);
+  --info-surface: oklch(50% 0.12 250 / 0.12);
+
+  /* --- Etiquetas ---------------------------------------------------------
+   * Dieciséis matices repartidos por los 310 grados que quedan fuera de la
+   * franja reservada al acento, con la luminosidad alternando entre vecinos.
+   *
+   * Corrige dos cosas medidas en oklab. La primera es el problema 6:
+   * `archivado` desaparecía por ser un gris oscuro entre colores vivos, y
+   * ahora ninguna etiqueta baja de 71% de luminosidad sobre un fondo del 15%.
+   * La segunda no estaba en la auditoría: `turquesa` y `cian` estaban a
+   * Δ=0.038 entre sí, es decir, eran el mismo color con dos nombres. Ningún
+   * par baja hoy de Δ=0.091, y el acento queda a Δ=0.116 del más parecido.
+   */
+  --tag-cian: oklch(52% 0.1 222);
+  --tag-celeste: oklch(44% 0.14 244);
+  --tag-azul: oklch(52% 0.14 266);
+  --tag-indigo: oklch(44% 0.14 288);
+  --tag-violeta: oklch(52% 0.14 309);
+  --tag-fucsia: oklch(44% 0.15 331);
+  --tag-rosa: oklch(52% 0.14 353);
+  --tag-rojo: oklch(44% 0.16 15);
+  --tag-naranja: oklch(52% 0.14 37);
+  --tag-ambar: oklch(44% 0.13 59);
+  --tag-amarillo: oklch(52% 0.13 81);
+  --tag-lima: oklch(44% 0.13 102);
+  --tag-verde: oklch(52% 0.14 124);
+  --tag-esmeralda: oklch(44% 0.11 146);
+  --tag-turquesa: oklch(52% 0.1 168);
+  --tag-piedra: oklch(48% 0.015 75);
+
+  /* Receta del chip. El componente aplica estas tres, nunca un hex suelto. */
+  --tag-chip-bg: 14%;
+  --tag-chip-border: 34%;
+  --tag-chip-text: 100%;
+
+  /* --- Sombras -----------------------------------------------------------
+   * Teñidas con el matiz cálido de la paleta: una sombra negra pura sobre un
+   * fondo cálido se ve sucia.
+   */
+  --shadow-sm: 0 1px 2px oklch(24% 0.008 75 / 0.06);
+  --shadow-md: 0 4px 12px oklch(24% 0.008 75 / 0.09), 0 1px 2px oklch(24% 0.008 75 / 0.05);
+  --shadow-lg: 0 16px 40px oklch(24% 0.008 75 / 0.14), 0 2px 6px oklch(24% 0.008 75 / 0.06);
+  --shadow-inset-top: inset 0 1px 0 oklch(100% 0 0 / 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --surface-base: oklch(15% 0.006 75);
+    --surface-raised: oklch(20% 0.007 75);
+    --surface-sunken: oklch(25.5% 0.008 75);
+    --surface-overlay: oklch(23% 0.008 75);
+
+    --border-subtle: oklch(29% 0.008 75);
+    --border-default: oklch(35% 0.009 75);
+    --border-strong: oklch(48% 0.01 75);
+
+    --text-primary: oklch(96% 0.004 75);
+    --text-secondary: oklch(78% 0.006 75);
+    --text-tertiary: oklch(63% 0.008 75);
+    --text-disabled: oklch(48% 0.007 75);
+    --text-on-accent: oklch(16% 0.02 195);
+
+    --accent: oklch(72% 0.16 195);
+    --accent-hover: oklch(78% 0.15 195);
+    --accent-active: oklch(66% 0.16 195);
+    --accent-surface: oklch(72% 0.16 195 / 0.14);
+    --accent-border: oklch(72% 0.16 195 / 0.42);
+
+    --success: oklch(76% 0.14 155);
+    --success-surface: oklch(76% 0.14 155 / 0.16);
+    --warning: oklch(80% 0.14 70);
+    --warning-surface: oklch(80% 0.14 70 / 0.16);
+    --danger: oklch(70% 0.17 25);
+    --danger-surface: oklch(70% 0.17 25 / 0.16);
+    --info: oklch(74% 0.12 250);
+    --info-surface: oklch(74% 0.12 250 / 0.16);
+
+    --tag-cian: oklch(80% 0.1 222);
+  --tag-celeste: oklch(71% 0.14 244);
+  --tag-azul: oklch(80% 0.14 266);
+  --tag-indigo: oklch(71% 0.14 288);
+  --tag-violeta: oklch(80% 0.14 309);
+  --tag-fucsia: oklch(71% 0.14 331);
+  --tag-rosa: oklch(80% 0.14 353);
+  --tag-rojo: oklch(71% 0.14 15);
+  --tag-naranja: oklch(80% 0.14 37);
+  --tag-ambar: oklch(71% 0.14 59);
+  --tag-amarillo: oklch(80% 0.13 81);
+  --tag-lima: oklch(71% 0.14 102);
+  --tag-verde: oklch(80% 0.14 124);
+  --tag-esmeralda: oklch(71% 0.1 146);
+  --tag-turquesa: oklch(80% 0.1 168);
+  --tag-piedra: oklch(76% 0.015 75);
+
+    --tag-chip-bg: 18%;
+    --tag-chip-border: 40%;
+
+    --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
+    --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-lg: 0 16px 40px oklch(0% 0 0 / 0.55), 0 2px 6px oklch(0% 0 0 / 0.35);
+    --shadow-inset-top: inset 0 1px 0 oklch(100% 0 0 / 0.06);
+  }
+}
+
+.dark {
+  --surface-base: oklch(15% 0.006 75);
+  --surface-raised: oklch(20% 0.007 75);
+  --surface-sunken: oklch(25.5% 0.008 75);
+  --surface-overlay: oklch(23% 0.008 75);
+
+  --border-subtle: oklch(29% 0.008 75);
+  --border-default: oklch(35% 0.009 75);
+  --border-strong: oklch(48% 0.01 75);
+
+  --text-primary: oklch(96% 0.004 75);
+  --text-secondary: oklch(78% 0.006 75);
+  --text-tertiary: oklch(63% 0.008 75);
+  --text-disabled: oklch(48% 0.007 75);
+  --text-on-accent: oklch(16% 0.02 195);
+
+  --accent: oklch(72% 0.16 195);
+  --accent-hover: oklch(78% 0.15 195);
+  --accent-active: oklch(66% 0.16 195);
+  --accent-surface: oklch(72% 0.16 195 / 0.14);
+  --accent-border: oklch(72% 0.16 195 / 0.42);
+
+  --success: oklch(76% 0.14 155);
+  --success-surface: oklch(76% 0.14 155 / 0.16);
+  --warning: oklch(80% 0.14 70);
+  --warning-surface: oklch(80% 0.14 70 / 0.16);
+  --danger: oklch(70% 0.17 25);
+  --danger-surface: oklch(70% 0.17 25 / 0.16);
+  --info: oklch(74% 0.12 250);
+  --info-surface: oklch(74% 0.12 250 / 0.16);
+
+  --tag-cian: oklch(80% 0.1 222);
+  --tag-celeste: oklch(71% 0.14 244);
+  --tag-azul: oklch(80% 0.14 266);
+  --tag-indigo: oklch(71% 0.14 288);
+  --tag-violeta: oklch(80% 0.14 309);
+  --tag-fucsia: oklch(71% 0.14 331);
+  --tag-rosa: oklch(80% 0.14 353);
+  --tag-rojo: oklch(71% 0.14 15);
+  --tag-naranja: oklch(80% 0.14 37);
+  --tag-ambar: oklch(71% 0.14 59);
+  --tag-amarillo: oklch(80% 0.13 81);
+  --tag-lima: oklch(71% 0.14 102);
+  --tag-verde: oklch(80% 0.14 124);
+  --tag-esmeralda: oklch(71% 0.1 146);
+  --tag-turquesa: oklch(80% 0.1 168);
+  --tag-piedra: oklch(76% 0.015 75);
+
+  --tag-chip-bg: 18%;
+  --tag-chip-border: 40%;
+
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
+  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-lg: 0 16px 40px oklch(0% 0 0 / 0.55), 0 2px 6px oklch(0% 0 0 / 0.35);
+  --shadow-inset-top: inset 0 1px 0 oklch(100% 0 0 / 0.06);
+}
+
+:root {
+  /* --- Tipografía --------------------------------------------------------
+   * Geist va empaquetada con la aplicación, no enlazada: Mosaic no hace
+   * peticiones de red, y hasta hoy declaraba Inter sin incluirla, así que
+   * llevaba toda la vida cayendo a la fuente del sistema.
+   */
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Seis tamaños. Cada uno con su altura de línea y su peso: el peso forma
+   * parte del tamaño, no se elige por separado. */
+  --text-title: 1.375rem;      /* 22px · vacíos y títulos de ventana */
+  --text-title-lh: 1.2;
+  --text-title-weight: 600;
+
+  --text-section: 1.0625rem;   /* 17px · cabeceras de sección y modales */
+  --text-section-lh: 1.3;
+  --text-section-weight: 600;
+
+  --text-card: 0.9375rem;      /* 15px · nombre de proyecto */
+  --text-card-lh: 1.35;
+  --text-card-weight: 560;
+
+  --text-body: 0.8438rem;      /* 13.5px · texto corriente */
+  --text-body-lh: 1.5;
+  --text-body-weight: 400;
+
+  --text-meta: 0.75rem;        /* 12px · rótulos, contadores, chips */
+  --text-meta-lh: 1.4;
+  --text-meta-weight: 450;
+
+  --text-code: 0.7188rem;      /* 11.5px · rutas, sha, números */
+  --text-code-lh: 1.45;
+  --text-code-weight: 400;
+
+  --tracking-tight: -0.014em;  /* títulos */
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;     /* rótulos en versal */
+
+  /* --- Espaciado --------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* --- Radios ------------------------------------------------------------
+   * Tres. `pill` no es un tamaño, es una forma, y solo la llevan los
+   * elementos con forma de etiqueta.
+   */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* --- Movimiento --------------------------------------------------------
+   * Tres duraciones y dos curvas. Todo lo que se mueva usa una de estas.
+   */
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --duration-slow: 280ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Iconografía -------------------------------------------------------
+   * Cuatro tamaños y un grosor único. El grosor constante es lo que hace que
+   * un icono de 14 y otro de 24 parezcan de la misma familia.
+   */
+  --icon-xs: 14px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+  --icon-stroke: 1.75;
+
+  /* --- Densidad del tablero ----------------------------------------------
+   * Las dos densidades salen de aquí, no de clases sueltas en el grid.
+   */
+  --card-min-comodo: 300px;
+  --card-padding-comodo: var(--space-4);
+  --card-gap-comodo: var(--space-3);
+
+  --card-min-compacto: 220px;
+  --card-padding-compacto: var(--space-3);
+  --card-gap-compacto: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}

@@ -1,4 +1,76 @@
 @import 'tailwindcss';
+@import './lib/styles/tokens.css';
+
+/*
+ * Las tipografías viajan dentro de la aplicación, no se enlazan: Mosaic no hace
+ * peticiones de red. Hasta ahora se declaraba `Inter` sin incluir ningún
+ * fichero, así que la interfaz caía a la fuente del sistema.
+ */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./lib/assets/fonts/inter-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./lib/assets/fonts/jetbrains-mono-400-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./lib/assets/fonts/jetbrains-mono-500-latin.woff2') format('woff2');
+}
+
+/*
+ * Puente entre los tokens de `lib/styles/tokens.css` y las utilidades de
+ * Tailwind. `inline` hace que la utilidad resuelva la variable en tiempo de
+ * ejecución, así que el cambio de tema no necesita recompilar.
+ *
+ * Los tokens viejos (`surface-0`, `content`, `accent`) siguen vivos mientras
+ * los componentes se migran de uno en uno.
+ */
+@theme inline {
+  --color-surface-base: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+
+  --color-line-subtle: var(--border-subtle);
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-tertiary);
+  --color-ink-off: var(--text-disabled);
+  --color-on-accent: var(--text-on-accent);
+
+  --color-brand: var(--accent);
+  --color-brand-hover: var(--accent-hover);
+  --color-brand-active: var(--accent-active);
+  --color-brand-surface: var(--accent-surface);
+  --color-brand-border: var(--accent-border);
+
+  --color-ok: var(--success);
+  --color-ok-surface: var(--success-surface);
+  --color-warn: var(--warning);
+  --color-warn-surface: var(--warning-surface);
+  --color-bad: var(--danger);
+  --color-bad-surface: var(--danger-surface);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
 
 /* Tema claro/oscuro controlado por la clase `dark` en <html> (Fase 6). */
 @custom-variant dark (&:where(.dark, .dark *));
