@@ -101,9 +101,24 @@ tarjetas.
 
 ---
 
-## Fase 5 — Detalle de proyecto
+## Fase 5 — Detalle de proyecto · CONGELADA
 
 Objetivo: vista en profundidad.
+
+**Estado a 2026-09-20: congelada durante una semana de uso real.** Hay dos
+piezas de backend terminadas y con tests, y ni una de interfaz. Nada de lo
+hecho está enganchado a la aplicación: el código existe, compila y se prueba,
+pero ningún comando lo expone todavía.
+
+Terminado:
+
+- [x] `core/readme.rs`: localiza el README en la raíz y lo convierte a HTML
+      seguro. El HTML literal del Markdown se descarta antes de renderizar y lo
+      que queda lo limpia `ammonia`. Ninguna imagen se carga: las de origen
+      `https` pasan a enlace y el resto a texto alternativo. 13 tests.
+- [x] `core/git.rs`: `read_history` y `read_branches`, sin red. 7 tests.
+
+Sin empezar:
 
 - [ ] `ProjectView.svelte` con cabecera y botón de copiar ruta
 - [ ] Preview del README renderizado
@@ -113,6 +128,61 @@ Objetivo: vista en profundidad.
       comparación de `updated_at`: al hacerlo hay que corregir su documentación
       en `db/repositories/projects.rs` y en `ARCHITECTURE.md`, en el mismo commit
 - [ ] Etiquetas asignadas y acciones rápidas ampliadas
+- [ ] Los cinco comandos: `get_project_readme`, `get_project_history`,
+      `get_project_branches`, `set_project_notes` y `open_external`
+- [ ] Las cuatro dependencias aprobadas y aún no añadidas:
+      `tauri-plugin-clipboard-manager` (fijando la serie 2, porque `cargo add` a
+      secas instala una alfa para Tauri 3) y su paquete de frontend
+- [ ] `docs/ARCHITECTURE.md` y el doc de `projects.rs`, que deben corregirse en
+      el mismo commit que introduzca las notas
+
+Decisiones ya cerradas, para no volver a discutirlas: README renderizado en
+Rust; enlaces del README abiertos en el navegador con lista blanca `http` y
+`https`; imágenes no cargadas; portapapeles con el plugin oficial; notas con
+autoguardado de 1,5 s más volcado inmediato al salir de la vista; navegación
+con unión discriminada, sin router y sin persistir el detalle.
+
+---
+
+## Rediseño visual · CONGELADO
+
+Trabajo abierto fuera del plan de fases, a partir de la auditoría visual del
+2026-09-20, que listó diez problemas por gravedad.
+
+Terminado:
+
+- [x] `src/lib/styles/tokens.css`: color, tipografía, espaciado, radios,
+      sombras, movimiento e iconografía, en oklch y con los dos temas.
+- [x] `docs/DESIGN.md` con el porqué de cada decisión.
+- [x] Tipografías empaquetadas: Inter Variable y JetBrains Mono, subconjunto
+      latino, 96 KB, con su licencia. Antes se declaraban sin incluirlas y la
+      aplicación caía a la fuente del sistema.
+- [x] Rueda de etiquetas rehecha con medidas en oklab. Resuelve el problema 6
+      y un fallo que no estaba en la lista: `turquesa` y `cian` eran el mismo
+      color con dos nombres.
+- [x] `ProjectCard` migrado, con ranura de etiquetas reservada.
+- [x] `ProjectGrid` con dos densidades y `Dashboard` con el fondo migrado, que
+      es lo que hace visible el contraste entre lienzo y tarjeta.
+- [x] Aviso de pocos resultados bajo la barra de filtros, sin mover la rejilla.
+
+A medias:
+
+- [ ] **Problema 1, densidad.** El modo compacto gana columnas pero no alto:
+      pasa de 6,5 tarjetas visibles a 11, cuando el objetivo eran 17. Para
+      llegar, la tarjeta tiene que perder filas en compacto, no solo apretarse,
+      y eso obliga a que `ProjectCard` conozca la densidad. Sin decidir.
+
+Sin empezar:
+
+- [ ] Problema 7: el contador «Filtros 4» muestra tres chips, porque la
+      búsqueda cuenta pero no se pinta como chip.
+- [ ] Problema 8: los filtros de etiqueta se pintan rellenos y los de lenguaje
+      y Git con borde, siendo todos filtros activos.
+- [ ] Problema 10: la barra de título del sistema, clara sobre una aplicación
+      oscura, y la cabecera con seis elementos al mismo peso. La barra no es
+      CSS: hay que quitar decoraciones y dibujarla dentro, con arrastre y
+      redimensionado propios.
+- [ ] Los once componentes que siguen con los tokens anteriores.
 
 ---
 

@@ -195,12 +195,7 @@ export async function loadViewState(): Promise<void> {
  */
 export function startPersistingViewState(): () => void {
   const save = debounce(() => {
-    const state: ViewState = {
-      filters: get(filters),
-      sidebar_collapsed: get(sidebarCollapsed),
-      density: get(density),
-    };
-    void api.setViewState(JSON.stringify(state)).catch(() => {
+    void api.setViewState(JSON.stringify(currentViewState())).catch(() => {
       /* Perder la vista guardada no debe interrumpir al usuario. */
     });
   }, PERSIST_DELAY_MS);
@@ -226,8 +221,28 @@ export function startPersistingViewState(): () => void {
   };
 }
 
-/** Reconstruye un `ViewState` válido a partir de lo que hubiera guardado. */
-function sanitizeViewState(raw: unknown): ViewState {
+/**
+ * Construye el `ViewState` que se persiste, a partir de los stores actuales.
+ *
+ * Se exporta para poder comprobar en un test que no se olvida ningún campo:
+ * en la Fase 4 la vista guardada ya se rompió una vez por ahí.
+ */
+export function currentViewState(): ViewState {
+  return {
+    filters: get(filters),
+    sidebar_collapsed: get(sidebarCollapsed),
+    density: get(density),
+  };
+}
+
+/**
+ * Reconstruye un `ViewState` válido a partir de lo que hubiera guardado.
+ *
+ * Exportada por el mismo motivo que [`currentViewState`]: es la mitad del
+ * viaje de ida y vuelta, y la que decide qué pasa con una vista guardada por
+ * una versión anterior.
+ */
+export function sanitizeViewState(raw: unknown): ViewState {
   const source = isRecord(raw) ? raw : {};
   const stored = isRecord(source.filters) ? source.filters : {};
 
