@@ -140,7 +140,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    padding: var(--space-4);
+    /* La rejilla fija el relleno según la densidad; el 16 es el de reserva. */
+    padding: var(--card-padding, var(--space-4));
     min-width: 0;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);

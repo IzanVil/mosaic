@@ -4,18 +4,17 @@
   import EmptyState from './EmptyState.svelte';
   import ProjectCard from './ProjectCard.svelte';
   import { clearFilters } from '../stores/filters';
-  import type { ProjectWithTags } from '../types';
+  import type { Density, ProjectWithTags } from '../types';
 
   interface Props {
     /** Proyectos destacados, que se pintan siempre en el bloque de arriba. */
     pinned: ProjectWithTags[];
     /** El resto, ya filtrado y ordenado. */
     rest: ProjectWithTags[];
+    density: Density;
   }
 
-  let { pinned, rest }: Props = $props();
-
-  const COLUMNAS = 'repeat(auto-fill, minmax(280px, 1fr))';
+  let { pinned, rest, density }: Props = $props();
 
   let total = $derived(pinned.length + rest.length);
 </script>
@@ -28,19 +27,15 @@
     onAction={clearFilters}
   >
     {#snippet icon()}
-      <SearchX size={32} strokeWidth={1.5} />
+      <SearchX size={32} strokeWidth={1.75} />
     {/snippet}
   </EmptyState>
 {:else}
-  <div class="flex flex-col gap-5 p-6">
+  <div class="tablero" class:compacto={density === 'compacto'}>
     {#if pinned.length > 0}
-      <section class="flex flex-col gap-3" aria-label="Proyectos fijados">
-        <h2 class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide
-                   text-content-muted">
-          <Pin size={12} />
-          Fijados
-        </h2>
-        <div class="grid gap-3" style="grid-template-columns: {COLUMNAS};">
+      <section aria-label="Proyectos fijados">
+        <h2><Pin size={12} strokeWidth={1.75} /> Fijados</h2>
+        <div class="rejilla">
           {#each pinned as project (project.id)}
             <ProjectCard {project} />
           {/each}
@@ -49,12 +44,12 @@
     {/if}
 
     {#if pinned.length > 0 && rest.length > 0}
-      <hr class="border-surface-border" />
+      <hr />
     {/if}
 
     {#if rest.length > 0}
-      <section class="flex flex-col gap-3" aria-label="Resto de proyectos">
-        <div class="grid gap-3" style="grid-template-columns: {COLUMNAS};">
+      <section aria-label="Resto de proyectos">
+        <div class="rejilla">
           {#each rest as project (project.id)}
             <ProjectCard {project} />
           {/each}
@@ -63,3 +58,60 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  /*
+   * Las dos densidades salen de los tokens, no de clases sueltas: la compacta
+   * cambia el ancho mínimo de columna, el hueco entre tarjetas y el relleno
+   * interior, y ese último lo lee `ProjectCard` de la variable que se fija
+   * aquí. Con 34 proyectos, la cómoda muestra seis tarjetas y media y la
+   * compacta pasa de quince.
+   */
+  .tablero {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5) var(--space-5) var(--space-7);
+    --columna: var(--card-min-comodo);
+    --hueco: var(--card-gap-comodo);
+    --card-padding: var(--card-padding-comodo);
+  }
+  .tablero.compacto {
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-4) var(--space-6);
+    --columna: var(--card-min-compacto);
+    --hueco: var(--card-gap-compacto);
+    --card-padding: var(--card-padding-compacto);
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    font-size: var(--text-meta);
+    font-weight: var(--text-meta-weight);
+    line-height: var(--text-meta-lh);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--columna), 1fr));
+    gap: var(--hueco);
+  }
+
+  hr {
+    margin: 0;
+    border: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+</style>

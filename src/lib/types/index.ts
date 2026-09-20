@@ -165,7 +165,11 @@ export interface FilterState {
 }
 
 /** Lo que se persiste entre sesiones para recuperar la última vista. */
+/** Densidad del tablero. `comodo` es la de siempre. */
+export type Density = 'comodo' | 'compacto';
+
 export interface ViewState {
   filters: FilterState;
   sidebar_collapsed: boolean;
+  density: Density;
 }

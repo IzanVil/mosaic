@@ -14,6 +14,7 @@ import { derived, get, writable } from 'svelte/store';
 
 import * as api from '../api/settings';
 import type {
+  Density,
   FilterState,
   GitStateFilter,
   SortDirection,
@@ -43,6 +44,15 @@ const SORT_OPTIONS: SortOption[] = ['name', 'last_opened', 'created', 'updated']
 
 export const filters = writable<FilterState>({ ...DEFAULT_FILTERS });
 export const sidebarCollapsed = writable(false);
+
+/**
+ * Densidad del tablero.
+ *
+ * Arranca en cómodo: quien tiene veinte proyectos no necesita apretarlos, y
+ * quien tiene trescientos descubre el modo compacto en cuanto le estorba el
+ * scroll.
+ */
+export const density = writable<Density>('comodo');
 
 /** `true` cuando algo recorta la lista; el orden no cuenta como filtro. */
 export const hasActiveFilters = derived(filters, (current) => activeFilterCount(current) > 0);
@@ -135,6 +145,10 @@ export function toggleSidebar(): void {
   sidebarCollapsed.update((collapsed) => !collapsed);
 }
 
+export function toggleDensity(): void {
+  density.update((actual) => (actual === 'comodo' ? 'compacto' : 'comodo'));
+}
+
 /**
  * Dirección natural de cada criterio: los nombres se leen de la A a la Z, y
  * las fechas de lo más reciente a lo más antiguo.
@@ -166,6 +180,7 @@ export async function loadViewState(): Promise<void> {
     const parsed = sanitizeViewState(JSON.parse(raw));
     filters.set(parsed.filters);
     sidebarCollapsed.set(parsed.sidebar_collapsed);
+    density.set(parsed.density);
   } catch {
     /* JSON ilegible: se queda lo que hay. */
   }
@@ -183,13 +198,14 @@ export function startPersistingViewState(): () => void {
     const state: ViewState = {
       filters: get(filters),
       sidebar_collapsed: get(sidebarCollapsed),
+      density: get(density),
     };
     void api.setViewState(JSON.stringify(state)).catch(() => {
       /* Perder la vista guardada no debe interrumpir al usuario. */
     });
   }, PERSIST_DELAY_MS);
 
-  let pendingInitial = 2;
+  let pendingInitial = 3;
   const onChange = () => {
     if (pendingInitial > 0) {
       pendingInitial -= 1;
@@ -198,7 +214,11 @@ export function startPersistingViewState(): () => void {
     save();
   };
 
-  const unsubscribes = [filters.subscribe(onChange), sidebarCollapsed.subscribe(onChange)];
+  const unsubscribes = [
+    filters.subscribe(onChange),
+    sidebarCollapsed.subscribe(onChange),
+    density.subscribe(onChange),
+  ];
 
   return () => {
     save.cancel();
@@ -226,6 +246,7 @@ function sanitizeViewState(raw: unknown): ViewState {
       sort_dir: stored.sort_dir === 'desc' ? 'desc' : 'asc',
     },
     sidebar_collapsed: source.sidebar_collapsed === true,
+    density: source.density === 'compacto' ? 'compacto' : 'comodo',
   };
 }
 
