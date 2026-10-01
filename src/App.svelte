@@ -110,76 +110,68 @@
 </script>
 
 <div class="flex h-full flex-col">
-  <header
-    class="flex shrink-0 items-center gap-4 border-b border-surface-border bg-surface-1 px-6 py-3"
-  >
-    <h1 class="text-sm font-semibold tracking-wide text-content-strong">Mosaic</h1>
+  <header class="cabecera">
+    <h1 class="marca">Mosaic</h1>
 
-    <nav class="flex items-center gap-1" aria-label="Secciones">
+    <nav class="pestanas" aria-label="Secciones">
       <button
         type="button"
+        class="pestana"
         onclick={() => (view = 'dashboard')}
         aria-current={view === 'dashboard' ? 'page' : undefined}
-        class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition
-               hover:bg-surface-2"
-        class:bg-surface-2={view === 'dashboard'}
-        class:text-content-strong={view === 'dashboard'}
-        class:text-content-muted={view !== 'dashboard'}
       >
-        <LayoutList size={16} />
+        <LayoutList size={16} strokeWidth={1.75} />
         Proyectos
       </button>
 
       <button
         type="button"
+        class="pestana"
         onclick={() => (view = 'settings')}
         aria-current={view === 'settings' ? 'page' : undefined}
-        class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition
-               hover:bg-surface-2"
-        class:bg-surface-2={view === 'settings'}
-        class:text-content-strong={view === 'settings'}
-        class:text-content-muted={view !== 'settings'}
       >
-        <SettingsIcon size={16} />
+        <SettingsIcon size={16} strokeWidth={1.75} />
         Ajustes
       </button>
     </nav>
 
-    <div class="ml-auto flex items-center gap-4">
-      <p class="text-xs text-content-muted">
+    <p class="metadatos">
+      <span>
         {$projects.length}
         {$projects.length === 1 ? 'proyecto' : 'proyectos'}
-      </p>
-
+      </span>
       {#if gitLabel !== ''}
-        <p class="text-xs text-content-muted" aria-live="polite">{gitLabel}</p>
+        <span class="sep" aria-hidden="true">·</span>
+        <span aria-live="polite">{gitLabel}</span>
       {/if}
+    </p>
 
+    <div class="acciones" role="group" aria-label="Acciones">
       <button
         type="button"
+        class="accion"
         onclick={refreshGit}
         disabled={$refreshingGit}
         title={GIT_BUTTON_HINT}
-        class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
-               text-sm text-content transition hover:bg-surface-2 disabled:opacity-60
-               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <GitBranch size={16} class={$refreshingGit ? 'animate-pulse' : ''} />
+        <GitBranch
+          size={14}
+          strokeWidth={1.75}
+          class={$refreshingGit ? 'animate-pulse' : ''}
+        />
         {$refreshingGit ? 'Leyendo…' : 'Git'}
       </button>
 
       <button
         type="button"
+        class="accion"
         onclick={scan}
         disabled={$scanning || !canScan}
         title={canScan
           ? 'Recorrer las rutas configuradas y actualizar la lista de proyectos'
           : 'Añade una carpeta en Ajustes para poder escanear'}
-        class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
-               text-sm text-content transition hover:bg-surface-2 disabled:opacity-60
-               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <RefreshCw size={16} class={$scanning ? 'animate-spin' : ''} />
+        <RefreshCw size={14} strokeWidth={1.75} class={$scanning ? 'animate-spin' : ''} />
         {$scanning ? 'Escaneando…' : 'Escanear'}
       </button>
     </div>
@@ -205,3 +197,136 @@
     {/if}
   </main>
 </div>
+
+<style>
+  /*
+   * Solo la cabecera. El resto de este fichero es el armazón de la aplicación
+   * y sigue con utilidades de Tailwind hasta que le toque migrar.
+   *
+   * Cuatro pesos, de más a menos: la marca, la navegación, las acciones y los
+   * metadatos. Antes los seis elementos tenían el mismo tamaño de letra y el
+   * ojo no sabía por dónde empezar.
+   */
+  .cabecera {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: 48px;
+    padding: 0 var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-raised);
+  }
+
+  .marca {
+    margin: 0;
+    font-size: var(--text-section);
+    line-height: var(--text-section-lh);
+    font-weight: var(--text-section-weight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+  }
+
+  /* Las pestañas ocupan todo el alto para que el subrayado pise el borde. */
+  .pestanas {
+    display: flex;
+    align-self: stretch;
+    gap: var(--space-1);
+  }
+
+  .pestana {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    font-weight: 500;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .pestana:hover {
+    color: var(--text-secondary);
+  }
+  .pestana[aria-current='page'] {
+    color: var(--text-primary);
+  }
+  .pestana::after {
+    content: '';
+    position: absolute;
+    right: var(--space-3);
+    bottom: -1px;
+    left: var(--space-3);
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .pestana[aria-current='page']::after {
+    background: var(--accent);
+  }
+
+  .metadatos {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    margin: 0 0 0 auto;
+    overflow: hidden;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--text-tertiary);
+  }
+  .sep {
+    color: var(--text-disabled);
+  }
+
+  /* Un solo bloque con borde: dos acciones hermanas, no dos botones sueltos. */
+  .acciones {
+    display: flex;
+    flex: none;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .accion {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 5px var(--space-3);
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .accion + .accion {
+    border-left: 1px solid var(--border-default);
+  }
+  .accion:hover:not(:disabled) {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .accion:disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+</style>
