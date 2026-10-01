@@ -222,12 +222,16 @@
 
 :root {
   /* --- Tipografía --------------------------------------------------------
-   * Geist va empaquetada con la aplicación, no enlazada: Mosaic no hace
-   * peticiones de red, y hasta hoy declaraba Inter sin incluirla, así que
-   * llevaba toda la vida cayendo a la fuente del sistema.
+   * Inter y JetBrains Mono van empaquetadas con la aplicación (`app.css`
+   * declara sus `@font-face`), no enlazadas: Mosaic no hace peticiones de red.
+   *
+   * Los nombres tienen que coincidir con esas declaraciones. Esta hoja va sin
+   * capa y gana a la `@theme` de Tailwind, así que un nombre que no exista
+   * aquí manda a toda la aplicación a la fuente del sistema. Pasó: decía
+   * `Geist`, que nunca se incluyó.
    */
-  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   /* Seis tamaños. Cada uno con su altura de línea y su peso: el peso forma
    * parte del tamaño, no se elige por separado. */
