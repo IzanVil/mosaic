@@ -164,6 +164,15 @@ Terminado:
 - [x] `ProjectGrid` con dos densidades y `Dashboard` con el fondo migrado, que
       es lo que hace visible el contraste entre lienzo y tarjeta.
 - [x] Aviso de pocos resultados bajo la barra de filtros, sin mover la rejilla.
+- [x] Sesión A: `Sidebar`, `SearchBar`, `FilterBar`, `SortMenu`,
+      `GitStatusBadge` y `EmptyState` migrados a los tokens.
+- [x] Problema 7: el contador del botón «Filtros» cuenta solo los chips. La
+      búsqueda vive en su campo y no entra en la cuenta, aunque sigue contando
+      para «Limpiar filtros» y el aviso de pocos resultados.
+- [x] Problema 8: una sola gramática de chip, la tintada con borde. Desaparece
+      la variante rellena, que con etiquetas claras daba texto blanco a ~2:1.
+- [x] Problema 10, la cabecera: Mosaic como marca, pestañas con subrayado de
+      acento, metadatos en una línea terciaria y las acciones en un grupo.
 
 A medias:
 
@@ -174,15 +183,8 @@ A medias:
 
 Sin empezar:
 
-- [ ] Problema 7: el contador «Filtros 4» muestra tres chips, porque la
-      búsqueda cuenta pero no se pinta como chip.
-- [ ] Problema 8: los filtros de etiqueta se pintan rellenos y los de lenguaje
-      y Git con borde, siendo todos filtros activos.
-- [ ] Problema 10: la barra de título del sistema, clara sobre una aplicación
-      oscura, y la cabecera con seis elementos al mismo peso. La barra no es
-      CSS: hay que quitar decoraciones y dibujarla dentro, con arrastre y
-      redimensionado propios.
-- [ ] Los once componentes que siguen con los tokens anteriores.
+- [ ] Los cinco componentes que siguen con los tokens anteriores, más el
+      armazón de `App.svelte` fuera de la cabecera.
 
 ---
 
@@ -194,6 +196,10 @@ Sin empezar:
 - [ ] Escanear al arrancar
 - [ ] Exportar e importar la configuración en JSON
 - [ ] Modos compacto y cómodo del grid
+- [ ] Barra de título propia. La del sistema es clara sobre una aplicación
+      oscura (resto del problema 10 de la auditoría). No es CSS: hay que quitar
+      las decoraciones y dibujarla dentro, con arrastre y redimensionado
+      propios.
 
 ---
 
