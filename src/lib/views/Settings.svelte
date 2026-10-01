@@ -1,6 +1,6 @@
 <script lang="ts">
   import { open } from '@tauri-apps/plugin-dialog';
-  import { FolderPlus, Trash2 } from '@lucide/svelte';
+  import { ChevronDown, FolderPlus, Trash2 } from '@lucide/svelte';
 
   import EmptyState from '../components/EmptyState.svelte';
   import ScanSummaryBar from '../components/ScanSummaryBar.svelte';
@@ -148,15 +148,18 @@
           {#if available.length === 0}
             <span class="explica">{section.empty}</span>
           {:else}
-            <select
-              value={selected}
-              onchange={(event) => setPreferredApp(section.kind, event.currentTarget.value)}
-            >
-              <option value="">Automático ({available[0]?.name})</option>
-              {#each available as app (app.id)}
-                <option value={app.id}>{app.name}</option>
-              {/each}
-            </select>
+            <span class="desplegable">
+              <select
+                value={selected}
+                onchange={(event) => setPreferredApp(section.kind, event.currentTarget.value)}
+              >
+                <option value="">Automático ({available[0]?.name})</option>
+                {#each available as app (app.id)}
+                  <option value={app.id}>{app.name}</option>
+                {/each}
+              </select>
+              <ChevronDown size={14} strokeWidth={1.75} class="flecha" />
+            </span>
           {/if}
         </label>
       {/each}
@@ -362,8 +365,27 @@
     color: var(--text-secondary);
   }
 
+  /*
+   * Sin `appearance: none`, WebKitGTK pinta el control nativo del tema GTK:
+   * fondo blanco con el texto claro de la aplicación encima, ilegible. La
+   * flecha la pone el icono, porque con la apariencia nativa se va también la
+   * suya.
+   */
+  .desplegable {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .desplegable :global(.flecha) {
+    position: absolute;
+    right: var(--space-2);
+    color: var(--text-tertiary);
+    pointer-events: none;
+  }
+
   select {
-    padding: 6px var(--space-3);
+    appearance: none;
+    padding: 6px calc(var(--space-3) + 18px) 6px var(--space-3);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
     background: var(--surface-raised);
