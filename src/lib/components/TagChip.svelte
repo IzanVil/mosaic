@@ -2,7 +2,6 @@
   import { X } from '@lucide/svelte';
 
   import type { Tag } from '../types';
-  import { chipBackground, chipBorder } from '../utils/tagColors';
 
   interface Props {
     tag: Tag;
@@ -43,9 +42,16 @@
    * blanco sobre el color de la etiqueta. Con etiquetas de luminosidad alta el
    * contraste se quedaba en torno a 2:1, y además un filtro se veía distinto
    * de la etiqueta que filtra.
+   *
+   * Los porcentajes salen de `--tag-chip-*` en `tokens.css`, que cambian con
+   * el tema. Antes eran sufijos de alfa fijos en `tagColors.ts`, iguales en
+   * claro y en oscuro.
    */
   let style = $derived(
-    `background-color: ${chipBackground(tag.color)}; border-color: ${chipBorder(tag.color)}; color: ${tag.color};`,
+    `--chip-color: ${tag.color};` +
+      ' background-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-bg), transparent);' +
+      ' border-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);' +
+      ' color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), transparent);',
   );
 
   /**

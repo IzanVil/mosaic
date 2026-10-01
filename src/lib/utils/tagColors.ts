@@ -38,31 +38,6 @@ export const TAG_COLORS: readonly TagColor[] = [
 /** Color con el que se crea una etiqueta si el usuario no elige otro. */
 export const DEFAULT_TAG_COLOR = '#3B82F6';
 
-/** Opacidad del fondo de un chip, como sufijo hexadecimal (15 %). */
-const CHIP_BACKGROUND_ALPHA = '26';
-/** Opacidad del borde de un chip (30 %). */
-const CHIP_BORDER_ALPHA = '4D';
-
-/**
- * Añade canal alfa a un `#RRGGBB`.
- *
- * Si el color no tiene la forma esperada se devuelve tal cual: es mejor pintar
- * un chip opaco que romper el estilo con un valor CSS inválido.
- */
-function withAlpha(hex: string, alpha: string): string {
-  return /^#[0-9A-Fa-f]{6}$/.test(hex) ? `${hex}${alpha}` : hex;
-}
-
-/** Fondo translúcido de un chip. */
-export function chipBackground(hex: string): string {
-  return withAlpha(hex, CHIP_BACKGROUND_ALPHA);
-}
-
-/** Borde semitranslúcido de un chip. */
-export function chipBorder(hex: string): string {
-  return withAlpha(hex, CHIP_BORDER_ALPHA);
-}
-
 /** Valor válido para `<input type="color">`, que solo acepta `#rrggbb`. */
 export function colorInputValue(hex: string): string {
   return /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex.toLowerCase() : DEFAULT_TAG_COLOR.toLowerCase();
