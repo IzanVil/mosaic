@@ -31,63 +31,50 @@
   }
 </script>
 
-<div class="relative flex shrink-0 items-center gap-1">
+<div class="orden">
   <button
     bind:this={trigger}
     type="button"
+    class="boton"
     onclick={() => (open ? close() : (open = true))}
     aria-expanded={open}
     aria-haspopup="menu"
     title="Cambiar la ordenación"
-    class="inline-flex items-center gap-2 rounded-md border border-surface-border px-3 py-1.5
-           text-sm text-content transition hover:bg-surface-2 focus-visible:outline-2
-           focus-visible:outline-offset-2 focus-visible:outline-accent"
   >
-    <ArrowUpDown size={14} />
+    <ArrowUpDown size={14} strokeWidth={1.75} />
     {activeLabel}
   </button>
 
   <button
     type="button"
+    class="boton icono"
     onclick={() => setSortDirection(ascending ? 'desc' : 'asc')}
     aria-label={ascending ? 'Orden ascendente, cambiar a descendente' : 'Orden descendente, cambiar a ascendente'}
     title={ascending ? 'Ascendente' : 'Descendente'}
-    class="rounded-md border border-surface-border p-1.5 text-content-muted transition
-           hover:bg-surface-2 hover:text-content focus-visible:outline-2
-           focus-visible:outline-offset-2 focus-visible:outline-accent"
   >
     {#if ascending}
-      <ArrowUp size={14} />
+      <ArrowUp size={14} strokeWidth={1.75} />
     {:else}
-      <ArrowDown size={14} />
+      <ArrowDown size={14} strokeWidth={1.75} />
     {/if}
   </button>
 
   {#if open}
-    <div
-      use:dismissable={{ onDismiss: close }}
-      role="menu"
-      aria-label="Ordenar por"
-      class="absolute right-0 top-full z-30 mt-1 w-52 rounded-lg border border-surface-border
-             bg-surface-1 p-1 shadow-lg"
-    >
+    <div use:dismissable={{ onDismiss: close }} role="menu" aria-label="Ordenar por" class="menu">
       {#each OPTIONS as option (option.value)}
         <button
           type="button"
+          class="opcion"
           role="menuitemradio"
           aria-checked={$filters.sort === option.value}
           onclick={() => choose(option.value)}
-          class="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left
-                 text-sm transition hover:bg-surface-2"
-          class:text-content-strong={$filters.sort === option.value}
-          class:text-content={$filters.sort !== option.value}
         >
           {option.label}
           {#if $filters.sort === option.value}
             {#if ascending}
-              <ArrowUp size={13} class="text-accent" />
+              <ArrowUp size={14} strokeWidth={1.75} class="marca" />
             {:else}
-              <ArrowDown size={13} class="text-accent" />
+              <ArrowDown size={14} strokeWidth={1.75} class="marca" />
             {/if}
           {/if}
         </button>
@@ -95,3 +82,88 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .orden {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 5px var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .boton:hover,
+  .boton[aria-expanded='true'] {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .boton.icono {
+    padding: 6px;
+    color: var(--text-tertiary);
+  }
+
+  .menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 30;
+    width: 13rem;
+    margin-top: var(--space-1);
+    padding: var(--space-1);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-overlay);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .opcion {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: 6px var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    text-align: left;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .opcion:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .opcion[aria-checked='true'] {
+    color: var(--text-primary);
+  }
+  .opcion :global(.marca) {
+    color: var(--accent);
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>

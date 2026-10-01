@@ -30,182 +30,299 @@
 </script>
 
 {#if collapsed}
-  <nav
-    class="flex w-12 shrink-0 flex-col items-center gap-2 border-r border-surface-border
-           bg-surface-1 py-3"
-    aria-label="Colecciones"
-  >
+  <nav class="panel plegado" aria-label="Colecciones">
     <button
       type="button"
+      class="icono"
       onclick={onToggle}
       aria-label="Desplegar el panel lateral"
       title="Desplegar el panel lateral"
-      class="rounded-md p-2 text-content-muted transition hover:bg-surface-2 hover:text-content
-             focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      <PanelLeftOpen size={16} />
+      <PanelLeftOpen size={16} strokeWidth={1.75} />
     </button>
 
     <button
       type="button"
+      class="icono"
+      class:activo={showingAll}
       onclick={showAll}
       aria-label="Todos los proyectos"
       title="Todos los proyectos"
-      class="rounded-md p-2 transition hover:bg-surface-2 focus-visible:outline-2
-             focus-visible:outline-offset-2 focus-visible:outline-accent"
-      class:text-accent={showingAll}
-      class:text-content-muted={!showingAll}
     >
-      <LayoutGrid size={16} />
+      <LayoutGrid size={16} strokeWidth={1.75} />
     </button>
 
     {#if $pinnedProjects.length > 0}
       <button
         type="button"
+        class="icono"
+        class:activo={$filters.pinned_only}
         onclick={() => setPinnedOnly(!$filters.pinned_only)}
         aria-label="Solo destacados"
         title="Solo destacados"
-        class="rounded-md p-2 transition hover:bg-surface-2 focus-visible:outline-2
-               focus-visible:outline-offset-2 focus-visible:outline-accent"
-        class:text-accent={$filters.pinned_only}
-        class:text-content-muted={!$filters.pinned_only}
       >
-        <Pin size={16} />
+        <Pin size={16} strokeWidth={1.75} />
       </button>
     {/if}
 
-    <div class="mt-1 flex flex-col items-center gap-1.5 overflow-y-auto">
+    <div class="puntos">
       {#each $tags as tag (tag.id)}
         <button
           type="button"
+          class="punto"
+          class:elegido={$filters.tag_ids.includes(tag.id)}
           onclick={() => toggleTagFilter(tag.id)}
           aria-label="Filtrar por {tag.name}"
           aria-pressed={$filters.tag_ids.includes(tag.id)}
           title="{tag.name} ({tag.project_count})"
-          class="size-3.5 rounded-full border-2 transition hover:scale-110 focus-visible:outline-2
-                 focus-visible:outline-offset-1 focus-visible:outline-accent"
-          style="background-color: {tag.color}; border-color: {$filters.tag_ids.includes(tag.id)
-            ? 'currentColor'
-            : 'transparent'};"
+          style="background-color: {tag.color};"
         ></button>
       {/each}
     </div>
 
     <button
       type="button"
+      class="icono final"
       onclick={onManageTags}
       aria-label="Gestionar etiquetas"
       title="Gestionar etiquetas"
-      class="mt-auto rounded-md p-2 text-content-muted transition hover:bg-surface-2
-             hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2
-             focus-visible:outline-accent"
     >
-      <Settings2 size={16} />
+      <Settings2 size={16} strokeWidth={1.75} />
     </button>
   </nav>
 {:else}
-  <nav
-    class="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-surface-border
-           bg-surface-1 px-2 py-3"
-    aria-label="Colecciones"
-  >
-    <div class="flex items-center justify-between gap-1 px-2 pb-1">
-      <span class="text-xs font-medium uppercase tracking-wide text-content-muted">Vistas</span>
+  <nav class="panel" aria-label="Colecciones">
+    <div class="cabecera">
+      <span class="rotulo">Vistas</span>
       <button
         type="button"
+        class="icono pequeno"
         onclick={onToggle}
         aria-label="Plegar el panel lateral"
         title="Plegar el panel lateral"
-        class="rounded p-1 text-content-muted transition hover:bg-surface-2 hover:text-content
-               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <PanelLeftClose size={15} />
+        <PanelLeftClose size={14} strokeWidth={1.75} />
       </button>
     </div>
 
-    <button
-      type="button"
-      onclick={showAll}
-      class="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition
-             hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2
-             focus-visible:outline-accent"
-      class:bg-surface-2={showingAll}
-      class:text-content-strong={showingAll}
-      class:text-content={!showingAll}
-    >
-      <LayoutGrid size={15} class="shrink-0 text-content-muted" />
-      <span class="min-w-0 flex-1 truncate">Todos los proyectos</span>
-      <span class="shrink-0 text-xs text-content-muted">{$projects.length}</span>
+    <button type="button" class="fila" class:activo={showingAll} onclick={showAll}>
+      <LayoutGrid size={14} strokeWidth={1.75} class="glifo" />
+      <span class="nombre">Todos los proyectos</span>
+      <span class="numero">{$projects.length}</span>
     </button>
 
     {#if $pinnedProjects.length > 0}
       <button
         type="button"
+        class="fila"
+        class:activo={$filters.pinned_only}
         onclick={() => setPinnedOnly(!$filters.pinned_only)}
         aria-pressed={$filters.pinned_only}
-        class="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition
-               hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2
-               focus-visible:outline-accent"
-        class:bg-surface-2={$filters.pinned_only}
-        class:text-content-strong={$filters.pinned_only}
-        class:text-content={!$filters.pinned_only}
       >
-        <Pin size={15} class="shrink-0 text-content-muted" />
-        <span class="min-w-0 flex-1 truncate">Fijados</span>
-        <span class="shrink-0 text-xs text-content-muted">{$pinnedProjects.length}</span>
+        <Pin size={14} strokeWidth={1.75} class="glifo" />
+        <span class="nombre">Fijados</span>
+        <span class="numero">{$pinnedProjects.length}</span>
       </button>
     {/if}
 
-    <div class="mt-3 flex items-center justify-between gap-1 px-2 pb-1">
-      <span class="text-xs font-medium uppercase tracking-wide text-content-muted">Etiquetas</span>
+    <div class="cabecera separada">
+      <span class="rotulo">Etiquetas</span>
       <button
         type="button"
+        class="icono pequeno"
         onclick={onManageTags}
         aria-label="Gestionar etiquetas"
         title="Gestionar etiquetas"
-        class="rounded p-1 text-content-muted transition hover:bg-surface-2 hover:text-content
-               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <Settings2 size={15} />
+        <Settings2 size={14} strokeWidth={1.75} />
       </button>
     </div>
 
     {#if $tags.length === 0}
-      <p class="px-2 py-1 text-xs text-content-muted">
-        Ninguna todavía. Etiqueta un proyecto desde su tarjeta.
-      </p>
+      <p class="vacio">Ninguna todavía. Etiqueta un proyecto desde su tarjeta.</p>
     {:else}
       {#each $tags as tag (tag.id)}
         <button
           type="button"
+          class="fila"
+          class:activo={$filters.tag_ids.includes(tag.id)}
           onclick={() => toggleTagFilter(tag.id)}
           aria-pressed={$filters.tag_ids.includes(tag.id)}
-          class="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition
-                 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2
-                 focus-visible:outline-accent"
-          class:bg-surface-2={$filters.tag_ids.includes(tag.id)}
-          class:text-content-strong={$filters.tag_ids.includes(tag.id)}
-          class:text-content={!$filters.tag_ids.includes(tag.id)}
         >
-          <span
-            class="size-2.5 shrink-0 rounded-full"
-            style="background-color: {tag.color};"
-          ></span>
-          <span class="min-w-0 flex-1 truncate" title={tag.name}>{tag.name}</span>
-          <span class="shrink-0 text-xs text-content-muted">{tag.project_count}</span>
+          <span class="color" style="background-color: {tag.color};"></span>
+          <span class="nombre" title={tag.name}>{tag.name}</span>
+          <span class="numero">{tag.project_count}</span>
         </button>
       {/each}
     {/if}
 
-    <button
-      type="button"
-      onclick={onManageTags}
-      class="mt-auto flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm
-             text-content-muted transition hover:bg-surface-2 hover:text-content
-             focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-    >
-      <Tags size={15} />
-      Gestionar etiquetas
+    <button type="button" class="fila gestionar" onclick={onManageTags}>
+      <Tags size={14} strokeWidth={1.75} class="glifo" />
+      <span class="nombre">Gestionar etiquetas</span>
     </button>
   </nav>
 {/if}
+
+<style>
+  .panel {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 2px;
+    width: 14rem;
+    overflow-y: auto;
+    padding: var(--space-3) var(--space-2);
+    border-right: 1px solid var(--border-subtle);
+    background: var(--surface-raised);
+  }
+
+  .panel.plegado {
+    width: 3rem;
+    align-items: center;
+    gap: var(--space-2);
+    padding-inline: 0;
+  }
+
+  .cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1);
+    padding: 0 var(--space-2) var(--space-1);
+  }
+  .cabecera.separada {
+    margin-top: var(--space-4);
+  }
+
+  .rotulo {
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 6px var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    text-align: left;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .fila:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .fila.activo {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .fila :global(.glifo) {
+    flex: none;
+    color: var(--text-tertiary);
+  }
+
+  .nombre {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .numero {
+    flex: none;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-tertiary);
+  }
+
+  .color {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .gestionar {
+    margin-top: auto;
+    color: var(--text-tertiary);
+  }
+
+  .vacio {
+    margin: 0;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-tertiary);
+  }
+
+  .icono {
+    display: inline-flex;
+    padding: var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .icono.pequeno {
+    padding: var(--space-1);
+  }
+  .icono:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .icono.activo {
+    color: var(--accent);
+  }
+  .icono.final {
+    margin-top: auto;
+  }
+
+  .puntos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--space-1);
+    overflow-y: auto;
+  }
+
+  .punto {
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+  .punto:hover {
+    transform: scale(1.1);
+  }
+  .punto.elegido {
+    border-color: var(--text-primary);
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>

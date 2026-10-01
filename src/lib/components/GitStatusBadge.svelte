@@ -34,29 +34,58 @@
   });
 </script>
 
-<span
-  class="inline-flex shrink-0 items-center gap-1.5 text-xs text-content-muted"
-  title={tooltip}
->
-  <GitBranch size={12} />
-  <span class="font-mono" class:italic={detached}>{label}</span>
+<span class="insignia" title={tooltip}>
+  <GitBranch size={12} strokeWidth={1.75} />
+  <span class="rama" class:separado={detached}>{label}</span>
 
   {#if status?.is_dirty}
-    <span
-      class="size-1.5 rounded-full bg-amber-400"
-      aria-label="Cambios sin commitear"
-    ></span>
+    <span class="sucio" aria-label="Cambios sin commitear"></span>
   {/if}
 
   {#if status?.ahead}
-    <span class="inline-flex items-center" aria-label="{status.ahead} commits por delante">
-      <ArrowUp size={11} />{status.ahead}
+    <span class="delta" aria-label="{status.ahead} commits por delante">
+      <ArrowUp size={11} strokeWidth={1.75} />{status.ahead}
     </span>
   {/if}
 
   {#if status?.behind}
-    <span class="inline-flex items-center" aria-label="{status.behind} commits por detrás">
-      <ArrowDown size={11} />{status.behind}
+    <span class="delta" aria-label="{status.behind} commits por detrás">
+      <ArrowDown size={11} strokeWidth={1.75} />{status.behind}
     </span>
   {/if}
 </span>
+
+<style>
+  .insignia {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-tertiary);
+  }
+
+  .rama {
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    color: var(--text-secondary);
+  }
+  .rama.separado {
+    font-style: italic;
+  }
+
+  .sucio {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--warning);
+  }
+
+  .delta {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+  }
+</style>
