@@ -182,6 +182,22 @@ Terminado:
 - [x] Sesión B: `TagPicker`, `TagManager`, `Settings` y el botón de densidad
       migrados. Los desplegables de ajustes eran ilegibles en oscuro (control
       nativo de GTK) y ya no.
+- [x] Cierre de la migración: `ScanSummaryBar`, el armazón de `App.svelte`,
+      los avisos de `Dashboard` y `TagChip`. `app.css` ya no tiene tokens
+      propios ni puente con `@theme`; Tailwind queda para la maquetación.
+- [x] Conmutador de tema en la cabecera: oscuro, claro y sistema. Se guarda
+      en `ui.view_state` y se aplica antes de montar la aplicación.
+
+Deuda conocida del rediseño:
+
+- [ ] `ProjectCard` reestiliza el disparador de `TagPicker` con
+      `.anadir.fantasma :global(button)`, que alcanza también a los botones del
+      panel. `TagPicker` lo neutraliza anidando sus selectores en `.panel`
+      (comentado allí). Lo correcto es que la tarjeta no alcance hijos ajenos.
+- Peculiaridad conocida, no es un fallo: en `pnpm tauri dev`, Vite puede
+  registrar `window.__TAURI_INTERNALS__ undefined` al arrancar, antes de que
+  el binario abra su ventana. Es una carrera entre Vite y el binario; no pasa
+  en un build de release, que no usa Vite.
 
 A medias:
 
@@ -192,20 +208,13 @@ A medias:
 
 Sin empezar:
 
-- [ ] Lo que sigue con los tokens anteriores: `ScanSummaryBar`, el armazón
-      de `App.svelte` fuera de la cabecera y los avisos de error y de carga de
-      `Dashboard`. Con eso, `app.css` puede dejar los tokens viejos.
-- [ ] Tema claro: los valores existen y la aplicación se ve bien con la clase
-      `light`, pero `index.html` fija `dark` y no hay conmutador. Sin clase, los
-      tokens nuevos siguen al sistema y los viejos de `app.css` no, así que la
-      mezcla se vería hasta terminar la migración. El conmutador es Fase 6.
 
 ---
 
 ## Fase 6 — Pulido, atajos y ajustes avanzados
 
 - [ ] Atajos: paleta de comandos, refrescar Git, abrir ajustes
-- [ ] Tema claro, oscuro y del sistema
+- [x] Tema claro, oscuro y del sistema (adelantado con el rediseño)
 - [ ] IDE y terminal preferidos configurables
 - [ ] Escanear al arrancar
 - [ ] Exportar e importar la configuración en JSON

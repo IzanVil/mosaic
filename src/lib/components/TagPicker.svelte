@@ -212,11 +212,19 @@
   }
 
   /*
-   * Todo lo de dentro del panel va anidado en `.panel` a propósito.
-   * `ProjectCard` reestiliza con `:global(button)` el disparador de las
-   * tarjetas sin etiquetas, y ese selector alcanza también a los botones de
-   * este panel; con un solo nivel de clase, el suyo ganaba y las opciones se
-   * quedaban sin relleno.
+   * Todo lo de dentro del panel va anidado en `.panel` a propósito: es una
+   * neutralización, no un estilo.
+   *
+   * `ProjectCard` reestiliza el disparador de las tarjetas sin etiquetas con
+   * `.anadir.fantasma :global(button)`, y ese selector no se queda en el
+   * disparador: alcanza a todos los botones de este componente, panel incluido.
+   * Pesa (0,3,1); un selector de una clase, como `.opcion`, pesa (0,2,0) con el
+   * hash de Svelte y perdía, así que las opciones se quedaban sin relleno.
+   * Anidado en `.panel` pesa (0,4,0) y gana.
+   *
+   * Es deuda apuntada en `docs/ROADMAP.md`: lo correcto es que `ProjectCard`
+   * no alcance hijos ajenos (una prop de apariencia en `TagPicker`, por
+   * ejemplo). Cuando se haga, este anidado sobra.
    */
   .panel input {
     width: 100%;
