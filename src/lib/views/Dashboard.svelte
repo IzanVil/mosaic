@@ -11,7 +11,6 @@
   import TagManager from '../components/TagManager.svelte';
   import { appsError } from '../stores/apps';
   import {
-    clearFilters,
     density,
     hasActiveFilters,
     sidebarCollapsed,
@@ -44,6 +43,10 @@
 
   /**
    * Umbral a partir del cual se explica por qué hay tan poco en pantalla.
+   *
+   * El aviso no lleva botón propio: «Limpiar filtros» ya está en la barra de
+   * justo encima siempre que hay algo filtrado, y dos iguales a la vez era
+   * ruido.
    *
    * La rejilla NO se recoloca: la búsqueda filtra en vivo, y centrar el
    * contenido al bajar de seis resultados haría saltar las tarjetas a mitad de
@@ -112,7 +115,6 @@
             {visibles === 1
               ? '1 proyecto coincide con los filtros aplicados.'
               : `${visibles} proyectos coinciden con los filtros aplicados.`}
-            <button type="button" onclick={clearFilters}>Limpiar filtros</button>
           </p>
         {/if}
       </div>
@@ -174,24 +176,5 @@
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
     color: var(--text-tertiary);
-  }
-
-  .aviso-pocos button {
-    border: 0;
-    background: none;
-    padding: 0;
-    font: inherit;
-    color: var(--accent);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-  .aviso-pocos button:hover {
-    color: var(--accent-hover);
-  }
-  .aviso-pocos button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
   }
 </style>
