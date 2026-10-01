@@ -18,6 +18,7 @@ Local, privado y sin una sola petición de red.</p>
 </p>
 
 <p>
+<a href="https://mosaic-app.i-vilches.workers.dev"><b>Web</b></a> ·
 <a href="#-lo-que-hace"><b>Lo que hace</b></a> ·
 <a href="#-capturas"><b>Capturas</b></a> ·
 <a href="#-empezar"><b>Empezar</b></a> ·
