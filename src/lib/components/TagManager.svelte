@@ -56,79 +56,57 @@
   }
 </script>
 
-<div
-  class="fixed inset-0 z-40 flex items-start justify-center bg-black/40 p-6 pt-20"
-  role="presentation"
->
+<div class="fondo" role="presentation">
   <div
     use:dismissable={{ onDismiss: onClose, enabled: canDismiss }}
     role="dialog"
     aria-modal="true"
     aria-label="Gestionar etiquetas"
-    class="flex max-h-[70vh] w-full max-w-xl flex-col rounded-lg border border-surface-border
-           bg-surface-1 shadow-xl"
+    class="modal"
   >
-    <header class="flex items-center justify-between gap-4 border-b border-surface-border px-5 py-3">
-      <h2 class="text-sm font-semibold text-content-strong">Etiquetas</h2>
-      <button
-        type="button"
-        onclick={onClose}
-        aria-label="Cerrar"
-        class="rounded p-1 text-content-muted transition hover:bg-surface-2 hover:text-content
-               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-      >
-        <X size={16} />
+    <header>
+      <h2>Etiquetas</h2>
+      <button type="button" class="icono" onclick={onClose} aria-label="Cerrar">
+        <X size={16} strokeWidth={1.75} />
       </button>
     </header>
 
-    <div class="flex items-center gap-2 border-b border-surface-border px-5 py-3">
-      <div class="relative">
+    <div class="nueva">
+      <div class="ancla">
         <button
           type="button"
+          class="caja-color"
           onclick={() => (colorEditing = colorEditing === 0 ? null : 0)}
           aria-label="Elegir el color de la etiqueta nueva"
           title="Color"
-          class="flex size-8 items-center justify-center rounded-md border border-surface-border
-                 transition hover:bg-surface-2 focus-visible:outline-2
-                 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          <span class="size-4 rounded-full" style="background-color: {newColor};"></span>
+          <span class="punto" style="background-color: {newColor};"></span>
         </button>
 
         {#if colorEditing === 0}
-          <div
-            use:dismissable={{ onDismiss: () => (colorEditing = null) }}
-            class="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-surface-border
-                   bg-surface-1 p-2 shadow-lg"
-          >
-            <div class="flex flex-wrap gap-1">
+          <div use:dismissable={{ onDismiss: () => (colorEditing = null) }} class="paleta">
+            <div class="muestras">
               {#each TAG_COLORS as color (color.hex)}
                 <button
                   type="button"
+                  class="muestra"
                   onclick={() => {
                     newColor = color.hex;
                     colorEditing = null;
                   }}
                   title={color.name}
                   aria-label="Color {color.name}"
-                  class="size-5 rounded-full transition hover:scale-110 focus-visible:outline-2
-                         focus-visible:outline-offset-1 focus-visible:outline-accent"
                   style="background-color: {color.hex};"
                 ></button>
               {/each}
             </div>
-            <label
-              class="mt-2 flex items-center gap-2 border-t border-surface-border pt-2 text-xs
-                     text-content-muted"
-            >
-              <Palette size={13} />
+            <label class="personalizado">
+              <Palette size={14} strokeWidth={1.75} />
               Personalizado
               <input
                 type="color"
                 value={colorInputValue(newColor)}
                 oninput={(event) => (newColor = event.currentTarget.value.toUpperCase())}
-                class="ml-auto h-6 w-10 cursor-pointer rounded border border-surface-border
-                       bg-transparent"
               />
             </label>
           </div>
@@ -145,89 +123,67 @@
           }
         }}
         type="text"
+        class="campo"
         maxlength="32"
         placeholder="Nueva etiqueta…"
-        class="min-w-0 flex-1 rounded-md border border-surface-border bg-surface-0 px-2 py-1.5
-               text-sm text-content placeholder:text-content-muted focus-visible:outline-2
-               focus-visible:outline-offset-1 focus-visible:outline-accent"
       />
 
       <button
         type="button"
+        class="primario"
         onclick={create}
         disabled={creating || newName.trim() === ''}
-        class="inline-flex shrink-0 items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-sm
-               font-medium text-surface-0 transition hover:bg-accent-strong disabled:opacity-50
-               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <Plus size={14} />
+        <Plus size={14} strokeWidth={1.75} />
         Crear
       </button>
     </div>
 
     {#if $tagsError}
-      <p class="border-b border-surface-border px-5 py-2 text-xs text-content" role="alert">
-        {$tagsError}
-      </p>
+      <p class="error" role="alert">{$tagsError}</p>
     {/if}
 
-    <div class="min-h-0 flex-1 overflow-y-auto">
+    <div class="lista">
       {#if $tags.length === 0}
-        <p class="px-5 py-10 text-center text-sm text-content-muted">
-          Todavía no hay etiquetas. Crea la primera arriba.
-        </p>
+        <p class="vacio">Todavía no hay etiquetas. Crea la primera arriba.</p>
       {:else}
         <ul>
           {#each $tags as tag (tag.id)}
-            <li class="border-b border-surface-border/60 px-5 py-2 last:border-b-0">
-              <div class="flex items-center gap-2">
-                <div class="relative shrink-0">
+            <li>
+              <div class="fila">
+                <div class="ancla">
                   <button
                     type="button"
+                    class="caja-color pequena"
                     onclick={() => (colorEditing = colorEditing === tag.id ? null : tag.id)}
                     aria-label="Cambiar el color de {tag.name}"
                     title="Cambiar el color"
-                    class="flex size-7 items-center justify-center rounded-md border
-                           border-surface-border transition hover:bg-surface-2
-                           focus-visible:outline-2 focus-visible:outline-offset-2
-                           focus-visible:outline-accent"
                   >
-                    <span class="size-3.5 rounded-full" style="background-color: {tag.color};"></span>
+                    <span class="punto" style="background-color: {tag.color};"></span>
                   </button>
 
                   {#if colorEditing === tag.id}
-                    <div
-                      use:dismissable={{ onDismiss: () => (colorEditing = null) }}
-                      class="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border
-                             border-surface-border bg-surface-1 p-2 shadow-lg"
-                    >
-                      <div class="flex flex-wrap gap-1">
+                    <div use:dismissable={{ onDismiss: () => (colorEditing = null) }} class="paleta">
+                      <div class="muestras">
                         {#each TAG_COLORS as color (color.hex)}
                           <button
                             type="button"
+                            class="muestra"
                             onclick={() => recolor(tag.id, tag.name, color.hex)}
                             title={color.name}
                             aria-label="Color {color.name}"
-                            class="size-5 rounded-full transition hover:scale-110
-                                   focus-visible:outline-2 focus-visible:outline-offset-1
-                                   focus-visible:outline-accent"
                             style="background-color: {color.hex};"
                           ></button>
                         {/each}
                       </div>
-                      <label
-                        class="mt-2 flex items-center gap-2 border-t border-surface-border pt-2
-                               text-xs text-content-muted"
-                      >
-                        <Palette size={13} />
+                      <label class="personalizado">
+                        <Palette size={14} strokeWidth={1.75} />
                         Personalizado
                         <input
                           type="color"
                           value={colorInputValue(tag.color)}
                           onchange={(event) =>
                             recolor(tag.id, tag.name, event.currentTarget.value.toUpperCase())}
-                          class="ml-auto h-6 w-10 cursor-pointer rounded border
-                                 border-surface-border bg-transparent"
                         />
                       </label>
                     </div>
@@ -242,59 +198,41 @@
                     if (event.key === 'Escape') event.currentTarget.value = tag.name;
                   }}
                   type="text"
+                  class="nombre"
                   maxlength="32"
                   aria-label="Nombre de la etiqueta {tag.name}"
-                  class="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2
-                         py-1 text-sm text-content transition hover:border-surface-border
-                         focus-visible:border-surface-border focus-visible:bg-surface-0
-                         focus-visible:outline-2 focus-visible:outline-offset-1
-                         focus-visible:outline-accent"
                 />
 
-                <span class="shrink-0 text-xs text-content-muted">
+                <span class="cuenta">
                   {tag.project_count}
                   {tag.project_count === 1 ? 'proyecto' : 'proyectos'}
                 </span>
 
                 <button
                   type="button"
+                  class="icono"
                   onclick={() => (confirmingId = tag.id)}
                   aria-label="Borrar la etiqueta {tag.name}"
                   title="Borrar la etiqueta"
-                  class="shrink-0 rounded-md p-1.5 text-content-muted transition
-                         hover:bg-surface-2 hover:text-content focus-visible:outline-2
-                         focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={14} strokeWidth={1.75} />
                 </button>
               </div>
 
               {#if confirmingId === tag.id}
-                <div class="mt-2 rounded-md border border-surface-border bg-surface-2 px-3 py-2">
-                  <p class="text-xs text-content">
+                <div class="confirmar">
+                  <p>
                     {tag.project_count === 0
                       ? 'Esta etiqueta no está asignada a ningún proyecto.'
                       : `Esto quitará la etiqueta de ${tag.project_count} ${
                           tag.project_count === 1 ? 'proyecto' : 'proyectos'
                         }. No se borran los proyectos.`}
                   </p>
-                  <div class="mt-2 flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onclick={() => (confirmingId = null)}
-                      class="rounded-md border border-surface-border px-2.5 py-1 text-xs
-                             text-content transition hover:bg-surface-1 focus-visible:outline-2
-                             focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    >
+                  <div class="botones">
+                    <button type="button" class="secundario" onclick={() => (confirmingId = null)}>
                       Cancelar
                     </button>
-                    <button
-                      type="button"
-                      onclick={() => confirmDelete(tag.id)}
-                      class="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-surface-0
-                             transition hover:bg-accent-strong focus-visible:outline-2
-                             focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    >
+                    <button type="button" class="peligro" onclick={() => confirmDelete(tag.id)}>
                       Borrar
                     </button>
                   </div>
@@ -307,3 +245,338 @@
     </div>
   </div>
 </div>
+
+<style>
+  /*
+   * El velo es el propio fondo de la aplicación medio transparente: oscurece
+   * en el tema oscuro y aclara en el claro, sin un negro fijo que en claro
+   * ensuciaría.
+   */
+  .fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--space-8) var(--space-5) var(--space-5);
+    background: color-mix(in oklab, var(--surface-base) 72%, transparent);
+  }
+
+  .modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 36rem;
+    max-height: 70vh;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--surface-overlay);
+    box-shadow: var(--shadow-lg);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: var(--text-section);
+    line-height: var(--text-section-lh);
+    font-weight: var(--text-section-weight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-primary);
+  }
+
+  .nueva {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .ancla {
+    position: relative;
+    flex: none;
+  }
+
+  .caja-color {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: transparent;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .caja-color.pequena {
+    width: 28px;
+    height: 28px;
+  }
+  .caja-color:hover {
+    background: var(--surface-sunken);
+  }
+
+  .punto {
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-pill);
+  }
+
+  .paleta {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 50;
+    width: 12rem;
+    margin-top: var(--space-1);
+    padding: var(--space-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-overlay);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .muestras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .muestra {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+  .muestra:hover {
+    transform: scale(1.1);
+  }
+
+  .personalizado {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-subtle);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-tertiary);
+  }
+  .personalizado input {
+    width: 40px;
+    height: 24px;
+    margin-left: auto;
+    padding: 0;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .campo {
+    flex: 1;
+    min-width: 0;
+    padding: 6px var(--space-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-base);
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--text-primary);
+  }
+  .campo::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .primario {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 6px var(--space-3);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--accent);
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    font-weight: 500;
+    color: var(--text-on-accent);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .primario:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+  .primario:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .error {
+    margin: 0;
+    padding: var(--space-2) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--danger-surface);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--danger);
+  }
+
+  .lista {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .vacio {
+    margin: 0;
+    padding: var(--space-6) var(--space-5);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    text-align: center;
+    color: var(--text-tertiary);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    padding: var(--space-2) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  li:last-child {
+    border-bottom: 0;
+  }
+
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .nombre {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--text-primary);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  .nombre:hover {
+    border-color: var(--border-default);
+  }
+  .nombre:focus-visible {
+    border-color: var(--border-default);
+    background: var(--surface-base);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .cuenta {
+    flex: none;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-tertiary);
+  }
+
+  .icono {
+    display: inline-flex;
+    flex: none;
+    padding: 6px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .icono:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+
+  .confirmar {
+    margin-top: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+  }
+  .confirmar p {
+    margin: 0;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-secondary);
+  }
+
+  .botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  .secundario,
+  .peligro {
+    padding: var(--space-1) 10px;
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .secundario {
+    border: 1px solid var(--border-default);
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  .secundario:hover {
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+  /* Borrar es la única acción irreversible del modal: no lleva el acento. */
+  .peligro {
+    border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
+    background: var(--danger-surface);
+    color: var(--danger);
+  }
+  .peligro:hover {
+    background: color-mix(in oklab, var(--danger) 24%, transparent);
+  }
+
+  button:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
