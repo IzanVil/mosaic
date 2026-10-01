@@ -1,127 +1,176 @@
 <div align="center">
 
-<img src="src-tauri/icons/128x128@2x.png" width="96" height="96" alt="Icono de Mosaic">
+<img src="src-tauri/icons/128x128@2x.png" width="88" height="88" alt="Icono de Mosaic">
 
-# Mosaic
+<h1>Mosaic</h1>
 
-**Todos tus proyectos de código, en un solo tablero.**
+<p><b>Todos tus proyectos de código, en un solo tablero.</b></p>
 
-Mosaic encuentra las carpetas de proyectos que tienes en el disco y las pone en
-tarjetas con su estado de Git en vivo, sus etiquetas y un clic para abrirlas en
-el editor, la terminal o el explorador.
+<p>Estado de Git en vivo, etiquetas y un clic para abrir cada proyecto.<br>
+Local, privado y sin una sola petición de red.</p>
 
-![Licencia MIT](https://img.shields.io/badge/licencia-MIT-2c8c8c)
-![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db?logo=tauri&logoColor=white)
-![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00?logo=svelte&logoColor=white)
-![Rust](https://img.shields.io/badge/Rust-2021-b7410e?logo=rust&logoColor=white)
-![Linux · macOS · Windows](https://img.shields.io/badge/Linux%20·%20macOS%20·%20Windows-escritorio-555)
+<p>
+<img src="https://img.shields.io/badge/licencia-Apache%202.0-2c8c8c?style=flat-square" alt="Licencia Apache 2.0">
+<img src="https://img.shields.io/badge/Tauri-2-24c8db?style=flat-square&logo=tauri&logoColor=white" alt="Tauri 2">
+<img src="https://img.shields.io/badge/Svelte-5-ff3e00?style=flat-square&logo=svelte&logoColor=white" alt="Svelte 5">
+<img src="https://img.shields.io/badge/Rust-b7410e?style=flat-square&logo=rust&logoColor=white" alt="Rust">
+<img src="https://img.shields.io/badge/estado-alfa-d4a017?style=flat-square" alt="Estado: alfa">
+</p>
+
+<p>
+<a href="#-lo-que-hace"><b>Lo que hace</b></a> ·
+<a href="#-capturas"><b>Capturas</b></a> ·
+<a href="#-empezar"><b>Empezar</b></a> ·
+<a href="#-estado"><b>Estado</b></a> ·
+<a href="#-compilar"><b>Compilar</b></a>
+</p>
+
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/portada-oscura.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/portada-clara.png">
+  <img src="docs/img/portada-oscura.png" alt="El tablero de Mosaic: tres proyectos fijados arriba y el resto en rejilla, cada tarjeta con su ruta, sus etiquetas de color, su lenguaje y su rama de Git, y a la izquierda el panel de vistas y etiquetas">
+</picture>
 
 </div>
 
 <br>
 
-![El tablero de Mosaic en tema oscuro: tres proyectos fijados arriba y el resto en rejilla, cada tarjeta con su ruta, sus etiquetas de color, su lenguaje y su rama de Git, y a la izquierda el panel de vistas y etiquetas](docs/img/tablero-oscuro.png)
+## 💡 Por qué
 
-<br>
-
-## Por qué Mosaic
-
-Llega un momento en que tienes cuarenta carpetas en `~/proyectos`, la mitad con
-cambios sin commitear que ya no recuerdas, y abrir la que buscas pasa por
-`cd`, `ls` y adivinar. Mosaic es la vista de pájaro de todo eso.
-
-Y es deliberadamente sencillo:
-
-| | |
-|---|---|
-| **Local de verdad** | Todo vive en una base SQLite en tu máquina. Mosaic no hace ni una petición de red: ni siquiera `git fetch`. |
-| **Privado** | Sin cuentas, sin telemetría, sin analítica. |
-| **Sin IA** | Ninguna API de modelos. Lee metadatos y te los enseña, nada más. |
-| **De solo lectura** | Lee tus repositorios; nunca escribe en ellos. |
-| **Ligero** | Pensado para cientos de proyectos. Git se lee en segundo plano, sin bloquear la interfaz. |
-
-## Lo que hace
-
-**Encuentra tus proyectos solo.** Le das una o varias carpetas raíz y las
-recorre buscando `.git`, `package.json`, `Cargo.toml`, `pyproject.toml`,
-`go.mod`, `pom.xml`, `build.gradle`, `composer.json` o `Gemfile`. Deduce el
-lenguaje principal de cada uno y se salta `node_modules`, `target`, `.venv` y
-compañía.
-
-**Git de un vistazo.** Rama, cambios sin commitear, commits por delante y por
-detrás del upstream y último commit. Se refresca solo en segundo plano, y el
-botón **Git** de la cabecera fuerza una relectura y te dice qué ha cambiado.
-
-**Un clic para abrir.** Cada tarjeta abre el proyecto en tu editor, tu
-terminal o tu explorador de archivos. Mosaic detecta los que tienes
-instalados y puedes elegir cuál prefieres.
-
-**Etiquetas con color.** Se asignan desde la propia tarjeta, se crean al vuelo
-escribiendo un nombre nuevo y se gestionan (renombrar, recolorear, borrar)
-desde su panel.
-
-**Búsqueda y filtros.** Búsqueda difusa por nombre y ruta, sin importar
-acentos ni mayúsculas. Filtros por etiqueta, lenguaje, estado de Git,
-destacados y proyectos que ya no están en el disco, y cuatro órdenes
-distintos.
-
-**Recuerda dónde lo dejaste.** Búsqueda, filtros, orden, densidad y tema se
-guardan solos: al volver a abrir Mosaic lo encuentras tal cual.
-
-**Claro, oscuro o el del sistema.** Con un botón en la cabecera.
-
-<br>
-
-![Búsqueda «api» con cinco filtros activos en chips (dos etiquetas, dos lenguajes y «Ausentes ocultos»), el contador «Filtros 5» y el aviso de que dos proyectos coinciden](docs/img/filtros.png)
+Cuarenta carpetas en `~/proyectos`, la mitad con cambios sin commitear que ya
+no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
+**Mosaic te da la vista de pájaro.**
 
 <table>
   <tr>
-    <td width="58%"><img src="docs/img/gestor-etiquetas.png" alt="El gestor de etiquetas: un campo para crear una nueva con su color y la lista de etiquetas con cuántos proyectos tiene cada una"></td>
-    <td width="42%"><img src="docs/img/selector-etiquetas.png" alt="El selector de etiquetas abierto desde una tarjeta, con un buscador y las etiquetas asignadas marcadas"></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Gestor de etiquetas</sub></td>
-    <td align="center"><sub>Etiquetar desde la tarjeta</sub></td>
+    <td width="25%" valign="top">
+      <h3>🔒 Local</h3>
+      Todo vive en un SQLite en tu máquina. Cero peticiones de red, ni siquiera <code>git fetch</code>.
+    </td>
+    <td width="25%" valign="top">
+      <h3>🕶️ Privado</h3>
+      Sin cuentas, sin telemetría y sin analítica.
+    </td>
+    <td width="25%" valign="top">
+      <h3>📖 Solo lectura</h3>
+      Lee tus repositorios y nunca escribe en ellos.
+    </td>
+    <td width="25%" valign="top">
+      <h3>🧘 Sin IA</h3>
+      Ninguna API de modelos. Lee metadatos y te los enseña.
+    </td>
   </tr>
 </table>
 
-![El mismo tablero en tema claro, con fondos cálidos y las etiquetas en tonos suaves](docs/img/tablero-claro.png)
+## ✨ Lo que hace
 
-## Primeros pasos
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>🔍 Los encuentra solo</h3>
+      Le das una carpeta y detecta cada proyecto por su <code>.git</code>, <code>package.json</code>, <code>Cargo.toml</code>, <code>go.mod</code>… Deduce también su lenguaje principal.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🌿 Git de un vistazo</h3>
+      Rama, cambios sin commitear, commits por delante y por detrás del upstream y último commit. Se refresca solo en segundo plano.
+    </td>
+    <td width="33%" valign="top">
+      <h3>⚡ Un clic para abrir</h3>
+      Abre cada proyecto en tu editor, tu terminal o tu explorador. Mosaic detecta lo que tienes instalado.
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>🏷️ Etiquetas con color</h3>
+      Se asignan desde la propia tarjeta y se crean al vuelo con solo escribir un nombre nuevo.
+    </td>
+    <td valign="top">
+      <h3>🎯 Búsqueda y filtros</h3>
+      Búsqueda difusa que ignora acentos y mayúsculas. Filtra por etiqueta, lenguaje, estado de Git o destacados.
+    </td>
+    <td valign="top">
+      <h3>🌗 Claro u oscuro</h3>
+      O el del sistema. Mosaic recuerda el tema, los filtros y el orden entre sesiones.
+    </td>
+  </tr>
+</table>
 
-1. Abre **Ajustes** y añade la carpeta donde guardas tus proyectos. Puedes
-   añadir varias y desactivar las que no quieras mirar por un tiempo.
-2. Pulsa **Escanear**. Mosaic recorre el disco y llena el tablero.
-3. Etiqueta, destaca y filtra. La vista que dejes es la que te encontrarás la
-   próxima vez.
+## 📸 Capturas
 
-El estado de Git se lee solo a los cinco segundos de arrancar y después cada
-cinco minutos.
-
-## Cómo decide qué es un proyecto
-
-Una carpeta entra en el tablero si tiene alguno de los ficheros marcadores y,
-además, **o tiene su propio `.git`, o ninguna carpeta por encima está ya
-registrada**. En la práctica: un monorepo es una tarjeta, y dos repositorios
-anidados son dos.
-
-- Baja cuatro niveles por defecto y nunca sigue enlaces simbólicos, así que los
-  ciclos no le afectan.
-- Si una raíz pasa de 50.000 entradas, se detiene y el resumen avisa de que el
-  escaneo quedó incompleto, en vez de fallar en silencio.
-- Un proyecto que desaparece del disco **se marca como ausente, no se borra**:
-  conserva sus etiquetas por si vuelve.
-
-<details>
-<summary><b>Escanear al arrancar</b> (todavía sin interfaz)</summary>
+<p align="center">
+  <img src="docs/img/filtros.png" alt="Búsqueda «api» con cinco filtros activos en chips (dos etiquetas, dos lenguajes y «Ausentes ocultos»), el contador «Filtros 5» y el aviso de que dos proyectos coinciden">
+  <br><sub><b>Busca y filtra.</b> Cada filtro es un chip con su X, y el contador dice cuántos hay puestos.</sub>
+</p>
 
 <br>
 
-Por defecto Mosaic no toca el disco al abrirse: pinta lo que ya tenía guardado
-y espera a que pulses **Escanear**. Si prefieres que se actualice solo, hay un
-ajuste que lanza un escaneo ocho segundos después de arrancar y refresca el
-estado de Git al terminar. Su interfaz llega en la Fase 6; hasta entonces se
-activa así:
+<table>
+  <tr>
+    <td width="58%" align="center">
+      <img src="docs/img/gestor-etiquetas.png" alt="El gestor de etiquetas: un campo para crear una nueva con su color y la lista de etiquetas con cuántos proyectos tiene cada una">
+      <br><sub><b>Gestiona las etiquetas</b> en un solo panel.</sub>
+    </td>
+    <td width="42%" align="center">
+      <img src="docs/img/selector-etiquetas.png" alt="El selector de etiquetas abierto desde una tarjeta, con un buscador y las etiquetas asignadas marcadas">
+      <br><sub><b>Etiqueta desde la tarjeta</b>, sin salir del tablero.</sub>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<p align="center">
+  <img src="docs/img/temas.png" alt="El tablero partido en diagonal: la mitad izquierda en tema oscuro y la derecha en tema claro">
+  <br><sub><b>Dos temas</b> con la misma paleta cálida, y un botón en la cabecera para cambiar de uno a otro.</sub>
+</p>
+
+## 🚀 Empezar
+
+```
+1. Ajustes  →  Añadir carpeta       la que contiene tus proyectos
+2. Escanear                         Mosaic recorre el disco y llena el tablero
+3. Etiqueta, destaca y filtra       la próxima vez lo encontrarás igual
+```
+
+El estado de Git se lee solo a los cinco segundos de arrancar y después cada
+cinco minutos. El botón **Git** de la cabecera fuerza una relectura.
+
+<details>
+<summary><b>¿Cómo decide qué es un proyecto?</b></summary>
+
+<br>
+
+Una carpeta entra en el tablero si tiene un fichero marcador (`.git`,
+`package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, `pom.xml`,
+`build.gradle`, `composer.json` o `Gemfile`) y, además, **o tiene su propio
+`.git`, o ninguna carpeta por encima está ya registrada**. Así, un monorepo es
+una tarjeta, y dos repositorios anidados son dos.
+
+Baja cuatro niveles, no sigue enlaces simbólicos y se salta `node_modules`,
+`target`, `.venv` y similares. Si una raíz pasa de 50.000 entradas, se detiene
+y te avisa de que el escaneo quedó incompleto.
+
+</details>
+
+<details>
+<summary><b>¿Y si borro o muevo una carpeta?</b></summary>
+
+<br>
+
+El proyecto se marca como **ausente, no se borra**: conserva sus etiquetas por
+si vuelve. Puedes ocultar los ausentes con un filtro.
+
+</details>
+
+<details>
+<summary><b>¿Puede escanear solo al arrancar?</b></summary>
+
+<br>
+
+Sí, aunque el ajuste todavía no tiene interfaz (llega en la Fase 6). Se activa
+así, y Mosaic escaneará ocho segundos después de abrirse:
 
 ```bash
 sqlite3 ~/.local/share/mosaic/mosaic.db \
@@ -131,105 +180,12 @@ sqlite3 ~/.local/share/mosaic/mosaic.db \
 
 </details>
 
-## Estado
-
-**Alfa.** Se usa a diario, pero aún le faltan piezas. El detalle está en el
-[roadmap](docs/ROADMAP.md).
-
-| | Fase | |
-|---|---|---|
-| ✅ | 1 · Escaneo de proyectos | Raíces configurables, marcadores, lenguaje principal |
-| ✅ | 2 · Integración con Git | Estado en vivo, refresco en segundo plano |
-| ✅ | 3 · Tablero | Tarjetas, destacados, apertura en editor y terminal |
-| ✅ | 4 · Etiquetas, búsqueda y filtros | Y la vista guardada entre sesiones |
-| ✅ | Rediseño visual | Sistema de diseño propio, tema claro y oscuro |
-| 🔜 | 5 · Detalle de proyecto | README renderizado, historial, ramas y notas |
-| ⬜ | 6 · Pulido | Atajos de teclado y ajustes avanzados con interfaz |
-| 🟡 | 7 · Distribución | Instaladores listos; falta publicar y firmar |
-
-## Descargas
-
-Todavía no hay una versión publicada. El workflow de release ya compila los
-instaladores de las tres plataformas, y saldrán en la página de
-[releases](https://github.com/IzanVil/mosaic/releases) en cuanto haya una:
-
-| Plataforma | Formatos |
-|---|---|
-| macOS (Intel y Apple Silicon) | `.dmg`, binario universal |
-| Windows | `.msi` e instalador `.exe` |
-| Linux | `.deb`, `.rpm` y `.AppImage` |
-
-Los binarios **no irán firmados**, porque firmar cuesta dinero en las dos
-plataformas que lo exigen. macOS pedirá permiso en *Ajustes → Privacidad y
-seguridad* la primera vez, y Windows mostrará el aviso de SmartScreen.
-
-Mientras tanto, compilarlo son dos órdenes.
-
-## Compilar
-
-Necesitas Rust estable, Node 20 o superior, [pnpm](https://pnpm.io) y las
-dependencias de sistema de Tauri 2. En Fedora:
-
-```bash
-sudo dnf install webkit2gtk4.1-devel libsoup3-devel gtk3-devel \
-                 openssl-devel curl wget file
-```
-
-Para otras distribuciones, macOS y Windows, mira
-[los requisitos de Tauri](https://tauri.app/start/prerequisites/).
-
-```bash
-pnpm install          # dependencias del frontend
-pnpm tauri dev        # la app en modo desarrollo
-pnpm tauri build      # binario de release
-```
-
 <details>
-<summary><b>Tests y comprobaciones</b></summary>
+<summary><b>¿Dónde guarda los datos?</b></summary>
 
 <br>
 
-Frontend:
-
-```bash
-pnpm check            # svelte-check, falla también con avisos
-pnpm test             # tests de vitest
-pnpm build            # build de producción
-```
-
-Backend:
-
-```bash
-cd src-tauri
-cargo test
-cargo clippy --all-targets -- -D warnings
-cargo fmt --check
-cargo llvm-cov --summary-only   # cobertura
-```
-
-La lógica de dominio vive en `src-tauri/src/core/`, que es lo que cubren los
-tests unitarios; los de integración están en `src-tauri/tests/`. El nivel de
-logs se controla con `MOSAIC_LOG` (por ejemplo, `MOSAIC_LOG=debug pnpm tauri dev`).
-
-</details>
-
-## Hecho con
-
-| | |
-|---|---|
-| **Backend** | Rust y [Tauri 2](https://tauri.app). SQLite con `rusqlite`. Repositorios leídos con `git2`, compilado sin soporte de red. |
-| **Frontend** | [Svelte 5](https://svelte.dev) con TypeScript estricto y Vite. Búsqueda difusa con `fuse.js`. |
-| **Diseño** | Sistema propio de tokens en oklch, con neutros cálidos y acento turquesa. Inter y JetBrains Mono van empaquetadas, sin cargarlas de internet. |
-
-## Documentación
-
-- [Arquitectura](docs/ARCHITECTURE.md): capas, escáner, modelo de datos y
-  decisiones técnicas.
-- [Sistema de diseño](docs/DESIGN.md): color, tipografía y el porqué de cada
-  elección.
-- [Roadmap](docs/ROADMAP.md): qué está hecho y qué viene.
-
-## Dónde guarda los datos
+En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
 
 | Sistema | Ruta |
 |---|---|
@@ -237,8 +193,106 @@ logs se controla con `MOSAIC_LOG` (por ejemplo, `MOSAIC_LOG=debug pnpm tauri dev
 | macOS | `~/Library/Application Support/dev.izan.mosaic/mosaic.db` |
 | Windows | `%APPDATA%\izan\mosaic\data\mosaic.db` |
 
-Es un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
+</details>
 
-## Licencia
+## 🧭 Estado
 
-[MIT](LICENSE).
+**Alfa:** se usa a diario, pero le faltan piezas. Lo detallado está en el
+[roadmap](docs/ROADMAP.md).
+
+| | | |
+|:-:|---|---|
+| ✅ | **Escaneo** | Raíces configurables, detección de proyectos y lenguaje |
+| ✅ | **Git** | Estado en vivo con refresco en segundo plano |
+| ✅ | **Tablero** | Tarjetas, destacados y apertura en editor y terminal |
+| ✅ | **Etiquetas y filtros** | Búsqueda difusa y vista guardada entre sesiones |
+| ✅ | **Diseño** | Sistema propio, tema claro y oscuro |
+| 🔜 | **Detalle de proyecto** | README, historial, ramas y notas |
+| ⬜ | **Pulido** | Atajos de teclado y ajustes avanzados |
+| 🟡 | **Distribución** | Instaladores listos, pendientes de publicar |
+
+## 📦 Descargas
+
+Todavía no hay una versión publicada. Cuando la haya, estará en
+[releases](https://github.com/IzanVil/mosaic/releases) para las tres
+plataformas:
+
+<table>
+  <tr>
+    <td align="center" width="33%"><b>macOS</b><br><sub><code>.dmg</code> universal<br>Intel y Apple Silicon</sub></td>
+    <td align="center" width="33%"><b>Windows</b><br><sub><code>.msi</code> e instalador <code>.exe</code></sub></td>
+    <td align="center" width="33%"><b>Linux</b><br><sub><code>.deb</code>, <code>.rpm</code> y <code>.AppImage</code></sub></td>
+  </tr>
+</table>
+
+Los binarios no irán firmados. La primera vez, macOS pedirá permiso en
+*Ajustes → Privacidad y seguridad* y Windows mostrará el aviso de SmartScreen.
+
+## 🔧 Compilar
+
+Necesitas Rust estable, Node 20 o superior, [pnpm](https://pnpm.io) y
+[las dependencias de Tauri 2](https://tauri.app/start/prerequisites/) para tu
+sistema.
+
+```bash
+pnpm install          # dependencias
+pnpm tauri dev        # la app en desarrollo
+pnpm tauri build      # binario de release
+```
+
+<details>
+<summary><b>Dependencias en Fedora</b></summary>
+
+<br>
+
+```bash
+sudo dnf install webkit2gtk4.1-devel libsoup3-devel gtk3-devel \
+                 openssl-devel curl wget file
+```
+
+</details>
+
+<details>
+<summary><b>Tests y comprobaciones</b></summary>
+
+<br>
+
+```bash
+pnpm check            # svelte-check, falla también con avisos
+pnpm test             # tests de vitest
+
+cd src-tauri
+cargo test
+cargo clippy --all-targets -- -D warnings
+cargo fmt --check
+```
+
+La lógica de dominio vive en `src-tauri/src/core/` y la cubren los tests
+unitarios; los de integración están en `src-tauri/tests/`. Los logs se
+controlan con `MOSAIC_LOG` (por ejemplo, `MOSAIC_LOG=debug pnpm tauri dev`).
+
+</details>
+
+## 🧱 Hecho con
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><b>Backend</b><br><sub>Rust y <a href="https://tauri.app">Tauri 2</a>. SQLite con <code>rusqlite</code>. Repositorios leídos con <code>git2</code>, compilado sin soporte de red.</sub></td>
+    <td width="33%" valign="top"><b>Frontend</b><br><sub><a href="https://svelte.dev">Svelte 5</a> con TypeScript estricto y Vite. Búsqueda difusa con <code>fuse.js</code>.</sub></td>
+    <td width="33%" valign="top"><b>Diseño</b><br><sub>Tokens propios en oklch, neutros cálidos y acento turquesa. Inter y JetBrains Mono van empaquetadas.</sub></td>
+  </tr>
+</table>
+
+Para entrar en detalle: [arquitectura](docs/ARCHITECTURE.md) ·
+[sistema de diseño](docs/DESIGN.md) · [roadmap](docs/ROADMAP.md).
+
+## 📄 Licencia
+
+[Apache 2.0](LICENSE). Las tipografías empaquetadas mantienen su propia
+licencia, la [SIL OFL 1.1](src/lib/assets/fonts/OFL.txt).
+
+<br>
+
+<div align="center">
+<sub>Hecho con calma, para quien tiene demasiados proyectos.</sub>
+</div>
