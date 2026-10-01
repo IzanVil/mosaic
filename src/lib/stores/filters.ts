@@ -54,13 +54,26 @@ export const sidebarCollapsed = writable(false);
  */
 export const density = writable<Density>('comodo');
 
-/** `true` cuando algo recorta la lista; el orden no cuenta como filtro. */
-export const hasActiveFilters = derived(filters, (current) => activeFilterCount(current) > 0);
+/**
+ * `true` cuando algo recorta la lista; el orden no cuenta como filtro.
+ *
+ * Aquí la búsqueda sí cuenta, a diferencia de `filterChipCount`: de esto
+ * dependen «Limpiar filtros» y el aviso de pocos resultados, y una búsqueda
+ * recorta la lista igual que cualquier chip.
+ */
+export const hasActiveFilters = derived(
+  filters,
+  (current) => current.query.trim() !== '' || filterChipCount(current) > 0,
+);
 
-/** Cuántos filtros hay puestos, para el contador del botón «Filtros». */
-export function activeFilterCount(current: FilterState): number {
+/**
+ * Cuántos chips pinta la barra de filtros, para el contador del botón.
+ *
+ * La búsqueda no entra: vive en su propio campo, que ya muestra el texto y su
+ * X. Contarla hacía que el botón dijera «Filtros 4» con tres chips a la vista.
+ */
+export function filterChipCount(current: FilterState): number {
   return (
-    (current.query.trim() === '' ? 0 : 1) +
     current.tag_ids.length +
     current.languages.length +
     (current.git_state === 'all' ? 0 : 1) +

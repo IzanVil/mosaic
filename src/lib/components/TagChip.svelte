@@ -6,8 +6,6 @@
 
   interface Props {
     tag: Tag;
-    /** Pinta el chip con el color pleno, para cuando actúa como filtro activo. */
-    selected?: boolean;
     removable?: boolean;
     onRemove?: () => void;
     onClick?: () => void;
@@ -30,7 +28,6 @@
 
   let {
     tag,
-    selected = false,
     removable = false,
     onRemove,
     onClick,
@@ -39,10 +36,16 @@
     revealOnHover = false,
   }: Props = $props();
 
+  /**
+   * Una sola gramática: fondo y borde tintados, texto en el color pleno.
+   *
+   * Antes había una variante rellena para los filtros activos, con texto
+   * blanco sobre el color de la etiqueta. Con etiquetas de luminosidad alta el
+   * contraste se quedaba en torno a 2:1, y además un filtro se veía distinto
+   * de la etiqueta que filtra.
+   */
   let style = $derived(
-    selected
-      ? `background-color: ${tag.color}; border-color: ${tag.color}; color: white;`
-      : `background-color: ${chipBackground(tag.color)}; border-color: ${chipBorder(tag.color)}; color: ${tag.color};`,
+    `background-color: ${chipBackground(tag.color)}; border-color: ${chipBorder(tag.color)}; color: ${tag.color};`,
   );
 
   /**
@@ -64,7 +67,6 @@
   <button
     type="button"
     onclick={onClick}
-    aria-pressed={selected}
     title={title ?? tag.name}
     class="{SHAPE} cursor-pointer hover:brightness-110"
     {style}
