@@ -1,12 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { listen } from '@tauri-apps/api/event';
-  import { GitBranch, RefreshCw, Settings as SettingsIcon, LayoutList } from '@lucide/svelte';
+  import {
+    GitBranch,
+    LayoutList,
+    Monitor,
+    Moon,
+    RefreshCw,
+    Settings as SettingsIcon,
+    Sun,
+  } from '@lucide/svelte';
 
   import Dashboard from './lib/views/Dashboard.svelte';
   import Settings from './lib/views/Settings.svelte';
   import { loadApps } from './lib/stores/apps';
-  import { loadViewState, startPersistingViewState } from './lib/stores/filters';
+  import { cycleTheme, startPersistingViewState, theme } from './lib/stores/filters';
   import {
     gitError,
     lastGitRefresh,
@@ -39,8 +47,20 @@
 
   type View = 'dashboard' | 'settings';
 
+  /**
+   * Un solo botón para tres estados: cada clic pasa al siguiente. El icono es
+   * el del tema actual y el `title` dice cuál viene, para que el clic no sea
+   * una sorpresa.
+   */
+  const THEME_INFO = {
+    dark: { icon: Moon, label: 'Tema oscuro', next: 'claro' },
+    light: { icon: Sun, label: 'Tema claro', next: 'el del sistema' },
+    system: { icon: Monitor, label: 'Tema del sistema', next: 'oscuro' },
+  } as const;
+
+  let themeInfo = $derived(THEME_INFO[$theme]);
+
   let view = $state<View>('dashboard');
-  let ready = $state(false);
   let tick = $state(now_ts());
 
   let canScan = $derived($scanPaths.length > 0);
@@ -76,22 +96,19 @@
       // la lista se relee entera en lugar de mezclar solo el estado de Git.
       listen(PROJECTS_RESCANNED, () => void loadProjects()),
     ]);
-    let stopPersisting: (() => void) | null = null;
-
     const clock = setInterval(() => (tick = now_ts()), CLOCK_TICK_MS);
 
-    void (async () => {
-      await loadViewState();
-      ready = true;
-      stopPersisting = startPersistingViewState();
+    // `main.ts` ya ha leído la vista guardada antes de montar.
+    const stopPersisting = startPersistingViewState();
 
+    void (async () => {
       await Promise.all([loadProjects(), loadScanPaths(), loadTags(), loadApps()]);
       await loadGitStatus();
     })();
 
     return () => {
       clearInterval(clock);
-      stopPersisting?.();
+      stopPersisting();
       void stopListening.then((stops) => stops.forEach((stop) => stop()));
     };
   });
@@ -109,7 +126,7 @@
   }
 </script>
 
-<div class="flex h-full flex-col">
+<div class="armazon">
   <header class="cabecera">
     <h1 class="marca">Mosaic</h1>
 
@@ -146,6 +163,16 @@
       {/if}
     </p>
 
+    <button
+      type="button"
+      class="tema"
+      onclick={cycleTheme}
+      title="{themeInfo.label}. Pulsa para pasar a {themeInfo.next}."
+      aria-label="{themeInfo.label}. Cambiar a {themeInfo.next}"
+    >
+      <themeInfo.icon size={16} strokeWidth={1.75} />
+    </button>
+
     <div class="acciones" role="group" aria-label="Acciones">
       <button
         type="button"
@@ -178,31 +205,51 @@
   </header>
 
   {#if $gitError}
-    <p
-      class="mx-6 mt-4 rounded-md border border-surface-border bg-surface-1 px-4 py-3 text-sm
-             text-content"
-      role="alert"
-    >
-      {$gitError}
-    </p>
+    <p class="alerta" role="alert">{$gitError}</p>
   {/if}
 
-  <main class="flex min-h-0 flex-1 flex-col">
-    {#if !ready}
-      <p class="px-6 py-16 text-center text-sm text-content-muted">Cargando…</p>
-    {:else if view === 'dashboard'}
+  <main class="principal">
+    {#if view === 'dashboard'}
       <Dashboard onGoToSettings={() => (view = 'settings')} onScan={scan} />
     {:else}
-      <div class="flex-1 overflow-y-auto"><Settings /></div>
+      <div class="desplazable"><Settings /></div>
     {/if}
   </main>
 </div>
 
 <style>
+  .armazon {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--surface-base);
+    color: var(--text-secondary);
+  }
+
+  .principal {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .desplazable {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .alerta {
+    margin: var(--space-4) var(--space-5) 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
+    border-radius: var(--radius-md);
+    background: var(--danger-surface);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--danger);
+  }
+
   /*
-   * Solo la cabecera. El resto de este fichero es el armazón de la aplicación
-   * y sigue con utilidades de Tailwind hasta que le toque migrar.
-   *
    * Cuatro pesos, de más a menos: la marca, la navegación, las acciones y los
    * metadatos. Antes los seis elementos tenían el mismo tamaño de letra y el
    * ojo no sabía por dónde empezar.
@@ -289,6 +336,24 @@
   }
 
   /* Un solo bloque con borde: dos acciones hermanas, no dos botones sueltos. */
+  .tema {
+    display: inline-flex;
+    flex: none;
+    padding: 7px;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .tema:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+
   .acciones {
     display: flex;
     flex: none;

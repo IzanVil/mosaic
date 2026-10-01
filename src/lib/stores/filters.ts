@@ -19,6 +19,7 @@ import type {
   GitStateFilter,
   SortDirection,
   SortOption,
+  ThemeMode,
   ViewState,
 } from '../types';
 import { debounce } from '../utils/debounce';
@@ -41,6 +42,7 @@ const PERSIST_DELAY_MS = 500;
 
 const GIT_STATES: GitStateFilter[] = ['all', 'dirty', 'clean', 'no_repo'];
 const SORT_OPTIONS: SortOption[] = ['name', 'last_opened', 'created', 'updated'];
+const THEMES: ThemeMode[] = ['dark', 'light', 'system'];
 
 export const filters = writable<FilterState>({ ...DEFAULT_FILTERS });
 export const sidebarCollapsed = writable(false);
@@ -53,6 +55,12 @@ export const sidebarCollapsed = writable(false);
  * scroll.
  */
 export const density = writable<Density>('comodo');
+
+/**
+ * Tema de la interfaz. Arranca en oscuro, que es el del producto; `system`
+ * sigue la preferencia del sistema operativo.
+ */
+export const theme = writable<ThemeMode>('dark');
 
 /**
  * `true` cuando algo recorta la lista; el orden no cuenta como filtro.
@@ -162,6 +170,11 @@ export function toggleDensity(): void {
   density.update((actual) => (actual === 'comodo' ? 'compacto' : 'comodo'));
 }
 
+/** Pasa al siguiente tema: oscuro, claro, sistema y vuelta a empezar. */
+export function cycleTheme(): void {
+  theme.update((actual) => THEMES[(THEMES.indexOf(actual) + 1) % THEMES.length] ?? 'dark');
+}
+
 /**
  * Dirección natural de cada criterio: los nombres se leen de la A a la Z, y
  * las fechas de lo más reciente a lo más antiguo.
@@ -194,6 +207,7 @@ export async function loadViewState(): Promise<void> {
     filters.set(parsed.filters);
     sidebarCollapsed.set(parsed.sidebar_collapsed);
     density.set(parsed.density);
+    theme.set(parsed.theme);
   } catch {
     /* JSON ilegible: se queda lo que hay. */
   }
@@ -213,7 +227,7 @@ export function startPersistingViewState(): () => void {
     });
   }, PERSIST_DELAY_MS);
 
-  let pendingInitial = 3;
+  let pendingInitial = 4;
   const onChange = () => {
     if (pendingInitial > 0) {
       pendingInitial -= 1;
@@ -226,6 +240,7 @@ export function startPersistingViewState(): () => void {
     filters.subscribe(onChange),
     sidebarCollapsed.subscribe(onChange),
     density.subscribe(onChange),
+    theme.subscribe(onChange),
   ];
 
   return () => {
@@ -245,6 +260,7 @@ export function currentViewState(): ViewState {
     filters: get(filters),
     sidebar_collapsed: get(sidebarCollapsed),
     density: get(density),
+    theme: get(theme),
   };
 }
 
@@ -275,6 +291,7 @@ export function sanitizeViewState(raw: unknown): ViewState {
     },
     sidebar_collapsed: source.sidebar_collapsed === true,
     density: source.density === 'compacto' ? 'compacto' : 'comodo',
+    theme: oneOf(source.theme, THEMES, 'dark'),
   };
 }
 

@@ -11,11 +11,13 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import {
   DEFAULT_FILTERS,
   currentViewState,
+  cycleTheme,
   density,
   filters,
   setGitState,
   sanitizeViewState,
   sidebarCollapsed,
+  theme,
   toggleDensity,
   toggleSidebar,
   toggleTagFilter,
@@ -25,6 +27,7 @@ beforeEach(() => {
   filters.set({ ...DEFAULT_FILTERS });
   sidebarCollapsed.set(false);
   density.set('comodo');
+  theme.set('dark');
 });
 
 describe('lo que se guarda', () => {
@@ -33,6 +36,7 @@ describe('lo que se guarda', () => {
       'density',
       'filters',
       'sidebar_collapsed',
+      'theme',
     ]);
   });
 
@@ -76,10 +80,42 @@ describe('lo que se recupera', () => {
     expect(sanitizeViewState({ density: 'compacto' }).density).toBe('compacto');
   });
 
+  it('cae al tema oscuro cuando falta el campo', () => {
+    expect(sanitizeViewState({ density: 'compacto' }).theme).toBe('dark');
+  });
+
+  it('cae al tema oscuro con un valor inventado', () => {
+    expect(sanitizeViewState({ theme: 'sepia' }).theme).toBe('dark');
+  });
+
+  it('acepta los tres temas guardados', () => {
+    for (const mode of ['dark', 'light', 'system'] as const) {
+      expect(sanitizeViewState({ theme: mode }).theme).toBe(mode);
+    }
+  });
+
   it('descarta un estado que no es un objeto sin perder los valores por defecto', () => {
     const recuperado = sanitizeViewState('esto no es una vista');
     expect(recuperado.filters).toEqual(DEFAULT_FILTERS);
     expect(recuperado.density).toBe('comodo');
     expect(recuperado.sidebar_collapsed).toBe(false);
+  });
+});
+
+describe('el tema', () => {
+  it('recorre oscuro, claro y sistema, y vuelve a empezar', () => {
+    const vistos = [];
+    for (let i = 0; i < 4; i += 1) {
+      cycleTheme();
+      vistos.push(currentViewState().theme);
+    }
+    expect(vistos).toEqual(['light', 'system', 'dark', 'light']);
+  });
+
+  it('sobrevive al viaje completo por JSON', () => {
+    cycleTheme();
+    cycleTheme();
+    const recuperado = sanitizeViewState(JSON.parse(JSON.stringify(currentViewState())));
+    expect(recuperado.theme).toBe('system');
   });
 });

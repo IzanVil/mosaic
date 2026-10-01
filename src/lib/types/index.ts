@@ -164,12 +164,16 @@ export interface FilterState {
   sort_dir: SortDirection;
 }
 
-/** Lo que se persiste entre sesiones para recuperar la última vista. */
 /** Densidad del tablero. `comodo` es la de siempre. */
 export type Density = 'comodo' | 'compacto';
 
+/** Tema elegido. `system` sigue la preferencia del sistema operativo. */
+export type ThemeMode = 'dark' | 'light' | 'system';
+
+/** Lo que se persiste entre sesiones para recuperar la última vista. */
 export interface ViewState {
   filters: FilterState;
   sidebar_collapsed: boolean;
   density: Density;
+  theme: ThemeMode;
 }
