@@ -173,6 +173,15 @@ Terminado:
       la variante rellena, que con etiquetas claras daba texto blanco a ~2:1.
 - [x] Problema 10, la cabecera: Mosaic como marca, pestañas con subrayado de
       acento, metadatos en una línea terciaria y las acciones en un grupo.
+- [x] Las fuentes de `tokens.css` apuntaban a Geist, que nunca se incluyó, y
+      la aplicación caía a la del sistema. Ahora apuntan a Inter y JetBrains
+      Mono; medido en WebKitGTK antes y después.
+- [x] `TagChip` lee `--tag-chip-*` en lugar de alfas fijos en `tagColors.ts`.
+- [x] Un solo «Limpiar filtros» a la vista y `GitStatusBadge`, sin uso,
+      borrado.
+- [x] Sesión B: `TagPicker`, `TagManager`, `Settings` y el botón de densidad
+      migrados. Los desplegables de ajustes eran ilegibles en oscuro (control
+      nativo de GTK) y ya no.
 
 A medias:
 
@@ -183,8 +192,13 @@ A medias:
 
 Sin empezar:
 
-- [ ] Los cinco componentes que siguen con los tokens anteriores, más el
-      armazón de `App.svelte` fuera de la cabecera.
+- [ ] Lo que sigue con los tokens anteriores: `ScanSummaryBar`, el armazón
+      de `App.svelte` fuera de la cabecera y los avisos de error y de carga de
+      `Dashboard`. Con eso, `app.css` puede dejar los tokens viejos.
+- [ ] Tema claro: los valores existen y la aplicación se ve bien con la clase
+      `light`, pero `index.html` fija `dark` y no hay conmutador. Sin clase, los
+      tokens nuevos siguen al sistema y los viejos de `app.css` no, así que la
+      mezcla se vería hasta terminar la migración. El conmutador es Fase 6.
 
 ---
 
