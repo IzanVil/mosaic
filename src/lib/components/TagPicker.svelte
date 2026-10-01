@@ -100,31 +100,22 @@
   }
 </script>
 
-<div class="relative">
+<div class="selector">
   <button
     bind:this={trigger}
     type="button"
+    class="disparador"
     onclick={() => (open ? close() : openPicker())}
     aria-expanded={open}
     aria-haspopup="dialog"
     title="Asignar etiquetas"
-    class="inline-flex items-center gap-1 rounded-full border border-dashed border-surface-border
-           px-2 py-0.5 text-xs text-content-muted transition hover:border-content-muted
-           hover:text-content focus-visible:outline-2 focus-visible:outline-offset-1
-           focus-visible:outline-accent"
   >
-    <Plus size={11} />
+    <Plus size={11} strokeWidth={1.75} />
     {#if !compact}Etiqueta{/if}
   </button>
 
   {#if open}
-    <div
-      use:dismissable={{ onDismiss: close }}
-      role="dialog"
-      aria-label="Asignar etiquetas"
-      class="absolute left-0 top-full z-30 mt-1 w-60 rounded-lg border border-surface-border
-             bg-surface-1 p-2 shadow-lg"
-    >
+    <div use:dismissable={{ onDismiss: close }} role="dialog" aria-label="Asignar etiquetas" class="panel">
       <input
         bind:this={input}
         bind:value={query}
@@ -132,66 +123,44 @@
         type="text"
         placeholder="Buscar o crear…"
         maxlength="32"
-        class="w-full rounded-md border border-surface-border bg-surface-0 px-2 py-1 text-sm
-               text-content placeholder:text-content-muted focus-visible:outline-2
-               focus-visible:outline-offset-1 focus-visible:outline-accent"
       />
 
-      <ul class="mt-2 max-h-48 space-y-0.5 overflow-y-auto">
+      <ul>
         {#each suggestions as tag (tag.id)}
           <li>
-            <button
-              type="button"
-              onclick={() => toggle(tag)}
-              disabled={busy}
-              class="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm
-                     text-content transition hover:bg-surface-2 disabled:opacity-60"
-            >
-              <span
-                class="size-2.5 shrink-0 rounded-full"
-                style="background-color: {tag.color};"
-              ></span>
-              <span class="min-w-0 flex-1 truncate">{tag.name}</span>
+            <button type="button" class="opcion" onclick={() => toggle(tag)} disabled={busy}>
+              <span class="color" style="background-color: {tag.color};"></span>
+              <span class="nombre">{tag.name}</span>
               {#if assignedIds.has(tag.id)}
-                <Check size={13} class="shrink-0 text-accent" />
+                <Check size={14} strokeWidth={1.75} class="marca" />
               {/if}
             </button>
           </li>
         {/each}
 
         {#if suggestions.length === 0 && !canCreate}
-          <li class="px-2 py-1 text-xs text-content-muted">
-            Todavía no hay etiquetas. Escribe un nombre para crear la primera.
-          </li>
+          <li class="vacio">Todavía no hay etiquetas. Escribe un nombre para crear la primera.</li>
         {/if}
       </ul>
 
       {#if canCreate}
-        <div class="mt-2 border-t border-surface-border pt-2">
-          <button
-            type="button"
-            onclick={create}
-            disabled={busy}
-            class="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm
-                   text-content transition hover:bg-surface-2 disabled:opacity-60"
-          >
-            <TagIcon size={13} style="color: {newColor};" />
-            <span class="min-w-0 flex-1 truncate">Crear «{query.trim()}»</span>
+        <div class="crear">
+          <button type="button" class="opcion" onclick={create} disabled={busy}>
+            <TagIcon size={14} strokeWidth={1.75} style="color: {newColor};" />
+            <span class="nombre">Crear «{query.trim()}»</span>
           </button>
 
-          <div class="mt-1 flex flex-wrap gap-1 px-2 pb-1">
+          <div class="paleta">
             {#each TAG_COLORS as color (color.hex)}
               <button
                 type="button"
+                class="muestra"
+                class:elegida={newColor === color.hex}
                 onclick={() => (newColor = color.hex)}
                 title={color.name}
                 aria-label="Color {color.name}"
                 aria-pressed={newColor === color.hex}
-                class="size-4 rounded-full border transition focus-visible:outline-2
-                       focus-visible:outline-offset-1 focus-visible:outline-accent"
-                style="background-color: {color.hex}; border-color: {newColor === color.hex
-                  ? 'currentColor'
-                  : 'transparent'};"
+                style="background-color: {color.hex};"
               ></button>
             {/each}
           </div>
@@ -200,3 +169,165 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .selector {
+    position: relative;
+  }
+
+  .disparador {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 2px var(--space-2);
+    border: 1px dashed var(--border-default);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-meta);
+    line-height: 16px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .disparador:hover {
+    border-color: var(--border-strong);
+    color: var(--text-secondary);
+  }
+
+  .panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 30;
+    width: 15rem;
+    margin-top: var(--space-1);
+    padding: var(--space-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-overlay);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /*
+   * Todo lo de dentro del panel va anidado en `.panel` a propósito.
+   * `ProjectCard` reestiliza con `:global(button)` el disparador de las
+   * tarjetas sin etiquetas, y ese selector alcanza también a los botones de
+   * este panel; con un solo nivel de clase, el suyo ganaba y las opciones se
+   * quedaban sin relleno.
+   */
+  .panel input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px var(--space-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: var(--surface-base);
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--text-primary);
+  }
+  .panel input::placeholder {
+    color: var(--text-tertiary);
+  }
+  .panel input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .panel ul {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 12rem;
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  .panel .opcion {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    text-align: left;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .panel .opcion:hover:not(:disabled) {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .panel .opcion:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+  .panel .opcion :global(.marca) {
+    flex: none;
+    color: var(--accent);
+  }
+
+  .color {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  .nombre {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vacio {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-tertiary);
+  }
+
+  .crear {
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .paleta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .panel .muestra {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+  }
+  .panel .muestra.elegida {
+    border-color: var(--text-primary);
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>
