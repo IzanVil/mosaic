@@ -97,9 +97,7 @@
               ? 'Cambiar a vista compacta'
               : 'Cambiar a vista cómoda'}
             aria-pressed={$density === 'compacto'}
-            class="rounded-md border border-surface-border p-1.5 text-content-muted transition
-                   hover:bg-surface-2 hover:text-content focus-visible:outline-2
-                   focus-visible:outline-offset-2 focus-visible:outline-accent"
+            class="densidad"
           >
             {#if $density === 'comodo'}
               <Rows3 size={14} strokeWidth={1.75} />
@@ -166,6 +164,29 @@
    */
   .lienzo {
     background: var(--surface-base);
+  }
+
+  /* Mismo botón de icono que la dirección de orden, que tiene al lado. */
+  .densidad {
+    display: inline-flex;
+    flex: none;
+    padding: 6px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .densidad:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+  .densidad:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .aviso-pocos {
