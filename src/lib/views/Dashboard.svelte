@@ -73,17 +73,11 @@
     {/if}
 
     {#each [$appsError, $projectsError, $tagsError].filter((error) => error !== null) as error}
-      <p
-        class="mx-6 mt-4 rounded-md border border-surface-border bg-surface-1 px-4 py-3 text-sm
-               text-content"
-        role="alert"
-      >
-        {error}
-      </p>
+      <p class="alerta" role="alert">{error}</p>
     {/each}
 
     {#if hasProjects}
-      <div class="flex flex-col gap-2 border-b border-surface-border px-6 py-3">
+      <div class="herramientas">
         <div class="flex items-center gap-3">
           <div class="min-w-0 flex-1"><SearchBar /></div>
           <SortMenu />
@@ -119,7 +113,7 @@
     {/if}
 
     {#if $loadingProjects && !hasProjects}
-      <p class="px-6 py-16 text-center text-sm text-content-muted">Cargando proyectos…</p>
+      <p class="cargando">Cargando proyectos…</p>
     {:else if !hasProjects && !hasScanPaths}
       <EmptyState
         title="Todavía no hay rutas que escanear"
@@ -164,6 +158,34 @@
    */
   .lienzo {
     background: var(--surface-base);
+  }
+
+  .alerta {
+    margin: var(--space-4) var(--space-5) 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in oklab, var(--danger) 40%, transparent);
+    border-radius: var(--radius-md);
+    background: var(--danger-surface);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--danger);
+  }
+
+  .herramientas {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .cargando {
+    margin: 0;
+    padding: var(--space-8) var(--space-5);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    text-align: center;
+    color: var(--text-tertiary);
   }
 
   /* Mismo botón de icono que la dirección de orden, que tiene al lado. */

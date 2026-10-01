@@ -53,53 +53,105 @@
       ' border-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);' +
       ' color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), transparent);',
   );
-
-  /**
-   * Clases que revelan la X con el ratón o el foco sobre el propio chip.
-   *
-   * Antes dependía de `group-hover`, es decir del hover de la tarjeta entera,
-   * que hacía aparecer tres X a la vez al pasar por encima.
-   */
-  const REVEAL =
-    'opacity-0 [:hover>&]:opacity-100 [:focus-within>&]:opacity-100 focus-visible:opacity-100';
-
-  const SHAPE =
-    'inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-xs' +
-    ' leading-4 transition focus-visible:outline-2 focus-visible:outline-offset-1' +
-    ' focus-visible:outline-accent';
 </script>
 
 {#if onClick}
-  <button
-    type="button"
-    onclick={onClick}
-    title={title ?? tag.name}
-    class="{SHAPE} cursor-pointer hover:brightness-110"
-    {style}
-  >
-    <span class="truncate">{tag.name}</span>
+  <button type="button" class="chip pulsable" onclick={onClick} title={title ?? tag.name} {style}>
+    <span class="nombre">{tag.name}</span>
     {#if count !== null}
-      <span class="opacity-70">{count}</span>
+      <span class="cuenta">{count}</span>
     {/if}
   </button>
 {:else}
-  <span class={SHAPE} {style} title={title ?? tag.name}>
-    <span class="truncate">{tag.name}</span>
+  <span class="chip" {style} title={title ?? tag.name}>
+    <span class="nombre">{tag.name}</span>
     {#if count !== null}
-      <span class="opacity-70">{count}</span>
+      <span class="cuenta">{count}</span>
     {/if}
     {#if removable && onRemove}
       <button
         type="button"
+        class="quitar"
+        class:oculta={revealOnHover}
         onclick={onRemove}
         aria-label="Quitar la etiqueta {tag.name}"
         title="Quitar la etiqueta {tag.name}"
-        class="-mr-1 rounded-full p-0.5 transition hover:bg-black/10 focus-visible:outline-2
-               focus-visible:outline-offset-1 focus-visible:outline-accent dark:hover:bg-white/20
-               {removable && revealOnHover ? REVEAL : ''}"
       >
         <X size={10} />
       </button>
     {/if}
   </span>
 {/if}
+
+<style>
+  /* La misma forma que los chips neutros de `FilterBar`: una sola gramática. */
+  .chip {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 2px var(--space-2);
+    border: 1px solid;
+    border-radius: var(--radius-pill);
+    font: inherit;
+    font-size: var(--text-meta);
+    line-height: 16px;
+    font-weight: var(--text-meta-weight);
+  }
+
+  .pulsable {
+    cursor: pointer;
+    transition: filter var(--duration-fast) var(--ease-out);
+  }
+  .pulsable:hover {
+    filter: brightness(1.1);
+  }
+
+  .nombre {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cuenta {
+    opacity: 0.7;
+  }
+
+  .quitar {
+    display: inline-flex;
+    margin-right: calc(var(--space-1) * -1);
+    padding: 2px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      opacity var(--duration-fast) var(--ease-out);
+  }
+  .quitar:hover {
+    background: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);
+  }
+
+  /*
+   * La X oculta ocupa su hueco igualmente, así que el chip no cambia de ancho
+   * al pasar el cursor. Se revela con el hover o el foco sobre **este** chip,
+   * no sobre la tarjeta: antes dependía del hover de la tarjeta entera y
+   * aparecían tres X a la vez.
+   */
+  .quitar.oculta {
+    opacity: 0;
+  }
+  .chip:hover > .quitar.oculta,
+  .chip:focus-within > .quitar.oculta {
+    opacity: 1;
+  }
+
+  .chip:focus-visible,
+  .quitar:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+</style>

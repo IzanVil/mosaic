@@ -34,28 +34,74 @@
   );
 </script>
 
-<div
-  class="flex flex-col gap-1 border-b border-surface-border bg-surface-1 px-6 py-2.5 text-sm"
-  role="status"
->
-  <p class="flex items-center gap-2 text-content">
-    <CircleCheck size={14} class="shrink-0 text-content-muted" />
+<div class="resumen" role="status">
+  <p class="linea">
+    <CircleCheck size={14} strokeWidth={1.75} class="icono" />
     <span>
-      <span class="font-medium text-content-strong">
+      <span class="total">
         {summary.projects_found}
         {summary.projects_found === 1 ? 'proyecto encontrado' : 'proyectos encontrados'}
       </span>
       {#if details.length > 0}
-        <span class="text-content-muted">· {details.join(' · ')}</span>
+        <span class="detalle">· {details.join(' · ')}</span>
       {/if}
-      <span class="text-content-muted">· en {formatDuration(summary.elapsed_ms)}</span>
+      <span class="detalle">· en {formatDuration(summary.elapsed_ms)}</span>
     </span>
   </p>
 
   {#each warnings as warning (warning)}
-    <p class="flex items-center gap-2 text-xs text-content-muted">
-      <TriangleAlert size={13} class="shrink-0" />
+    <p class="aviso">
+      <TriangleAlert size={14} strokeWidth={1.75} class="icono" />
       {warning}
     </p>
   {/each}
 </div>
+
+<style>
+  .resumen {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: 10px var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-raised);
+  }
+
+  .linea,
+  .aviso {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .linea {
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    color: var(--text-secondary);
+  }
+
+  .linea :global(.icono) {
+    flex: none;
+    color: var(--success);
+  }
+
+  .total {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .detalle {
+    color: var(--text-tertiary);
+  }
+
+  .aviso {
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--warning);
+  }
+
+  .aviso :global(.icono) {
+    flex: none;
+  }
+</style>
