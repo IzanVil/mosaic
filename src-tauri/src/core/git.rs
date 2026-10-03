@@ -69,6 +69,9 @@ pub struct Branches {
     pub remote: Vec<BranchInfo>,
 }
 
+/// Commits que enseña la vista de detalle de un proyecto.
+pub const HISTORY_LIMIT: usize = 10;
+
 /// Lee los últimos `limit` commits accesibles desde HEAD, del más reciente al
 /// más antiguo.
 ///

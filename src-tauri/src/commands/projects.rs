@@ -1,13 +1,16 @@
 //! Comandos de consulta de proyectos.
 
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use tauri::State;
 
 use crate::core::project::normalize_notes;
+use crate::core::readme::{self, ReadmePreview};
 use crate::core::{now_ts, Project};
 use crate::db::repositories::projects::{self as repo, ProjectWithTags};
 use crate::db::Db;
+use crate::errors::AppError;
 
 /// Devuelve todos los proyectos: primero los fijados, luego por nombre.
 #[tauri::command]
@@ -62,4 +65,21 @@ pub async fn set_project_notes(
     let wrote = db.with_conn(|conn| repo::set_notes(conn, id, normalized.as_deref(), now_ts()))?;
     tracing::debug!(id, wrote, "set_project_notes");
     Ok(normalized)
+}
+
+/// Lee y renderiza el README de un proyecto.
+///
+/// Devuelve `null` si no tiene README, o si la carpeta ya no está en disco:
+/// los dos son casos normales que la interfaz explica con un mensaje.
+#[tauri::command]
+pub async fn get_project_readme(
+    db: State<'_, Arc<Db>>,
+    project_id: i64,
+) -> Result<Option<ReadmePreview>, String> {
+    let project = db.with_conn(|conn| repo::get_by_id(conn, project_id))?;
+
+    tauri::async_runtime::spawn_blocking(move || readme::read(&PathBuf::from(&project.path)))
+        .await
+        .map_err(|err| AppError::Internal(format!("la lectura del README falló: {err}")))?
+        .map_err(String::from)
 }
