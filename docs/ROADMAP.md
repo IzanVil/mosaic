@@ -101,14 +101,13 @@ tarjetas.
 
 ---
 
-## Fase 5 — Detalle de proyecto · CONGELADA
+## Fase 5 — Detalle de proyecto · EN CURSO
 
 Objetivo: vista en profundidad.
 
-**Estado a 2026-09-20: congelada durante una semana de uso real.** Hay dos
-piezas de backend terminadas y con tests, y ni una de interfaz. Nada de lo
-hecho está enganchado a la aplicación: el código existe, compila y se prueba,
-pero ningún comando lo expone todavía.
+**En curso desde el 2026-10-03**, después de cerrar el rediseño. Estuvo
+congelada del 2026-09-20 al 2026-10-03 mientras se usaba la aplicación; de
+entonces son las dos piezas de backend que ya tenían tests.
 
 Terminado:
 
