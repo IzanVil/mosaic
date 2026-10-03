@@ -101,7 +101,7 @@ tarjetas.
 
 ---
 
-## Fase 5 — Detalle de proyecto · EN CURSO
+## Fase 5 — Detalle de proyecto · HECHA, PENDIENTE DE VERIFICAR
 
 Objetivo: vista en profundidad.
 
@@ -117,23 +117,33 @@ Terminado:
       `https` pasan a enlace y el resto a texto alternativo. 13 tests.
 - [x] `core/git.rs`: `read_history` y `read_branches`, sin red. 7 tests.
 
-Sin empezar:
+Hecho el 2026-10-03, en la Sesión C:
 
-- [ ] `ProjectView.svelte` con cabecera y botón de copiar ruta
-- [ ] Preview del README renderizado
-- [ ] Historial de los últimos 10 commits
-- [ ] Ramas locales y remotas
-- [ ] Notas personales guardadas en `projects.notes`, que pasan a contar en la
-      comparación de `updated_at`: al hacerlo hay que corregir su documentación
-      en `db/repositories/projects.rs` y en `ARCHITECTURE.md`, en el mismo commit
-- [ ] Etiquetas asignadas y acciones rápidas ampliadas
-- [ ] Los cinco comandos: `get_project_readme`, `get_project_history`,
-      `get_project_branches`, `set_project_notes` y `open_external`
-- [ ] Las cuatro dependencias aprobadas y aún no añadidas:
-      `tauri-plugin-clipboard-manager` (fijando la serie 2, porque `cargo add` a
-      secas instala una alfa para Tauri 3) y su paquete de frontend
-- [ ] `docs/ARCHITECTURE.md` y el doc de `projects.rs`, que deben corregirse en
-      el mismo commit que introduzca las notas
+- [x] Los cinco comandos: `get_project_readme`, `get_project_history` (los
+      diez últimos commits), `get_project_branches`, `set_project_notes` y
+      `open_external`
+- [x] `open_external` con lista blanca de `http` y `https`, parseada con el
+      crate `url`, que sigue el estándar de los navegadores. 4 tests
+- [x] Notas en `projects.notes`: vacías se guardan como `NULL`, el mismo texto
+      no se reescribe, y mueven `updated_at` solo cuando cambian. La
+      documentación de `projects.rs` y de `ARCHITECTURE.md` se corrigió en el
+      mismo commit. 7 tests
+- [x] Plugin del portapapeles: crate en la serie 2 (2.3.3), paquete de npm
+      fijado a la misma versión menor y solo permiso de escritura
+- [x] `stores/navigation.ts` (unión discriminada) y `stores/projectDetail.ts`
+      (las cuatro reglas de las notas). 6 tests
+- [x] `ProjectView.svelte` con `ReadmeView`, `CommitList`, `BranchList`,
+      `NotesEditor` y `CopyPathButton`, todo sobre los tokens
+- [x] El nombre de la tarjeta abre el detalle; Escape vuelve con el foco en la
+      tarjeta, salvo si se pasó por Ajustes
+
+Pendiente de verificar a mano: abrir enlaces del README en el navegador, copiar
+la ruta y el regreso del foco con Escape. Se puede probar sin manos solo lo que
+hay en las capturas.
+
+A tener en cuenta: el README se renderiza sin su HTML crudo, como se decidió.
+Un README que monte su portada o sus tablas en HTML (el de Mosaic, por ejemplo)
+se ve con huecos donde iban esos bloques.
 
 Decisiones ya cerradas, para no volver a discutirlas: README renderizado en
 Rust; enlaces del README abiertos en el navegador con lista blanca `http` y
