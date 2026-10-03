@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::errors::{AppError, Result};
 
@@ -313,6 +314,48 @@ pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<
     Ok(())
 }
 
+/// Esquemas que `open_external` acepta. Cualquier otro se rechaza.
+///
+/// Los enlaces vienen del README de un proyecto, que es contenido de terceros.
+/// Un `file:` abriría rutas del disco, un `javascript:` o un `data:` podrían
+/// ejecutar algo en el navegador, y esquemas propios como `vscode:` lanzarían
+/// aplicaciones. Solo la web pasa.
+pub const EXTERNAL_SCHEMES: &[&str] = &["http", "https"];
+
+/// Comprueba que `raw` es una URL web que se puede abrir en el navegador.
+///
+/// Se parsea con el crate `url`, no con comparaciones de prefijo. Ese parser
+/// sigue el estándar WHATWG, el mismo que los navegadores, así que lo que se
+/// valida aquí es exactamente lo que el navegador va a abrir: `HTTPS://` cuenta
+/// como `https`, y una forma rara como `http:/x` se normaliza a `http://x/`, que
+/// sigue siendo una web. Además del esquema, exige un host; una URL web sin
+/// host no lleva a ninguna parte.
+pub fn validate_external_url(raw: &str) -> Result<Url> {
+    let url = Url::parse(raw.trim())
+        .map_err(|err| AppError::Validation(format!("enlace no válido: {err}")))?;
+
+    if !EXTERNAL_SCHEMES.contains(&url.scheme()) {
+        return Err(AppError::Validation(format!(
+            "solo se abren enlaces http y https, no «{}:»",
+            url.scheme()
+        )));
+    }
+    if url.host_str().is_none_or(str::is_empty) {
+        return Err(AppError::Validation("el enlace no tiene servidor".into()));
+    }
+    Ok(url)
+}
+
+/// Abre una URL web en el navegador predeterminado, después de validarla.
+///
+/// La URL se pasa ya serializada por el crate `url`, como argumento suelto, y
+/// nunca dentro de una línea de shell.
+pub fn open_external(raw: &str) -> Result<()> {
+    let url = validate_external_url(raw)?;
+    open::that_detached(url.as_str())?;
+    Ok(())
+}
+
 /// Ruta del ejecutable de una aplicación detectada, para diagnóstico.
 pub fn which(bin: &str) -> Option<PathBuf> {
     let path = std::env::var_os("PATH")?;
@@ -323,6 +366,67 @@ pub fn which(bin: &str) -> Option<PathBuf> {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn external_urls_accept_http_and_https() {
+        for raw in [
+            "https://github.com/IzanVil/mosaic",
+            "http://localhost:8080/docs",
+            "HTTPS://Example.com/Ruta?q=1#ancla",
+            "  https://tauri.app  ",
+        ] {
+            assert!(validate_external_url(raw).is_ok(), "{raw} debería valer");
+        }
+        assert_eq!(
+            validate_external_url("HTTPS://Example.com")
+                .unwrap()
+                .scheme(),
+            "https"
+        );
+    }
+
+    #[test]
+    fn external_urls_are_normalized_like_a_browser_would() {
+        // El parser es el de WHATWG: lo que se valida es lo que se abre.
+        let url = validate_external_url("http:/barra-sola").unwrap();
+        assert_eq!(url.as_str(), "http://barra-sola/");
+    }
+
+    #[test]
+    fn external_urls_reject_every_other_scheme() {
+        for raw in [
+            "file:///etc/passwd",
+            "javascript:alert(1)",
+            "data:text/html,<script>alert(1)</script>",
+            "vscode://file/home/usuario",
+            "mailto:alguien@example.com",
+            "ftp://example.com/fichero",
+            "ssh://git@github.com/IzanVil/mosaic",
+        ] {
+            assert!(
+                matches!(validate_external_url(raw), Err(AppError::Validation(_))),
+                "{raw} no debería valer"
+            );
+        }
+    }
+
+    #[test]
+    fn external_urls_reject_relative_and_malformed_links() {
+        for raw in [
+            "",
+            "   ",
+            "docs/README.md",
+            "#instalacion",
+            "//example.com/sin-esquema",
+            "https://",
+        ] {
+            assert!(
+                validate_external_url(raw).is_err(),
+                "{raw:?} no debería valer"
+            );
+        }
+    }
+
     use super::*;
 
     #[test]

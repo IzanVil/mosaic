@@ -7,7 +7,7 @@ use std::sync::Arc;
 use tauri::State;
 
 use crate::config::settings;
-use crate::core::launcher::{detect, open_path, AppKind, DetectedApp};
+use crate::core::launcher::{detect, open_external as open_url, open_path, AppKind, DetectedApp};
 use crate::db::repositories::projects as projects_repo;
 use crate::db::Db;
 use crate::errors::AppError;
@@ -94,5 +94,16 @@ pub async fn set_preferred_app(
 
     db.with_conn(|conn| settings::set_raw(conn, key, &app_id))?;
     tracing::info!(?kind, app = %app_id, "aplicación preferida guardada");
+    Ok(())
+}
+
+/// Abre un enlace web en el navegador predeterminado.
+///
+/// Lo usan los enlaces del README. Solo pasan `http` y `https`: la lista
+/// blanca y su porqué viven en [`crate::core::launcher::validate_external_url`].
+#[tauri::command]
+pub async fn open_external(url: String) -> Result<(), String> {
+    open_url(&url)?;
+    tracing::debug!(%url, "open_external");
     Ok(())
 }

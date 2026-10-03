@@ -173,6 +173,7 @@ pub fn run() {
             commands::projects::set_project_notes,
             commands::system::list_detected_apps,
             commands::system::open_in,
+            commands::system::open_external,
             commands::system::get_preferred_apps,
             commands::system::set_preferred_app,
             commands::git::list_git_status,
