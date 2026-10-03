@@ -23,3 +23,11 @@ export function getPreferredApps(): Promise<PreferredApps> {
 export function setPreferredApp(kind: AppKind, appId: string): Promise<void> {
   return invoke<void>('set_preferred_app', { kind, appId });
 }
+
+/**
+ * Abre un enlace en el navegador predeterminado. El backend solo acepta
+ * `http` y `https`; cualquier otro esquema vuelve como error.
+ */
+export function openExternal(url: string): Promise<void> {
+  return invoke<void>('open_external', { url });
+}

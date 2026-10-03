@@ -230,6 +230,11 @@ export async function togglePinned(id: number, pinned: boolean): Promise<void> {
   }
 }
 
+/** Refleja en el tablero las notas que acaba de guardar la vista de detalle. */
+export function setProjectNotesLocally(id: number, notes: string | null): void {
+  patchProject(id, (project) => ({ ...project, notes }));
+}
+
 /**
  * Registra en local que un proyecto se acaba de abrir.
  *

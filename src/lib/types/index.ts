@@ -114,6 +114,43 @@ export interface GitRefreshSummary {
   elapsed_ms: number;
 }
 
+/** Espejo de `core::git::CommitInfo`. */
+export interface CommitInfo {
+  sha: string;
+  /** Los siete primeros caracteres del sha, que es como se citan a mano. */
+  short_sha: string;
+  /** Primera línea del mensaje. */
+  summary: string;
+  author_name: string;
+  /** Segundos desde el epoch Unix. */
+  committed_at: number;
+}
+
+/** Espejo de `core::git::BranchInfo`. */
+export interface BranchInfo {
+  /** Nombre corto: `main`, o `origin/main` para las remotas. */
+  name: string;
+  /** Es la rama a la que apunta HEAD. Siempre `false` en las remotas. */
+  is_head: boolean;
+}
+
+/** Espejo de `core::git::Branches`. */
+export interface Branches {
+  local: BranchInfo[];
+  /** Remotas conocidas localmente: las que dejó el último `fetch` del usuario. */
+  remote: BranchInfo[];
+}
+
+/** Espejo de `core::readme::ReadmePreview`. */
+export interface ReadmePreview {
+  /** Nombre del fichero encontrado, tal y como está en disco. */
+  file_name: string;
+  /** HTML ya saneado en el backend, listo para insertar. */
+  html: string;
+  /** El fichero pasaba de 512 KiB y se ha recortado. */
+  truncated: boolean;
+}
+
 /** Espejo de `core::launcher::AppKind`. */
 export type AppKind = 'ide' | 'terminal' | 'file_manager';
 
