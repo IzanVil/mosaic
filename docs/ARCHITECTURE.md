@@ -169,14 +169,14 @@ Es la parte con más reglas y la que más tests tiene:
 | Campo | Cuándo cambia |
 |---|---|
 | `created_at` | Solo en la inserción. Nunca se modifica. |
-| `updated_at` | Hoy, solo si cambia el nombre, el lenguaje primario o la condición de repositorio Git. Nada más. |
+| `updated_at` | Si el escáner ve cambiar el nombre, el lenguaje primario o la condición de repositorio Git, o si el usuario cambia las notas. Nada más. |
 | `last_seen_at` | Cada vez que el escáner ve el proyecto en disco. |
 | `missing` | `0` cuando el escáner lo ve, `1` cuando deja de verlo. |
 
-`notes` queda fuera de esa comparación porque ningún comando las escribe
-todavía. La Fase 5, que introduce la edición, tiene que añadirlas a la
-comparación y actualizar esta tabla **en el mismo commit**: esta página describe
-lo que el código hace, no lo que se pretende que haga.
+Las notas mueven `updated_at` solo cuando cambian de verdad: guardar el mismo
+texto que ya había no escribe nada. El editor autoguarda mientras se escribe, y
+sin esa comprobación cada pausa movería la fecha. Un texto vacío o de solo
+espacios se guarda como `NULL`.
 
 Un proyecto que desaparece del disco **se marca, no se borra**: borrarlo haría
 perder las etiquetas y las notas que el usuario le haya puesto.

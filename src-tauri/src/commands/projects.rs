@@ -4,7 +4,8 @@ use std::sync::Arc;
 
 use tauri::State;
 
-use crate::core::Project;
+use crate::core::project::normalize_notes;
+use crate::core::{now_ts, Project};
 use crate::db::repositories::projects::{self as repo, ProjectWithTags};
 use crate::db::Db;
 
@@ -44,4 +45,21 @@ pub async fn set_project_pinned(
 ) -> Result<(), String> {
     db.with_conn(|conn| repo::set_pinned(conn, id, pinned))?;
     Ok(())
+}
+
+/// Guarda las notas de un proyecto y devuelve lo que ha quedado guardado.
+///
+/// Un texto vacío o de solo espacios se guarda como `NULL`, y el mismo texto
+/// que ya había no se vuelve a escribir. El frontend usa la respuesta para
+/// quedarse con el valor real, no con el que envió.
+#[tauri::command]
+pub async fn set_project_notes(
+    db: State<'_, Arc<Db>>,
+    id: i64,
+    notes: String,
+) -> Result<Option<String>, String> {
+    let normalized = normalize_notes(&notes)?;
+    let wrote = db.with_conn(|conn| repo::set_notes(conn, id, normalized.as_deref(), now_ts()))?;
+    tracing::debug!(id, wrote, "set_project_notes");
+    Ok(normalized)
 }

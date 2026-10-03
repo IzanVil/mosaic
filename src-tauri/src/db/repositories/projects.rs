@@ -4,14 +4,11 @@
 //!
 //! - `created_at`: se fija en la inserción y no se modifica jamás.
 //! - `updated_at`: solo avanza si cambian metadatos propios del proyecto, es
-//!   decir columnas de `projects`. La regla de **hoy** es exactamente esta:
-//!   [`upsert_by_path`] compara `name`, `primary_language` e `is_git_repo`, y
-//!   nada más.
-//!
-//!   `notes` **no** está en la comparación porque no hay forma de editarlas:
-//!   ningún comando las escribe. Cuando la Fase 5 añada esa edición, hay que
-//!   meter `notes` en la comparación **y corregir esta lista en el mismo
-//!   commit**; la documentación describe el comportamiento, no la intención.
+//!   decir columnas de `projects`. La regla es exactamente esta, y no hay más
+//!   caminos que la muevan:
+//!   - [`upsert_by_path`] compara `name`, `primary_language` e `is_git_repo`;
+//!   - [`set_notes`] la mueve cuando las notas cambian de verdad. Guardar el
+//!     mismo texto que ya había no escribe nada, así que tampoco la mueve.
 //! - `last_seen_at`: avanza cada vez que el escáner ve el proyecto en disco.
 //! - `missing`: `0` cuando el escáner lo ve, `1` cuando deja de verlo.
 //!
@@ -255,6 +252,36 @@ pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
         return Err(AppError::NotFound(format!("proyecto {id}")));
     }
     Ok(())
+}
+
+/// Guarda las notas del proyecto. `None` las borra (`NULL`).
+///
+/// Las notas son un metadato propio del proyecto, así que **sí** hacen avanzar
+/// `updated_at`, pero solo cuando cambian: si el texto es el mismo que ya había
+/// no se escribe nada. El editor autoguarda mientras se escribe, y sin esta
+/// comprobación cada pausa movería la fecha aunque nadie hubiera tocado nada.
+///
+/// Devuelve si ha llegado a escribir. Las notas se esperan ya normalizadas con
+/// [`crate::core::project::normalize_notes`].
+pub fn set_notes(conn: &Connection, id: i64, notes: Option<&str>, now: i64) -> Result<bool> {
+    let current: Option<String> = conn
+        .query_row(
+            "SELECT notes FROM projects WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .optional()?
+        .ok_or_else(|| AppError::NotFound(format!("proyecto {id}")))?;
+
+    if current.as_deref() == notes {
+        return Ok(false);
+    }
+
+    conn.execute(
+        "UPDATE projects SET notes = ?2, updated_at = ?3 WHERE id = ?1",
+        params![id, notes, now],
+    )?;
+    Ok(true)
 }
 
 /// Registra que el proyecto se acaba de abrir.
@@ -559,6 +586,99 @@ mod tests {
 
         db.with_conn(|conn| set_pinned(conn, id, false)).unwrap();
         assert!(!db.with_conn(|conn| get_by_id(conn, id)).unwrap().pinned);
+    }
+
+    #[test]
+    fn set_notes_saves_the_text_and_advances_updated_at() {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/mosaic", None), 1_000))
+            .unwrap()
+            .id;
+
+        let wrote = db
+            .with_conn(|conn| set_notes(conn, id, Some("pendiente: firmar el .dmg"), 2_000))
+            .unwrap();
+        let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+
+        assert!(wrote);
+        assert_eq!(stored.notes.as_deref(), Some("pendiente: firmar el .dmg"));
+        assert_eq!(stored.updated_at, 2_000, "las notas son metadatos propios");
+    }
+
+    #[test]
+    fn set_notes_with_none_stores_null() {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/mosaic", None), 1_000))
+            .unwrap()
+            .id;
+        db.with_conn(|conn| set_notes(conn, id, Some("algo"), 2_000))
+            .unwrap();
+
+        let wrote = db
+            .with_conn(|conn| set_notes(conn, id, None, 3_000))
+            .unwrap();
+        let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+
+        assert!(wrote);
+        assert_eq!(stored.notes, None);
+        assert_eq!(stored.updated_at, 3_000, "borrarlas también es un cambio");
+    }
+
+    #[test]
+    fn set_notes_does_not_write_when_the_text_is_the_same() {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/mosaic", None), 1_000))
+            .unwrap()
+            .id;
+        db.with_conn(|conn| set_notes(conn, id, Some("igual"), 2_000))
+            .unwrap();
+
+        let wrote = db
+            .with_conn(|conn| set_notes(conn, id, Some("igual"), 9_000))
+            .unwrap();
+        let empty_again = db
+            .with_conn(|conn| {
+                set_notes(conn, id, None, 9_500)?;
+                set_notes(conn, id, None, 9_900)
+            })
+            .unwrap();
+        let stored = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+
+        assert!(!wrote, "el mismo texto no se vuelve a escribir");
+        assert!(!empty_again, "NULL sobre NULL tampoco");
+        assert_eq!(stored.updated_at, 9_500);
+    }
+
+    #[test]
+    fn set_notes_touches_nothing_else_and_rejects_unknown_projects() {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| upsert_by_path(conn, &discovered("/code/mosaic", None), 1_000))
+            .unwrap()
+            .id;
+        db.with_conn(|conn| {
+            set_pinned(conn, id, true)?;
+            touch_last_opened(conn, id, 1_500)
+        })
+        .unwrap();
+        let before = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+
+        db.with_conn(|conn| set_notes(conn, id, Some("nota"), 2_000))
+            .unwrap();
+        let after = db.with_conn(|conn| get_by_id(conn, id)).unwrap();
+
+        assert_eq!(after.created_at, before.created_at);
+        assert_eq!(after.last_seen_at, before.last_seen_at);
+        assert_eq!(after.last_opened_at, before.last_opened_at);
+        assert_eq!(after.missing, before.missing);
+        assert_eq!(after.pinned, before.pinned);
+        assert_eq!(after.name, before.name);
+
+        let missing = db.with_conn(|conn| set_notes(conn, id + 999, Some("x"), 2_000));
+        assert!(matches!(missing, Err(AppError::NotFound(_))));
     }
 
     #[test]

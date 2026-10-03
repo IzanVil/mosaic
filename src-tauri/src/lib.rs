@@ -170,6 +170,7 @@ pub fn run() {
             commands::scanner::set_scan_path_enabled,
             commands::scanner::scan_all_paths,
             commands::projects::set_project_pinned,
+            commands::projects::set_project_notes,
             commands::system::list_detected_apps,
             commands::system::open_in,
             commands::system::get_preferred_apps,
