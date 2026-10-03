@@ -12,6 +12,7 @@
   } from '@lucide/svelte';
 
   import Dashboard from './lib/views/Dashboard.svelte';
+  import ProjectView from './lib/views/ProjectView.svelte';
   import Settings from './lib/views/Settings.svelte';
   import { loadApps } from './lib/stores/apps';
   import { cycleTheme, startPersistingViewState, theme } from './lib/stores/filters';
@@ -22,6 +23,7 @@
     refreshAllGitStatus,
     refreshingGit,
   } from './lib/stores/gitStatus';
+  import { goToDashboard, goToSettings, route } from './lib/stores/navigation';
   import { loadProjects, projects, runScan, scanning } from './lib/stores/projects';
   import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
   import { loadTags } from './lib/stores/tags';
@@ -45,8 +47,6 @@
    */
   const CLOCK_TICK_MS = 30_000;
 
-  type View = 'dashboard' | 'settings';
-
   /**
    * Un solo botón para tres estados: cada clic pasa al siguiente. El icono es
    * el del tema actual y el `title` dice cuál viene, para que el clic no sea
@@ -60,7 +60,6 @@
 
   let themeInfo = $derived(THEME_INFO[$theme]);
 
-  let view = $state<View>('dashboard');
   let tick = $state(now_ts());
 
   let canScan = $derived($scanPaths.length > 0);
@@ -121,7 +120,7 @@
   async function scan() {
     const summary = await runScan();
     if (summary === null) return;
-    view = 'dashboard';
+    goToDashboard();
     await refreshAllGitStatus();
   }
 </script>
@@ -134,8 +133,8 @@
       <button
         type="button"
         class="pestana"
-        onclick={() => (view = 'dashboard')}
-        aria-current={view === 'dashboard' ? 'page' : undefined}
+        onclick={goToDashboard}
+        aria-current={$route.view !== 'settings' ? 'page' : undefined}
       >
         <LayoutList size={16} strokeWidth={1.75} />
         Proyectos
@@ -144,8 +143,8 @@
       <button
         type="button"
         class="pestana"
-        onclick={() => (view = 'settings')}
-        aria-current={view === 'settings' ? 'page' : undefined}
+        onclick={goToSettings}
+        aria-current={$route.view === 'settings' ? 'page' : undefined}
       >
         <SettingsIcon size={16} strokeWidth={1.75} />
         Ajustes
@@ -209,8 +208,13 @@
   {/if}
 
   <main class="principal">
-    {#if view === 'dashboard'}
-      <Dashboard onGoToSettings={() => (view = 'settings')} onScan={scan} />
+    {#if $route.view === 'dashboard'}
+      <Dashboard onGoToSettings={goToSettings} onScan={scan} />
+    {:else if $route.view === 'project'}
+      <!-- El key recrea la vista entera si se abre otro proyecto. -->
+      {#key $route.projectId}
+        <ProjectView projectId={$route.projectId} />
+      {/key}
     {:else}
       <div class="desplazable"><Settings /></div>
     {/if}

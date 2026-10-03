@@ -4,6 +4,7 @@
   import TagChip from './TagChip.svelte';
   import TagPicker from './TagPicker.svelte';
   import { openProject } from '../stores/apps';
+  import { openProjectDetail } from '../stores/navigation';
   import { togglePinned } from '../stores/projects';
   import { unassignTagFromProject } from '../stores/tags';
   import type { ProjectWithTags } from '../types';
@@ -44,7 +45,17 @@
 
 <article class="tarjeta" class:fijada={project.pinned} class:ausente={project.missing}>
   <header>
-    <h3 title={project.name}>{project.name}</h3>
+    <h3>
+      <button
+        type="button"
+        class="nombre"
+        data-proyecto={project.id}
+        onclick={() => openProjectDetail(project.id)}
+        title="Ver el detalle de {project.name}"
+      >
+        {project.name}
+      </button>
+    </h3>
 
     <button
       type="button"
@@ -181,6 +192,31 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /*
+   * El nombre abre el detalle. Es un botón para que llegue el teclado, y lleva
+   * `data-proyecto` porque es donde vuelve el foco al salir del detalle.
+   */
+  .nombre {
+    display: block;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .nombre:hover {
+    color: var(--accent);
   }
 
   .ruta {
