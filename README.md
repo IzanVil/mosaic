@@ -96,6 +96,12 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
       O el del sistema. Mosaic recuerda el tema, los filtros y el orden entre sesiones.
     </td>
   </tr>
+  <tr>
+    <td colspan="3" valign="top">
+      <h3>📂 Y una ficha por proyecto</h3>
+      Pulsa el nombre de una tarjeta y ves su README, sus ramas, sus últimos commits y tus notas, que se guardan solas mientras escribes. Escape te devuelve al tablero.
+    </td>
+  </tr>
 </table>
 
 ## 📸 Capturas
@@ -208,8 +214,8 @@ En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
 | ✅ | **Tablero** | Tarjetas, destacados y apertura en editor y terminal |
 | ✅ | **Etiquetas y filtros** | Búsqueda difusa y vista guardada entre sesiones |
 | ✅ | **Diseño** | Sistema propio, tema claro y oscuro |
-| 🔜 | **Detalle de proyecto** | README, historial, ramas y notas |
-| ⬜ | **Pulido** | Atajos de teclado y ajustes avanzados |
+| ✅ | **Detalle de proyecto** | README, historial, ramas y notas |
+| 🔜 | **Pulido** | Atajos de teclado y ajustes avanzados |
 | 🟡 | **Distribución** | Instaladores listos, pendientes de publicar |
 
 ## 📦 Descargas
