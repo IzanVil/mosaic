@@ -101,7 +101,7 @@ tarjetas.
 
 ---
 
-## Fase 5 — Detalle de proyecto · HECHA, PENDIENTE DE VERIFICAR
+## Fase 5 — Detalle de proyecto ✅ HECHA
 
 Objetivo: vista en profundidad.
 
@@ -137,9 +137,10 @@ Hecho el 2026-10-03, en la Sesión C:
 - [x] El nombre de la tarjeta abre el detalle; Escape vuelve con el foco en la
       tarjeta, salvo si se pasó por Ajustes
 
-Pendiente de verificar a mano: abrir enlaces del README en el navegador, copiar
-la ruta y el regreso del foco con Escape. Se puede probar sin manos solo lo que
-hay en las capturas.
+Verificada a mano por el usuario el 2026-10-05 con la versión de release
+instalada: README, ramas, últimos commits, notas, copiar la ruta y volver con
+Escape. Durante la prueba se vio que abrir el detalle no se descubría (se buscó
+con doble clic), y se añadió un aviso que se cierra y no vuelve a salir.
 
 A tener en cuenta: el README se renderiza sin su HTML crudo, como se decidió.
 Un README que monte su portada o sus tablas en HTML (el de Mosaic, por ejemplo)
