@@ -215,8 +215,11 @@
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-out);
   }
+  /* Subrayado además del color: que se lea como algo que se pulsa. */
   .nombre:hover {
     color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .ruta {

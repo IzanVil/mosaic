@@ -63,6 +63,13 @@ export const density = writable<Density>('comodo');
 export const theme = writable<ThemeMode>('dark');
 
 /**
+ * El aviso «pulsa el nombre de un proyecto para ver su detalle» ya no hace
+ * falta: o se cerró con su botón, o ya se abrió algún detalle. Abrir el
+ * detalle no se descubre solo, y el usuario lo buscó con doble clic.
+ */
+export const detailTipDismissed = writable(false);
+
+/**
  * `true` cuando algo recorta la lista; el orden no cuenta como filtro.
  *
  * Aquí la búsqueda sí cuenta, a diferencia de `filterChipCount`: de esto
@@ -170,6 +177,11 @@ export function toggleDensity(): void {
   density.update((actual) => (actual === 'comodo' ? 'compacto' : 'comodo'));
 }
 
+/** Retira para siempre el aviso de cómo abrir el detalle. */
+export function dismissDetailTip(): void {
+  detailTipDismissed.set(true);
+}
+
 /** Pasa al siguiente tema: oscuro, claro, sistema y vuelta a empezar. */
 export function cycleTheme(): void {
   theme.update((actual) => THEMES[(THEMES.indexOf(actual) + 1) % THEMES.length] ?? 'dark');
@@ -208,6 +220,7 @@ export async function loadViewState(): Promise<void> {
     sidebarCollapsed.set(parsed.sidebar_collapsed);
     density.set(parsed.density);
     theme.set(parsed.theme);
+    detailTipDismissed.set(parsed.detail_tip_dismissed);
   } catch {
     /* JSON ilegible: se queda lo que hay. */
   }
@@ -227,7 +240,7 @@ export function startPersistingViewState(): () => void {
     });
   }, PERSIST_DELAY_MS);
 
-  let pendingInitial = 4;
+  let pendingInitial = 5;
   const onChange = () => {
     if (pendingInitial > 0) {
       pendingInitial -= 1;
@@ -241,6 +254,7 @@ export function startPersistingViewState(): () => void {
     sidebarCollapsed.subscribe(onChange),
     density.subscribe(onChange),
     theme.subscribe(onChange),
+    detailTipDismissed.subscribe(onChange),
   ];
 
   return () => {
@@ -261,6 +275,7 @@ export function currentViewState(): ViewState {
     sidebar_collapsed: get(sidebarCollapsed),
     density: get(density),
     theme: get(theme),
+    detail_tip_dismissed: get(detailTipDismissed),
   };
 }
 
@@ -292,6 +307,7 @@ export function sanitizeViewState(raw: unknown): ViewState {
     sidebar_collapsed: source.sidebar_collapsed === true,
     density: source.density === 'compacto' ? 'compacto' : 'comodo',
     theme: oneOf(source.theme, THEMES, 'dark'),
+    detail_tip_dismissed: source.detail_tip_dismissed === true,
   };
 }
 
