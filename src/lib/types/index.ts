@@ -149,6 +149,10 @@ export interface ReadmePreview {
   html: string;
   /** El fichero pasaba de 512 KiB y se ha recortado. */
   truncated: boolean;
+  /** Imágenes que no se cargan (del Markdown o del HTML). */
+  images_omitted: number;
+  /** Vídeos, iframes, SVG y otros elementos que no se muestran. */
+  media_omitted: number;
 }
 
 /** Espejo de `core::launcher::AppKind`. */

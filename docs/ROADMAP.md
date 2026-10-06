@@ -112,9 +112,9 @@ entonces son las dos piezas de backend que ya tenían tests.
 Terminado:
 
 - [x] `core/readme.rs`: localiza el README en la raíz y lo convierte a HTML
-      seguro. El HTML literal del Markdown se descarta antes de renderizar y lo
-      que queda lo limpia `ammonia`. Ninguna imagen se carga: las de origen
-      `https` pasan a enlace y el resto a texto alternativo. 13 tests.
+      seguro. Ninguna imagen se carga: las de origen `https` pasan a enlace y
+      el resto a texto alternativo. 13 tests. (El HTML literal se descartaba
+      entero; desde el 2026-10-06 pasa por una lista blanca, ver abajo.)
 - [x] `core/git.rs`: `read_history` y `read_branches`, sin red. 7 tests.
 
 Hecho el 2026-10-03, en la Sesión C:
@@ -142,9 +142,13 @@ instalada: README, ramas, últimos commits, notas, copiar la ruta y volver con
 Escape. Durante la prueba se vio que abrir el detalle no se descubría (se buscó
 con doble clic), y se añadió un aviso que se cierra y no vuelve a salir.
 
-A tener en cuenta: el README se renderiza sin su HTML crudo, como se decidió.
-Un README que monte su portada o sus tablas en HTML (el de Mosaic, por ejemplo)
-se ve con huecos donde iban esos bloques.
+HTML del README, cambiado el 2026-10-06 a petición del usuario: ya no se
+descarta entero, sino que pasa por una lista blanca de `ammonia` (portadas
+centradas, tablas, `details`, `sub`…; nada de scripts, estilos, iframes ni
+manejadores de eventos). Las imágenes siguen sin cargarse y, con los vídeos e
+iframes, se cuentan: un aviso encima del README dice qué falta y ofrece abrirlo
+en la web del repositorio o en el editor. 6 tests más en `core/readme.rs` y 5
+de `remoteWebUrl`.
 
 Decisiones ya cerradas, para no volver a discutirlas: README renderizado en
 Rust; enlaces del README abiertos en el navegador con lista blanca `http` y

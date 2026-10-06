@@ -164,7 +164,12 @@
 
     <div class="envoltura cuerpo">
       <div class="principal">
-        <ReadmeView section={$readme} missing={project.missing} />
+        <ReadmeView
+          section={$readme}
+          missing={project.missing}
+          projectId={project.id}
+          remoteUrl={status?.remote_url ?? null}
+        />
       </div>
 
       <aside class="lateral">

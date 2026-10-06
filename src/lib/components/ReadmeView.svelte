@@ -1,19 +1,50 @@
 <script lang="ts">
-  import { FileText, TriangleAlert } from '@lucide/svelte';
+  import { FileText, ImageOff, TriangleAlert } from '@lucide/svelte';
   import { onDestroy } from 'svelte';
 
   import { openExternal } from '../api/system';
+  import { openProject } from '../stores/apps';
   import type { Section } from '../stores/projectDetail';
   import type { ReadmePreview } from '../types';
+  import { remoteWebUrl } from '../utils/remote';
 
   interface Props {
     /** README tal y como lo carga `stores/projectDetail.ts`. */
     section: Section<ReadmePreview | null>;
     /** La carpeta ya no está en disco: cambia el mensaje de «sin README». */
     missing: boolean;
+    /** Proyecto, para abrirlo en el editor si no hay página web a la que ir. */
+    projectId: number;
+    /** URL del remoto de Git, de la que sale la página web del repositorio. */
+    remoteUrl: string | null;
   }
 
-  let { section, missing }: Props = $props();
+  let { section, missing, projectId, remoteUrl }: Props = $props();
+
+  let web = $derived(remoteWebUrl(remoteUrl));
+
+  /**
+   * Qué se ha quedado fuera, dicho con números. Si el README tiene imágenes y
+   * no se dice, el lector cree que no las tiene o que algo ha fallado.
+   */
+  function omittedText(images: number, media: number): string | null {
+    const parts: string[] = [];
+    if (images > 0) parts.push(images === 1 ? '1 imagen' : `${images} imágenes`);
+    if (media > 0) parts.push(media === 1 ? '1 vídeo o elemento incrustado' : `${media} vídeos o elementos incrustados`);
+    if (parts.length === 0) return null;
+    return `Este README tiene ${parts.join(' y ')} que Mosaic no muestra.`;
+  }
+
+  function openElsewhere() {
+    if (web) {
+      openExternal(web.url).then(
+        () => say('Abierto en el navegador.'),
+        (error: unknown) => say(`No se pudo abrir: ${String(error)}`),
+      );
+    } else {
+      void openProject('ide', projectId);
+    }
+  }
 
   /** Aviso efímero tras pulsar un enlace, para que ningún clic quede mudo. */
   let notice = $state<string | null>(null);
@@ -68,6 +99,16 @@
     <code>{section.data.file_name}</code>
     {#if notice}<span class="aviso" role="status">{notice}</span>{/if}
   </div>
+  {@const omitted = omittedText(section.data.images_omitted, section.data.media_omitted)}
+  {#if omitted}
+    <div class="omitido" role="note">
+      <ImageOff size={16} strokeWidth={1.75} />
+      <span>{omitted}</span>
+      <button type="button" onclick={openElsewhere}>
+        {web ? `Abrir en ${web.host ?? 'el navegador'}` : 'Abrir en el editor'}
+      </button>
+    </div>
+  {/if}
   {#if section.data.truncated}
     <p class="recortado">
       <TriangleAlert size={14} strokeWidth={1.75} />
@@ -125,6 +166,45 @@
   .aviso {
     font-size: var(--text-meta);
     color: var(--text-secondary);
+  }
+
+  .omitido {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-secondary);
+  }
+  .omitido :global(svg) {
+    flex: none;
+    color: var(--text-tertiary);
+  }
+  .omitido span {
+    flex: 1;
+  }
+  .omitido button {
+    flex: none;
+    padding: 3px var(--space-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    font: inherit;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .omitido button:hover {
+    background: var(--surface-base);
+  }
+  .omitido button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .recortado {
@@ -228,6 +308,20 @@
     background: var(--surface-sunken);
     color: var(--text-primary);
     font-weight: 600;
+  }
+  /* Lo que ocupaba una imagen: se nota que había algo, sin fingir que se ve. */
+  .readme :global(.readme-imagen) {
+    display: inline-block;
+    margin: 1px 2px;
+    padding: 0 var(--space-1);
+    border: 1px dashed var(--border-default);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-tertiary);
+  }
+  .readme :global(a .readme-imagen) {
+    color: inherit;
   }
   .readme :global(hr) {
     margin: var(--space-5) 0;

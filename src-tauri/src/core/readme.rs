@@ -1,9 +1,15 @@
 //! Lectura y renderizado del README de un proyecto.
 //!
 //! El README es contenido de terceros: viene de un repositorio que Mosaic no
-//! controla. Por eso el HTML crudo del Markdown **se descarta antes de
-//! renderizar** y lo que queda pasa además por un saneador, en vez de confiar
-//! en uno solo de los dos filtros.
+//! controla. Muchos montan su portada, sus tablas o sus bloques plegables en
+//! HTML, así que el HTML crudo **sí pasa**, pero solo por una lista blanca de
+//! etiquetas y atributos de `ammonia`: nada de scripts, estilos, iframes ni
+//! manejadores de eventos. Hasta el 2026-10-06 se descartaba entero, y un
+//! README como el del propio Mosaic salía con huecos.
+//!
+//! Ninguna imagen se carga, venga del Markdown o del HTML. Las que se quitan,
+//! y los vídeos, iframes y similares, se cuentan en [`ReadmePreview`] para que
+//! la interfaz avise de que falta algo en vez de callarlo.
 //!
 //! El renderizado vive en el backend y no en el webview a propósito: así el
 //! Markdown de origen no se procesa nunca dentro de la ventana, y las reglas de
@@ -40,7 +46,29 @@ pub struct ReadmePreview {
     pub html: String,
     /// El fichero pasaba de [`MAX_BYTES`] y se ha recortado.
     pub truncated: bool,
+    /// Imágenes que no se cargan (del Markdown o del HTML).
+    pub images_omitted: u32,
+    /// Vídeos, audios, iframes, SVG y otros elementos que no se muestran.
+    pub media_omitted: u32,
 }
+
+/// HTML ya saneado y lo que se quedó fuera por el camino.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Rendered {
+    /// HTML saneado, listo para insertar.
+    pub html: String,
+    /// Imágenes que no se cargan.
+    pub images_omitted: u32,
+    /// Otros elementos que no se muestran.
+    pub media_omitted: u32,
+}
+
+/// Etiquetas de HTML que no se muestran y se cuentan como contenido omitido.
+/// Los `<script>` y `<style>` también se quitan, pero no se cuentan: no son
+/// contenido que el lector esperase ver.
+const MEDIA_TAGS: &[&str] = &[
+    "video", "audio", "iframe", "object", "embed", "svg", "canvas",
+];
 
 /// Busca el README en la raíz de `dir`.
 ///
@@ -75,6 +103,12 @@ pub fn find(dir: &Path) -> Option<PathBuf> {
 /// `https` se convierte en un enlace, que el usuario puede abrir en su
 /// navegador; cualquier otra se queda en su texto alternativo.
 pub fn render(markdown: &str) -> String {
+    render_with_report(markdown).html
+}
+
+/// Como [`render`], pero diciendo además cuántas imágenes y otros elementos se
+/// quedaron fuera.
+pub fn render_with_report(markdown: &str) -> Rendered {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
     options.insert(Options::ENABLE_STRIKETHROUGH);
@@ -83,10 +117,13 @@ pub fn render(markdown: &str) -> String {
 
     let mut eventos = Vec::new();
     let mut en_imagen: Option<String> = None;
+    let mut imagenes = 0u32;
+    let mut medios = 0u32;
 
     for evento in Parser::new_ext(markdown, options) {
         match evento {
             Event::Start(Tag::Image { dest_url, .. }) => {
+                imagenes += 1;
                 en_imagen = Some(dest_url.to_string());
                 eventos.push(Event::Html("".into()));
             }
@@ -102,10 +139,15 @@ pub fn render(markdown: &str) -> String {
                     en_imagen = Some(format!("{origen}\n{texto}"));
                 }
             }
-            // CommonMark deja pasar HTML literal, y aquí no interesa ni una
-            // etiqueta: el saneador posterior admitiría varias, entre ellas
-            // `<img>`, que es justo lo que no queremos cargar.
-            Event::Html(_) | Event::InlineHtml(_) => {}
+            // El HTML literal pasa, pero antes se le quitan las imágenes (que
+            // el saneador no sabría sustituir por su texto alternativo) y se
+            // cuentan los elementos que no se van a ver. Lo demás lo filtra la
+            // lista blanca de abajo.
+            Event::Html(fragmento) | Event::InlineHtml(fragmento) => {
+                medios += contar_medios(&fragmento);
+                let limpio = sustituir_imagenes_html(&fragmento, &mut imagenes);
+                eventos.push(Event::Html(limpio.into()));
+            }
             otro => eventos.push(otro),
         }
     }
@@ -113,13 +155,129 @@ pub fn render(markdown: &str) -> String {
     let mut bruto = String::new();
     html::push_html(&mut bruto, eventos.into_iter());
 
-    ammonia::Builder::default()
+    let html = ammonia::Builder::default()
         .rm_tags(["img"])
+        .add_tags(["details", "summary"])
+        .add_tag_attributes("details", ["open"])
+        .add_tag_attributes("table", ["align"])
+        .add_tag_attributes("td", ["align"])
+        .add_tag_attributes("th", ["align"])
+        .add_tag_attributes("div", ["align"])
+        .add_tag_attributes("p", ["align"])
+        .add_tag_attributes("h1", ["align"])
+        .add_tag_attributes("h2", ["align"])
+        .add_tag_attributes("h3", ["align"])
         .url_schemes(["http", "https"].into_iter().collect())
         .link_rel(Some("noopener noreferrer"))
         .add_generic_attributes(["class"])
         .clean(&bruto)
-        .to_string()
+        .to_string();
+
+    Rendered {
+        html,
+        images_omitted: imagenes,
+        media_omitted: medios,
+    }
+}
+
+/// Cuenta las etiquetas de [`MEDIA_TAGS`] que abren en un fragmento de HTML.
+fn contar_medios(fragmento: &str) -> u32 {
+    let minusculas = fragmento.to_ascii_lowercase();
+    MEDIA_TAGS
+        .iter()
+        .map(|etiqueta| {
+            let apertura = format!("<{etiqueta}");
+            minusculas
+                .match_indices(&apertura)
+                .filter(|(i, _)| {
+                    // `<svg` sí, `<svgfoo` no: tras el nombre viene un espacio,
+                    // una barra o el cierre.
+                    minusculas[i + apertura.len()..]
+                        .chars()
+                        .next()
+                        .is_none_or(|c| c.is_ascii_whitespace() || c == '>' || c == '/')
+                })
+                .count() as u32
+        })
+        .sum()
+}
+
+/// Sustituye cada `<img>` de un fragmento de HTML por su texto alternativo y
+/// suma cuántas había.
+///
+/// Es un reemplazo de presentación, no de seguridad: lo que quede, bien o mal
+/// formado, lo filtra después `ammonia`, que además quita cualquier `<img>`
+/// que se escape de aquí. Dentro de un enlace (las insignias, por ejemplo) el
+/// texto alternativo queda como texto del enlace, que es lo que se espera.
+fn sustituir_imagenes_html(fragmento: &str, contador: &mut u32) -> String {
+    let minusculas = fragmento.to_ascii_lowercase();
+    let mut salida = String::with_capacity(fragmento.len());
+    let mut resto = 0;
+
+    while let Some(rel) = minusculas[resto..].find("<img") {
+        let inicio = resto + rel;
+        let tras_nombre = minusculas[inicio + 4..].chars().next();
+        if !tras_nombre.is_none_or(|c| c.is_ascii_whitespace() || c == '>' || c == '/') {
+            salida.push_str(&fragmento[resto..inicio + 4]);
+            resto = inicio + 4;
+            continue;
+        }
+        let Some(fin) = fin_de_etiqueta(&fragmento[inicio..]) else {
+            break;
+        };
+        let etiqueta = &fragmento[inicio..inicio + fin];
+        let alt = atributo(etiqueta, "alt").filter(|a| !a.trim().is_empty());
+        salida.push_str(&fragmento[resto..inicio]);
+        salida.push_str(&format!(
+            "<span class=\"readme-imagen\">{}</span>",
+            escapar(alt.as_deref().unwrap_or("imagen"))
+        ));
+        *contador += 1;
+        resto = inicio + fin;
+    }
+    salida.push_str(&fragmento[resto..]);
+    salida
+}
+
+/// Longitud de una etiqueta hasta su `>` de cierre, saltando los `>` que vayan
+/// dentro de comillas. `None` si no se cierra.
+fn fin_de_etiqueta(texto: &str) -> Option<usize> {
+    let mut comillas: Option<char> = None;
+    for (i, c) in texto.char_indices() {
+        match (comillas, c) {
+            (Some(q), _) if c == q => comillas = None,
+            (Some(_), _) => {}
+            (None, '"' | '\'') => comillas = Some(c),
+            (None, '>') => return Some(i + 1),
+            _ => {}
+        }
+    }
+    None
+}
+
+/// Valor de un atributo dentro de una etiqueta, entre comillas o sin ellas.
+fn atributo(etiqueta: &str, nombre: &str) -> Option<String> {
+    let minusculas = etiqueta.to_ascii_lowercase();
+    let mut desde = 0;
+    while let Some(rel) = minusculas[desde..].find(nombre) {
+        let i = desde + rel;
+        let antes = minusculas[..i].chars().last();
+        let despues = &etiqueta[i + nombre.len()..];
+        let tras_espacios = despues.trim_start();
+        if antes.is_some_and(|c| c.is_ascii_whitespace()) && tras_espacios.starts_with('=') {
+            let valor = tras_espacios[1..].trim_start();
+            return Some(match valor.chars().next() {
+                Some(q @ ('"' | '\'')) => valor[1..].split(q).next().unwrap_or("").to_string(),
+                _ => valor
+                    .split(|c: char| c.is_ascii_whitespace() || c == '>' || c == '/')
+                    .next()
+                    .unwrap_or("")
+                    .to_string(),
+            });
+        }
+        desde = i + nombre.len();
+    }
+    None
 }
 
 /// Reemplazo de una imagen: enlace si es remota por `https`, texto si no.
@@ -160,13 +318,16 @@ pub fn read(dir: &Path) -> Result<Option<ReadmePreview>> {
     // visible, que es preferible a rechazar el fichero entero.
     let markdown = String::from_utf8_lossy(&bytes[..bytes.len().min(MAX_BYTES)]);
 
+    let rendered = render_with_report(&markdown);
     Ok(Some(ReadmePreview {
         file_name: path
             .file_name()
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_default(),
-        html: render(&markdown),
+        html: rendered.html,
         truncated,
+        images_omitted: rendered.images_omitted,
+        media_omitted: rendered.media_omitted,
     }))
 }
 
@@ -183,7 +344,7 @@ mod tests {
         let html = render("Hola\n\n<script>alert(1)</script>\n");
         assert!(
             !html.contains("script"),
-            "el HTML crudo no debe sobrevivir: {html}"
+            "un script nunca sobrevive: {html}"
         );
         assert!(html.contains("Hola"));
     }
@@ -238,6 +399,71 @@ mod tests {
             "una ruta local no se enlaza: {html}"
         );
         assert!(html.contains("diagrama"));
+    }
+
+    #[test]
+    fn render_keeps_whitelisted_html_like_a_centered_header() {
+        let html = render(
+            "<div align=\"center\">\n<h1>Mosaic</h1>\n<p><b>Todo en un tablero.</b></p>\n</div>\n",
+        );
+        assert!(html.contains("<div align=\"center\">"), "{html}");
+        assert!(html.contains("<h1>Mosaic</h1>"), "{html}");
+        assert!(html.contains("<b>Todo en un tablero.</b>"), "{html}");
+    }
+
+    #[test]
+    fn render_keeps_html_tables_and_collapsible_blocks() {
+        let html = render(
+            "<table><tr><td align=\"center\">uno<sub>2</sub></td></tr></table>\n\n<details><summary>Más</summary>\n\ndentro\n\n</details>\n",
+        );
+        assert!(html.contains("<td align=\"center\">"), "{html}");
+        assert!(html.contains("<sub>2</sub>"), "{html}");
+        assert!(
+            html.contains("<details>") && html.contains("<summary>Más</summary>"),
+            "{html}"
+        );
+    }
+
+    #[test]
+    fn render_strips_dangerous_parts_of_whitelisted_html() {
+        let html = render(
+            "<div align=\"center\" style=\"position:fixed\" onclick=\"alert(1)\"><a href=\"javascript:alert(1)\">x</a></div>\n\n<iframe src=\"https://example.invalid\"></iframe>\n",
+        );
+        assert!(!html.contains("style="), "sin estilos en línea: {html}");
+        assert!(!html.contains("onclick"), "sin manejadores: {html}");
+        assert!(!html.contains("javascript:"), "sin javascript: {html}");
+        assert!(!html.contains("<iframe"), "sin iframes: {html}");
+    }
+
+    #[test]
+    fn render_turns_html_images_into_their_alt_text() {
+        let html = render(
+            "<p><a href=\"https://example.invalid/licencia\"><img src=\"https://img.example.invalid/insignia.svg\" alt=\"Licencia Apache 2.0\"></a></p>\n",
+        );
+        assert!(!html.contains("<img"), "ninguna imagen se carga: {html}");
+        assert!(
+            !html.contains("insignia.svg"),
+            "la imagen no se enlaza: {html}"
+        );
+        assert!(
+            html.contains("Licencia Apache 2.0")
+                && html.contains("https://example.invalid/licencia"),
+            "el enlace queda con el texto alternativo: {html}"
+        );
+    }
+
+    #[test]
+    fn render_counts_every_image_and_media_element_it_drops() {
+        let markdown = "![uno](https://example.invalid/a.png)\n\n<img src=\"b.png\" alt=\"dos\">\n\n<picture><source srcset=\"c.webp\"><img src=\"c.png\"></picture>\n\n<video src=\"d.mp4\"></video>\n\n<iframe src=\"https://example.invalid\"></iframe>\n\n<svgfoo>no cuenta</svgfoo>\n";
+        let rendered = render_with_report(markdown);
+        assert_eq!(rendered.images_omitted, 3, "{rendered:?}");
+        assert_eq!(rendered.media_omitted, 2, "{rendered:?}");
+    }
+
+    #[test]
+    fn render_reports_nothing_omitted_for_plain_markdown() {
+        let rendered = render_with_report("# Hola\n\nSin imágenes ni vídeos.\n");
+        assert_eq!((rendered.images_omitted, rendered.media_omitted), (0, 0));
     }
 
     #[test]
