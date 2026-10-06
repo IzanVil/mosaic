@@ -4,6 +4,8 @@
 
 <h1>Mosaic</h1>
 
+<p><b>Español</b> · <a href="README.en.md">English</a></p>
+
 <p><b>Todos tus proyectos de código, en un solo tablero.</b></p>
 
 <p>Estado de Git en vivo, etiquetas y un clic para abrir cada proyecto.<br>
@@ -18,7 +20,12 @@ Local, privado y sin una sola petición de red.</p>
 </p>
 
 <p>
+<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Descargar-Mosaic%200.1.0-2c8c8c?style=for-the-badge" alt="Descargar Mosaic 0.1.0" height="36"></a>
+</p>
+
+<p>
 <a href="https://mosaic-app.i-vilches.workers.dev"><b>Web</b></a> ·
+<a href="#-descargas"><b>Descargar</b></a> ·
 <a href="#-lo-que-hace"><b>Lo que hace</b></a> ·
 <a href="#-capturas"><b>Capturas</b></a> ·
 <a href="#-empezar"><b>Empezar</b></a> ·
@@ -216,24 +223,74 @@ En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
 | ✅ | **Diseño** | Sistema propio, tema claro y oscuro |
 | ✅ | **Detalle de proyecto** | README, historial, ramas y notas |
 | 🔜 | **Pulido** | Atajos de teclado y ajustes avanzados |
-| 🟡 | **Distribución** | Instaladores listos, pendientes de publicar |
+| 🟡 | **Distribución** | 0.1.0 publicada para las tres plataformas; faltan las firmas |
 
 ## 📦 Descargas
 
-Todavía no hay una versión publicada. Cuando la haya, estará en
-[releases](https://github.com/IzanVil/mosaic/releases) para las tres
-plataformas:
+**Mosaic 0.1.0** ya está publicado para las tres plataformas. Elige tu sistema:
 
 <table>
   <tr>
-    <td align="center" width="33%"><b>macOS</b><br><sub><code>.dmg</code> universal<br>Intel y Apple Silicon</sub></td>
-    <td align="center" width="33%"><b>Windows</b><br><sub><code>.msi</code> e instalador <code>.exe</code></sub></td>
-    <td align="center" width="33%"><b>Linux</b><br><sub><code>.deb</code>, <code>.rpm</code> y <code>.AppImage</code></sub></td>
+    <th width="33%">🍎 macOS</th>
+    <th width="33%">🪟 Windows</th>
+    <th width="33%">🐧 Linux</th>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Descargar el .dmg universal"></a>
+      <br><sub>Intel y Apple Silicon · 8,3 MB</sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-instalador-2c8c8c?style=flat-square" alt="Descargar el instalador .exe"></a>
+      <br><sub>Recomendado · 3,4 MB</sub>
+      <br><br>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-paquete-555?style=flat-square" alt="Descargar el paquete .msi"></a>
+      <br><sub>Para despliegues · 4,6 MB</sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-cualquier%20distro-2c8c8c?style=flat-square" alt="Descargar el .AppImage"></a>
+      <br><sub>Sin instalar · 79 MB</sub>
+      <br><br>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Descargar el .deb"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic-0.1.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Descargar el .rpm"></a>
+      <br><sub>4,6 MB cada uno</sub>
+    </td>
   </tr>
 </table>
 
-Los binarios no irán firmados. La primera vez, macOS pedirá permiso en
-*Ajustes → Privacidad y seguridad* y Windows mostrará el aviso de SmartScreen.
+Todas las versiones, con sus notas, están en
+[releases](https://github.com/IzanVil/mosaic/releases).
+
+<details>
+<summary><b>Cómo instalarlo en cada sistema</b></summary>
+
+<br>
+
+**macOS.** Abre el `.dmg` y arrastra Mosaic a Aplicaciones. Como el binario no
+va firmado, la primera vez macOS lo bloquea: ve a *Ajustes del Sistema →
+Privacidad y seguridad* y pulsa «Abrir igualmente».
+
+**Windows.** Ejecuta el `.exe`. SmartScreen avisará de que el editor es
+desconocido, porque el instalador no va firmado: pulsa «Más información» y
+después «Ejecutar de todas formas».
+
+**Linux.**
+
+```bash
+# Fedora, openSUSE y derivadas
+sudo dnf install ./Mosaic-0.1.0-1.x86_64.rpm
+
+# Debian, Ubuntu y derivadas
+sudo apt install ./Mosaic_0.1.0_amd64.deb
+
+# Cualquier distribución, sin instalar nada
+chmod +x Mosaic_0.1.0_amd64.AppImage && ./Mosaic_0.1.0_amd64.AppImage
+```
+
+</details>
+
+Los binarios no van firmados: firmar cuesta dinero en macOS y en Windows. El
+código es abierto, así que siempre puedes [compilarlo tú](#-compilar).
 
 ## 🔧 Compilar
 
