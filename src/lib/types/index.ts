@@ -155,6 +155,38 @@ export interface ReadmePreview {
   media_omitted: number;
 }
 
+/** Espejo de `config::settings::AdvancedSettings`. */
+export interface AdvancedSettings {
+  /** Profundidad máxima del escaneo; la raíz es el nivel 0. */
+  max_depth: number;
+  /** Nombres de carpeta que el escáner nunca recorre. */
+  excluded_dirs: string[];
+  /** Entradas visitadas por escaneo antes de detenerse con aviso. */
+  max_entries_per_scan: number;
+  scan_on_startup: boolean;
+  /** Minutos entre refrescos de Git. `0` los desactiva. */
+  git_refresh_interval_minutes: number;
+}
+
+/** Espejo de `config::settings::SettingsLimits`. */
+export interface SettingsLimits {
+  max_depth_min: number;
+  max_depth_max: number;
+  max_entries_min: number;
+  max_entries_max: number;
+  git_refresh_max_minutes: number;
+  excluded_dirs_max: number;
+  excluded_dir_max_chars: number;
+}
+
+/** Espejo de `config::settings::AdvancedSettingsView`. */
+export interface AdvancedSettingsView {
+  current: AdvancedSettings;
+  /** Los de fábrica, para «Restaurar». */
+  defaults: AdvancedSettings;
+  limits: SettingsLimits;
+}
+
 /** Espejo de `core::launcher::AppKind`. */
 export type AppKind = 'ide' | 'terminal' | 'file_manager';
 

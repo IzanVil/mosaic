@@ -1,9 +1,18 @@
 <script lang="ts">
   import { open } from '@tauri-apps/plugin-dialog';
+  import { onMount } from 'svelte';
   import { ChevronDown, FolderPlus, Trash2 } from '@lucide/svelte';
 
   import EmptyState from '../components/EmptyState.svelte';
+  import ExcludedDirsEditor from '../components/ExcludedDirsEditor.svelte';
   import ScanSummaryBar from '../components/ScanSummaryBar.svelte';
+  import SettingRow from '../components/SettingRow.svelte';
+  import {
+    advancedSettings,
+    advancedSettingsError,
+    loadAdvancedSettings,
+    saveAdvancedField,
+  } from '../stores/advancedSettings';
   import {
     appsError,
     ides,
@@ -49,6 +58,38 @@
     } finally {
       picking = false;
     }
+  }
+
+  /** Opciones del refresco de Git. `0` lo desactiva. */
+  const GIT_INTERVALS = [
+    { value: 0, label: 'Desactivado' },
+    { value: 1, label: 'Cada minuto' },
+    { value: 5, label: 'Cada 5 minutos' },
+    { value: 15, label: 'Cada 15 minutos' },
+    { value: 30, label: 'Cada 30 minutos' },
+    { value: 60, label: 'Cada hora' },
+  ] as const;
+
+  onMount(() => {
+    void loadAdvancedSettings();
+  });
+
+  /**
+   * Guarda un número al confirmarlo (Enter o salir del campo). Si el backend
+   * lo rechaza, el campo vuelve a enseñar el valor que sigue guardado.
+   */
+  async function saveNumber(
+    field: 'max_depth' | 'max_entries_per_scan',
+    input: HTMLInputElement,
+  ) {
+    const previous = $advancedSettings?.current[field];
+    const value = Math.round(input.valueAsNumber);
+    if (Number.isNaN(value) || value === previous) {
+      if (previous !== undefined) input.value = String(previous);
+      return;
+    }
+    const ok = await saveAdvancedField(field, value);
+    if (!ok && previous !== undefined) input.value = String(previous);
   }
 </script>
 
@@ -123,6 +164,121 @@
         Deshabilitar una ruta la excluye de los escaneos sin borrarla. Eliminarla no borra los
         proyectos ya descubiertos: conservan sus etiquetas y notas.
       </p>
+    {/if}
+
+    {#if $advancedSettingsError}
+      <p class="error" role="alert">No se pudieron leer los ajustes: {$advancedSettingsError}</p>
+    {:else if $advancedSettings}
+      {@const actual = $advancedSettings.current}
+      {@const limites = $advancedSettings.limits}
+
+      <section class="bloque" aria-labelledby="titulo-escaneo">
+        <div>
+          <h2 id="titulo-escaneo">Escaneo</h2>
+          <p class="explica">Cómo recorre Mosaic tus carpetas. Cada cambio se guarda solo.</p>
+        </div>
+
+        <div class="ajustes-lista">
+          <SettingRow
+            label="Profundidad"
+            controlId="ajuste-profundidad"
+            field="max_depth"
+            effect={`Niveles por debajo de cada ruta, de ${limites.max_depth_min} a ${limites.max_depth_max}. Se aplica en el próximo escaneo.`}
+          >
+            <input
+              id="ajuste-profundidad"
+              class="numero"
+              type="number"
+              min={limites.max_depth_min}
+              max={limites.max_depth_max}
+              value={actual.max_depth}
+              onchange={(event) => saveNumber('max_depth', event.currentTarget)}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="Tope de entradas"
+            controlId="ajuste-tope"
+            field="max_entries_per_scan"
+            effect="Si una ruta tiene más, el escaneo se detiene y avisa. Se aplica en el próximo escaneo."
+          >
+            <input
+              id="ajuste-tope"
+              class="numero ancho"
+              type="number"
+              min={limites.max_entries_min}
+              max={limites.max_entries_max}
+              step="1000"
+              value={actual.max_entries_per_scan}
+              onchange={(event) => saveNumber('max_entries_per_scan', event.currentTarget)}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="Escanear al arrancar"
+            controlId="ajuste-arranque"
+            field="scan_on_startup"
+            effect="Recorre las rutas ocho segundos después de abrir Mosaic. Se aplica la próxima vez que lo abras."
+          >
+            <input
+              id="ajuste-arranque"
+              class="interruptor"
+              type="checkbox"
+              checked={actual.scan_on_startup}
+              onchange={(event) => void saveAdvancedField('scan_on_startup', event.currentTarget.checked)}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="Carpetas excluidas"
+            field="excluded_dirs"
+            effect="Nombres de carpeta que el escáner salta allí donde aparezcan. Se aplica en el próximo escaneo."
+          >
+            <ExcludedDirsEditor
+              dirs={actual.excluded_dirs}
+              defaults={$advancedSettings.defaults.excluded_dirs}
+              max={limites.excluded_dirs_max}
+              onChange={(dirs) => saveAdvancedField('excluded_dirs', dirs)}
+            />
+          </SettingRow>
+        </div>
+      </section>
+
+      <section class="bloque" aria-labelledby="titulo-git">
+        <div>
+          <h2 id="titulo-git">Git</h2>
+          <p class="explica">Mosaic relee el estado de tus repositorios en segundo plano, sin red.</p>
+        </div>
+
+        <div class="ajustes-lista">
+          <SettingRow
+            label="Refresco automático"
+            controlId="ajuste-git"
+            field="git_refresh_interval_minutes"
+            effect="Se aplica en el acto: al cambiarlo, Mosaic relee Git y empieza a contar de nuevo."
+          >
+            <span class="desplegable">
+              <select
+                id="ajuste-git"
+                value={actual.git_refresh_interval_minutes}
+                onchange={(event) =>
+                  void saveAdvancedField('git_refresh_interval_minutes', Number(event.currentTarget.value))}
+              >
+                {#each GIT_INTERVALS as option (option.value)}
+                  <option value={option.value}>{option.label}</option>
+                {/each}
+                {#if !GIT_INTERVALS.some((option) => option.value === actual.git_refresh_interval_minutes)}
+                  <!-- Un valor guardado a mano que no está en la lista se enseña tal cual. -->
+                  <option value={actual.git_refresh_interval_minutes}>
+                    Cada {actual.git_refresh_interval_minutes} minutos
+                  </option>
+                {/if}
+              </select>
+              <ChevronDown size={14} strokeWidth={1.75} class="flecha" />
+            </span>
+          </SettingRow>
+        </div>
+      </section>
     {/if}
 
     <section class="bloque">
@@ -340,6 +496,35 @@
   .icono:hover {
     background: var(--surface-sunken);
     color: var(--text-primary);
+  }
+
+  .ajustes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .numero {
+    width: 6rem;
+    padding: 6px var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-raised);
+    font: inherit;
+    font-size: var(--text-body);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .numero.ancho {
+    width: 9rem;
+  }
+
+  .interruptor {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
   }
 
   .bloque {
