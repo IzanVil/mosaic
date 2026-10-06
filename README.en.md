@@ -186,8 +186,12 @@ comes back. You can hide missing projects with a filter.
 
 <br>
 
-Yes, although the setting has no interface yet (it's coming in phase 6). Turn
-it on like this, and Mosaic will scan eight seconds after opening:
+Yes: in **Ajustes → Escaneo** (Settings → Scan), “Escanear al arrancar”.
+Mosaic will walk your roots eight seconds after opening. The same section also
+lets you change the scan depth, the folders it skips and how often it re-reads
+Git.
+
+That section arrives in the next release. In 0.1.0, turn it on like this:
 
 ```bash
 sqlite3 ~/.local/share/mosaic/mosaic.db \

@@ -183,8 +183,11 @@ si vuelve. Puedes ocultar los ausentes con un filtro.
 
 <br>
 
-Sí, aunque el ajuste todavía no tiene interfaz (llega en la Fase 6). Se activa
-así, y Mosaic escaneará ocho segundos después de abrirse:
+Sí: en **Ajustes → Escaneo**, «Escanear al arrancar». Mosaic recorrerá tus
+rutas ocho segundos después de abrirse. Ahí mismo se cambian también la
+profundidad, las carpetas que se saltan y la frecuencia con la que relee Git.
+
+Esa sección llega en la próxima versión. En la 0.1.0 se activa así:
 
 ```bash
 sqlite3 ~/.local/share/mosaic/mosaic.db \

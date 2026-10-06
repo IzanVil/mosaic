@@ -225,18 +225,36 @@ Sin empezar:
 
 ---
 
-## Fase 6 — Pulido, atajos y ajustes avanzados
+## Fase 6 — Pulido, atajos y ajustes avanzados · EN CURSO
 
-- [ ] Atajos: paleta de comandos, refrescar Git, abrir ajustes
+Planificada el 2026-10-06 en cuatro sesiones (D, E, F y G) con las decisiones
+ya cerradas por el usuario.
+
+Sesión D, ajustes avanzados (hecha el 2026-10-07):
+
+- [x] `get_advanced_settings` y `set_advanced_settings`, con valores de fábrica
+      y límites como fuente única: profundidad de 1 a 8, tope de 1.000 a
+      500.000 entradas, intervalo de Git de 0 a 60 minutos, hasta 100 carpetas
+      excluidas sin barras ni repetidas
+- [x] Ajustes tiene secciones de Escaneo y Git: cada campo se guarda al
+      cambiarlo, dice «Guardado» y cuándo surte efecto
+- [x] Escanear al arrancar, con su interruptor
+- [x] El refresco de Git se despierta al cambiar el intervalo: antes, bajar de
+      60 a 1 minuto tardaba hasta una hora en notarse. Comprobado en la app
+      real: se relee en el mismo segundo
+
+Pendiente:
+
+- [ ] Sesión E: atajos (Ctrl+K paleta de comandos, Ctrl+R Git, Ctrl+, Ajustes,
+      «/» para buscar y «?» para la ayuda)
+- [ ] Sesión F: exportar e importar la configuración y el trabajo (etiquetas y
+      notas), con una casilla; importar suma y nunca borra
+- [ ] Sesión G: modo compacto que oculta ruta y pie; colores de Tailwind con
+      mejor contraste en claro, retirando la rueda medida del sistema de diseño
 - [x] Tema claro, oscuro y del sistema (adelantado con el rediseño)
-- [ ] IDE y terminal preferidos configurables
-- [ ] Escanear al arrancar
-- [ ] Exportar e importar la configuración en JSON
-- [ ] Modos compacto y cómodo del grid
-- [ ] Barra de título propia. La del sistema es clara sobre una aplicación
-      oscura (resto del problema 10 de la auditoría). No es CSS: hay que quitar
-      las decoraciones y dibujarla dentro, con arrastre y redimensionado
-      propios.
+- [x] IDE y terminal preferidos configurables (hecho desde la Fase 3; el
+      roadmap lo daba por pendiente)
+- La barra de título propia pasa a la Fase 7, por decisión del 2026-10-06.
 
 ---
 
@@ -250,6 +268,12 @@ Sin empezar:
       manuales
 - [x] README con captura e instrucciones de instalación
 - [x] Rutas verbatim de Windows (`\\?\C:\...`) normalizadas antes de guardarlas
+- [x] Mosaic 0.1.0 publicado el 2026-10-06, con los seis instaladores y notas
+      bilingües; el README enlaza cada uno
+- [ ] Barra de título propia, aplazada desde la Fase 6. La del sistema sigue
+      el tema de KDE y no el de Mosaic. No es CSS: hay que quitar las
+      decoraciones y dibujarla dentro, con arrastre y redimensionado propios,
+      y comprobar antes cómo se redimensiona en Wayland sin decoraciones
 - [ ] **Verificar los tres binarios en su sistema**: nadie ha ejecutado todavía
       el `.dmg` ni el `.msi`
 - [ ] Firma de código en macOS y Windows, que requiere certificados de pago
