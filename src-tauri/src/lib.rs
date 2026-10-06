@@ -12,6 +12,8 @@ pub mod errors;
 use std::sync::Arc;
 use std::time::Duration;
 
+use tokio::sync::Notify;
+
 use tauri::{AppHandle, Emitter, Manager};
 use tracing_subscriber::{fmt, EnvFilter};
 
@@ -100,7 +102,27 @@ fn spawn_startup_scan_task(app: AppHandle, db: Arc<Db>) {
     });
 }
 
-fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
+/// Despierta la tarea de refresco de Git antes de que acabe su espera.
+///
+/// Sin ella, bajar el intervalo de 60 minutos a 1 no se notaba hasta que
+/// terminaba la espera en curso: hasta una hora sin efecto aparente. La avisa
+/// `set_advanced_settings` cuando el intervalo cambia.
+#[derive(Default)]
+pub struct GitRefreshSignal(pub Notify);
+
+/// Espera `duration` o hasta que llegue la señal, lo que pase antes.
+///
+/// Devuelve `true` si la despertó la señal. Si la señal llegó mientras no
+/// había nadie esperando, `Notify` la guarda y la próxima espera vuelve en el
+/// acto: un cambio de ajuste no se pierde aunque coincida con un refresco.
+async fn wait_or_wake(duration: Duration, signal: &GitRefreshSignal) -> bool {
+    tokio::select! {
+        _ = tokio::time::sleep(duration) => false,
+        _ = signal.0.notified() => true,
+    }
+}
+
+fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>, signal: Arc<GitRefreshSignal>) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_REFRESH_DELAY).await;
 
@@ -114,8 +136,9 @@ fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
             };
 
             if minutes == 0 {
-                // Desactivado: se sigue consultando por si el usuario lo reactiva.
-                tokio::time::sleep(Duration::from_secs(60)).await;
+                // Desactivado: se sigue consultando por si el usuario lo
+                // reactiva, y la señal lo despierta en cuanto lo hace.
+                wait_or_wake(Duration::from_secs(60), &signal).await;
                 continue;
             }
 
@@ -134,7 +157,11 @@ fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>) {
                 Err(err) => tracing::warn!(%err, "la tarea de refresco se interrumpió"),
             }
 
-            tokio::time::sleep(Duration::from_secs(minutes * 60)).await;
+            if wait_or_wake(Duration::from_secs(minutes * 60), &signal).await {
+                tracing::info!(
+                    "intervalo de Git cambiado: se relee ya y se empieza a contar de nuevo"
+                );
+            }
         }
     });
 }
@@ -157,9 +184,11 @@ pub fn run() {
         .setup(|app| {
             let path = db::default_db_path()?;
             let db = Arc::new(Db::open(&path)?);
+            let signal = Arc::new(GitRefreshSignal::default());
             app.manage(Arc::clone(&db));
+            app.manage(Arc::clone(&signal));
             spawn_startup_scan_task(app.handle().clone(), Arc::clone(&db));
-            spawn_git_refresh_task(app.handle().clone(), db);
+            spawn_git_refresh_task(app.handle().clone(), db, signal);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -193,7 +222,32 @@ pub fn run() {
             commands::tags::list_tags_for_project,
             commands::settings::get_view_state,
             commands::settings::set_view_state,
+            commands::settings::get_advanced_settings,
+            commands::settings::set_advanced_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error al arrancar la aplicación Tauri");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn wait_or_wake_returns_early_when_signalled() {
+        let signal = GitRefreshSignal::default();
+        signal.0.notify_one();
+        let inicio = std::time::Instant::now();
+        assert!(wait_or_wake(Duration::from_secs(30), &signal).await);
+        assert!(
+            inicio.elapsed() < Duration::from_secs(1),
+            "no espera la media hora"
+        );
+    }
+
+    #[tokio::test]
+    async fn wait_or_wake_times_out_without_a_signal() {
+        let signal = GitRefreshSignal::default();
+        assert!(!wait_or_wake(Duration::from_millis(20), &signal).await);
+    }
 }

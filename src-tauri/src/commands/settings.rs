@@ -1,16 +1,19 @@
 //! Comandos de estado persistido de la interfaz.
 //!
-//! Solo exponen la clave `ui.view_state`, no la tabla `settings` entera: un
-//! `get_setting`/`set_setting` genérico dejaría al frontend escribir cualquier
-//! ajuste del escáner o de Git sin pasar por su validación.
+//! Exponen la clave `ui.view_state` y los cinco ajustes avanzados, no la tabla
+//! `settings` entera: un `get_setting`/`set_setting` genérico dejaría al
+//! frontend escribir cualquier ajuste sin pasar por su validación.
 
 use std::sync::Arc;
 
 use tauri::State;
 
-use crate::config::settings::{self, KEY_VIEW_STATE};
+use crate::config::settings::{
+    self, validate_advanced, AdvancedSettings, AdvancedSettingsView, KEY_VIEW_STATE, LIMITS,
+};
 use crate::db::Db;
 use crate::errors::AppError;
+use crate::GitRefreshSignal;
 
 /// Tope de tamaño del JSON de la vista.
 ///
@@ -58,4 +61,37 @@ pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), 
 
     db.with_conn(|conn| settings::set_raw(conn, KEY_VIEW_STATE, &json))?;
     Ok(())
+}
+
+/// Devuelve los ajustes avanzados con sus valores de fábrica y sus límites.
+#[tauri::command]
+pub async fn get_advanced_settings(db: State<'_, Arc<Db>>) -> Result<AdvancedSettingsView, String> {
+    let current = AdvancedSettings::from(&db.with_conn(settings::load)?);
+    Ok(AdvancedSettingsView {
+        current,
+        defaults: AdvancedSettings::from(&settings::Settings::default()),
+        limits: LIMITS,
+    })
+}
+
+/// Valida y guarda los ajustes avanzados, y devuelve lo que ha quedado
+/// guardado (con los nombres de carpeta ya recortados).
+///
+/// Si cambia el intervalo de Git, despierta la tarea de refresco para que el
+/// cambio se note ya y no al acabar la espera en curso.
+#[tauri::command]
+pub async fn set_advanced_settings(
+    db: State<'_, Arc<Db>>,
+    signal: State<'_, Arc<GitRefreshSignal>>,
+    settings: AdvancedSettings,
+) -> Result<AdvancedSettings, String> {
+    let validos = validate_advanced(settings)?;
+    let antes = db.with_conn(settings::load)?.git_refresh_interval_minutes;
+    db.with_conn(|conn| settings::save_advanced(conn, &validos))?;
+
+    if validos.git_refresh_interval_minutes != antes {
+        signal.0.notify_one();
+    }
+    tracing::debug!(?validos, "set_advanced_settings");
+    Ok(validos)
 }
