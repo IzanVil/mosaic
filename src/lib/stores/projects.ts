@@ -60,6 +60,25 @@ function searchIndex(source: ProjectWithTags[]): Fuse<IndexedProject> {
   return fuse;
 }
 
+/**
+ * Proyectos que coinciden con un texto, del más parecido al menos, hasta
+ * `limit`. Usa el mismo índice que la búsqueda del tablero, así que la paleta
+ * de comandos y la barra de búsqueda nunca discrepan.
+ */
+export function rankProjects(
+  source: ProjectWithTags[],
+  query: string,
+  limit: number,
+): ProjectWithTags[] {
+  const needle = normalizeText(query.trim());
+  if (needle === '') return [];
+  const byId = new Map(source.map((project) => [project.id, project]));
+  return searchIndex(source)
+    .search(needle, { limit })
+    .map((result) => byId.get(result.item.id))
+    .filter((project): project is ProjectWithTags => project !== undefined);
+}
+
 /** Ids que coinciden con la búsqueda, o `null` si no hay búsqueda activa. */
 function matchingIds(source: ProjectWithTags[], query: string): Set<number> | null {
   const needle = normalizeText(query.trim());
