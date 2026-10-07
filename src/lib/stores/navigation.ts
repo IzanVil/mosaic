@@ -61,3 +61,15 @@ export function leaveProjectDetail(): number | null {
   route.set({ view: 'dashboard' });
   return target;
 }
+
+/**
+ * El gestor de etiquetas está abierto. Vive aquí y no en el tablero porque
+ * también se abre desde la paleta de comandos, estando en otra pantalla.
+ */
+export const tagManagerOpen = writable(false);
+
+/** Abre el gestor de etiquetas, volviendo antes al tablero si hace falta. */
+export function openTagManager(): void {
+  if (get(route).view !== 'dashboard') route.set({ view: 'dashboard' });
+  tagManagerOpen.set(true);
+}

@@ -40,6 +40,7 @@
   <div class="campo">
     <Search size={14} strokeWidth={1.75} class="lupa" />
     <input
+      id="busqueda"
       bind:value
       oninput={onInput}
       type="search"

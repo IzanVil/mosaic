@@ -28,6 +28,7 @@
     visibleGroups,
     visibleProjects,
   } from '../stores/projects';
+  import { openTagManager, tagManagerOpen } from '../stores/navigation';
   import { scanPaths } from '../stores/scanPaths';
   import { tagsError } from '../stores/tags';
 
@@ -38,7 +39,6 @@
 
   let { onGoToSettings, onScan }: Props = $props();
 
-  let managingTags = $state(false);
 
   let hasScanPaths = $derived($scanPaths.length > 0);
   let hasProjects = $derived($projects.length > 0);
@@ -65,7 +65,7 @@
     <Sidebar
       collapsed={$sidebarCollapsed}
       onToggle={toggleSidebar}
-      onManageTags={() => (managingTags = true)}
+      onManageTags={openTagManager}
     />
   {/if}
 
@@ -159,8 +159,8 @@
   </div>
 </section>
 
-{#if managingTags}
-  <TagManager onClose={() => (managingTags = false)} />
+{#if $tagManagerOpen}
+  <TagManager onClose={() => tagManagerOpen.set(false)} />
 {/if}
 
 <style>

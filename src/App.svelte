@@ -11,6 +11,8 @@
     Sun,
   } from '@lucide/svelte';
 
+  import CommandPalette from './lib/components/CommandPalette.svelte';
+  import ShortcutsHelp from './lib/components/ShortcutsHelp.svelte';
   import Dashboard from './lib/views/Dashboard.svelte';
   import ProjectView from './lib/views/ProjectView.svelte';
   import Settings from './lib/views/Settings.svelte';
@@ -23,11 +25,14 @@
     refreshAllGitStatus,
     refreshingGit,
   } from './lib/stores/gitStatus';
-  import { goToDashboard, goToSettings, route } from './lib/stores/navigation';
+  import { goToDashboard, goToSettings, openTagManager, route } from './lib/stores/navigation';
   import { loadProjects, projects, runScan, scanning } from './lib/stores/projects';
   import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
   import { loadTags } from './lib/stores/tags';
   import { formatRelativeTime, now_ts } from './lib/utils/format';
+  import type { PaletteAction } from './lib/utils/palette';
+  import { isMac, isTypingTarget, matchShortcut, shortcutList } from './lib/utils/shortcuts';
+  import { tick as nextRender } from 'svelte';
 
   /** Lo emite el backend al terminar un refresco automático de estado Git. */
   const GIT_REFRESHED = 'git-status-refreshed';
@@ -59,6 +64,76 @@
   } as const;
 
   let themeInfo = $derived(THEME_INFO[$theme]);
+
+  const mac = isMac();
+  const modKey = mac ? '⌘' : 'Ctrl+';
+  let paletteOpen = $state(false);
+  let helpOpen = $state(false);
+
+  /** Lo que se puede hacer desde la paleta, además de abrir proyectos. */
+  const PALETTE_ACTIONS: PaletteAction[] = [
+    { id: 'git', label: 'Releer el estado de Git', keywords: ['refrescar', 'actualizar'], shortcut: `${modKey}R` },
+    { id: 'scan', label: 'Escanear las rutas', keywords: ['buscar proyectos', 'actualizar'] },
+    { id: 'dashboard', label: 'Ir a Proyectos', keywords: ['tablero', 'inicio'] },
+    { id: 'settings', label: 'Ir a Ajustes', keywords: ['preferencias', 'configuración'], shortcut: `${modKey},` },
+    { id: 'tags', label: 'Gestionar etiquetas', keywords: ['tags', 'colores'] },
+    { id: 'theme', label: 'Cambiar el tema', keywords: ['claro', 'oscuro', 'sistema'] },
+    { id: 'help', label: 'Ver los atajos de teclado', keywords: ['ayuda', 'teclas'], shortcut: '?' },
+  ];
+
+  function runAction(id: string) {
+    if (id === 'git') void refreshGit();
+    else if (id === 'scan') void scan();
+    else if (id === 'dashboard') goToDashboard();
+    else if (id === 'settings') goToSettings();
+    else if (id === 'tags') openTagManager();
+    else if (id === 'theme') cycleTheme();
+    else if (id === 'help') helpOpen = true;
+  }
+
+  /** Va al tablero si hace falta y pone el cursor en la búsqueda. */
+  async function focusSearch() {
+    if ($route.view !== 'dashboard') {
+      goToDashboard();
+      await nextRender();
+    }
+    document.getElementById('busqueda')?.focus();
+  }
+
+  /**
+   * Atajos globales. Se atienden en `window`, pero los desplegables y modales
+   * que usan `dismissable` se quedan antes con su Escape.
+   */
+  function onGlobalKeydown(event: KeyboardEvent) {
+    const action = matchShortcut(
+      {
+        key: event.key,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        typing: isTypingTarget(event.target),
+      },
+      mac,
+    );
+    if (action === null) return;
+
+    // Ctrl+R recargaría la ventana como en un navegador: aquí relee Git.
+    event.preventDefault();
+    if (action === 'palette') {
+      helpOpen = false;
+      paletteOpen = !paletteOpen;
+    } else if (action === 'help') {
+      paletteOpen = false;
+      helpOpen = true;
+    } else if (action === 'refresh-git') {
+      void refreshGit();
+    } else if (action === 'settings') {
+      goToSettings();
+    } else if (action === 'focus-search') {
+      void focusSearch();
+    }
+  }
 
   let tick = $state(now_ts());
 
@@ -124,6 +199,8 @@
     await refreshAllGitStatus();
   }
 </script>
+
+<svelte:window onkeydown={onGlobalKeydown} />
 
 <div class="armazon">
   <header class="cabecera">
@@ -220,6 +297,19 @@
     {/if}
   </main>
 </div>
+
+{#if paletteOpen}
+  <CommandPalette
+    actions={PALETTE_ACTIONS}
+    onAction={runAction}
+    onClose={() => (paletteOpen = false)}
+    {modKey}
+  />
+{/if}
+
+{#if helpOpen}
+  <ShortcutsHelp shortcuts={shortcutList(mac)} onClose={() => (helpOpen = false)} />
+{/if}
 
 <style>
   .armazon {
