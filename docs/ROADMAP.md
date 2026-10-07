@@ -245,8 +245,11 @@ Sesión D, ajustes avanzados (hecha el 2026-10-07):
 
 Pendiente:
 
-- [ ] Sesión E: atajos (Ctrl+K paleta de comandos, Ctrl+R Git, Ctrl+, Ajustes,
-      «/» para buscar y «?» para la ayuda)
+- [x] Sesión E, atajos (hecha el 2026-10-07): Ctrl+K abre una paleta con
+      acciones y proyectos (Enter abre el detalle, Ctrl+Enter el editor),
+      Ctrl+R relee Git, Ctrl+, va a Ajustes, «/» busca y «?» enseña la ayuda.
+      En macOS, Cmd. Probado con teclado en WebKit; falta comprobar a mano en
+      la app instalada que Ctrl+R no recarga la ventana
 - [ ] Sesión F: exportar e importar la configuración y el trabajo (etiquetas y
       notas), con una casilla; importar suma y nunca borra
 - [ ] Sesión G: modo compacto que oculta ruta y pie; colores de Tailwind con

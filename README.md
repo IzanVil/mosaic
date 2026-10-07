@@ -151,6 +151,11 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
 El estado de Git se lee solo a los cinco segundos de arrancar y después cada
 cinco minutos. El botón **Git** de la cabecera fuerza una relectura.
 
+**Atajos** (desde la próxima versión): <kbd>Ctrl</kbd>+<kbd>K</kbd> abre una
+paleta para saltar a cualquier proyecto o acción, <kbd>Ctrl</kbd>+<kbd>R</kbd>
+relee Git, <kbd>/</kbd> busca y <kbd>?</kbd> enseña todos los atajos. En macOS,
+<kbd>⌘</kbd> en lugar de <kbd>Ctrl</kbd>.
+
 <details>
 <summary><b>¿Cómo decide qué es un proyecto?</b></summary>
 
@@ -225,7 +230,7 @@ En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
 | ✅ | **Etiquetas y filtros** | Búsqueda difusa y vista guardada entre sesiones |
 | ✅ | **Diseño** | Sistema propio, tema claro y oscuro |
 | ✅ | **Detalle de proyecto** | README, historial, ramas y notas |
-| 🔜 | **Pulido** | Atajos de teclado y ajustes avanzados |
+| 🟡 | **Pulido** | Ajustes avanzados y atajos hechos; faltan exportar la configuración y el modo compacto |
 | 🟡 | **Distribución** | 0.1.0 publicada para las tres plataformas; faltan las firmas |
 
 ## 📦 Descargas

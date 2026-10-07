@@ -154,6 +154,11 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 Git status is read five seconds after launch and every five minutes after that.
 The **Git** button in the header forces a fresh read.
 
+**Shortcuts** (from the next release on): <kbd>Ctrl</kbd>+<kbd>K</kbd> opens a
+palette to jump to any project or action, <kbd>Ctrl</kbd>+<kbd>R</kbd>
+re-reads Git, <kbd>/</kbd> searches and <kbd>?</kbd> lists every shortcut. On
+macOS, <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.
+
 <details>
 <summary><b>How does it decide what counts as a project?</b></summary>
 
@@ -229,7 +234,7 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 | ✅ | **Tags and filters** | Fuzzy search and a view that's saved between sessions |
 | ✅ | **Design** | Its own design system, light and dark themes |
 | ✅ | **Project page** | README, history, branches and notes |
-| 🔜 | **Polish** | Keyboard shortcuts and advanced settings |
+| 🟡 | **Polish** | Advanced settings and shortcuts done; config export and compact mode to go |
 | 🟡 | **Distribution** | 0.1.0 released for all three platforms; signing still to do |
 
 ## 📦 Download
