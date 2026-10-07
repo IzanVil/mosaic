@@ -224,6 +224,9 @@ pub fn run() {
             commands::settings::set_view_state,
             commands::settings::get_advanced_settings,
             commands::settings::set_advanced_settings,
+            commands::backup::export_backup,
+            commands::backup::preview_import,
+            commands::backup::apply_import,
         ])
         .run(tauri::generate_context!())
         .expect("error al arrancar la aplicación Tauri");
