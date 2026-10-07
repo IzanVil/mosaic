@@ -250,8 +250,14 @@ Pendiente:
       Ctrl+R relee Git, Ctrl+, va a Ajustes, «/» busca y «?» enseña la ayuda.
       En macOS, Cmd. Probado con teclado en WebKit; falta comprobar a mano en
       la app instalada que Ctrl+R no recarga la ventana
-- [ ] Sesión F: exportar e importar la configuración y el trabajo (etiquetas y
-      notas), con una casilla; importar suma y nunca borra
+- [x] Sesión F, copia de seguridad (hecha el 2026-10-07): Ajustes exporta a
+      JSON los ajustes y las rutas y, con la casilla, las etiquetas, los
+      fijados y las notas. Importar enseña antes un resumen y suma sin borrar:
+      no desfija, no quita etiquetas, no pisa notas (las distintas se avisan) y
+      salta las rutas que no existen. El fichero lleva formato y versión; uno
+      ajeno, dañado o de una versión más nueva se rechaza sin tocar nada, y la
+      importación va en una sola transacción. Falta probar a mano los diálogos
+      de guardar y abrir en la app instalada
 - [ ] Sesión G: modo compacto que oculta ruta y pie; colores de Tailwind con
       mejor contraste en claro, retirando la rueda medida del sistema de diseño
 - [x] Tema claro, oscuro y del sistema (adelantado con el rediseño)

@@ -207,6 +207,19 @@ sqlite3 ~/.local/share/mosaic/mosaic.db \
 </details>
 
 <details>
+<summary><b>How do I move my tags and notes to another computer?</b></summary>
+
+<br>
+
+In **Ajustes → Copia de seguridad** (Settings → Backup), “Exportar…” saves a
+JSON file with your settings and folders and, if the box stays ticked, your
+tags, notes and pins. On the other computer, “Importar…” shows you what will
+change first. Importing only adds: it never deletes anything or overwrites
+notes you already have. Coming in the next release.
+
+</details>
+
+<details>
 <summary><b>Where does it keep its data?</b></summary>
 
 <br>
@@ -234,7 +247,7 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 | ✅ | **Tags and filters** | Fuzzy search and a view that's saved between sessions |
 | ✅ | **Design** | Its own design system, light and dark themes |
 | ✅ | **Project page** | README, history, branches and notes |
-| 🟡 | **Polish** | Advanced settings and shortcuts done; config export and compact mode to go |
+| 🟡 | **Polish** | Advanced settings and shortcuts done; backup done; compact mode to go |
 | 🟡 | **Distribution** | 0.1.0 released for all three platforms; signing still to do |
 
 ## 📦 Download
