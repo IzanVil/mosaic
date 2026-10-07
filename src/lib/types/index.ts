@@ -252,3 +252,31 @@ export interface ViewState {
   /** Ya se cerró (o ya no hace falta) el aviso de que el nombre abre el detalle. */
   detail_tip_dismissed: boolean;
 }
+
+/** Espejo de `core::backup::ExportSummary`. */
+export interface ExportSummary {
+  scan_paths: number;
+  tags: number;
+  projects: number;
+}
+
+/** Espejo de `core::backup::ImportPlan`. */
+export interface ImportPlan {
+  exported_at: number;
+  app_version: string;
+  has_work: boolean;
+  settings_changed: string[];
+  git_interval_changed: boolean;
+  scan_paths_added: number;
+  /** No existen en este equipo y no se añaden. */
+  scan_paths_missing: string[];
+  tags_added: number;
+  tags_existing: number;
+  projects_matched: number;
+  projects_not_found: number;
+  pins_added: number;
+  assignments_added: number;
+  notes_added: number;
+  /** Nombres de proyecto cuyas notas difieren; se quedan las de aquí. */
+  notes_conflicts: string[];
+}

@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { ChevronDown, FolderPlus, Trash2 } from '@lucide/svelte';
 
+  import BackupSection from '../components/BackupSection.svelte';
   import EmptyState from '../components/EmptyState.svelte';
   import ExcludedDirsEditor from '../components/ExcludedDirsEditor.svelte';
   import ScanSummaryBar from '../components/ScanSummaryBar.svelte';
@@ -324,6 +325,8 @@
         El explorador de archivos no se configura aquí: se usa el que tenga asociado el sistema.
       </p>
     </section>
+
+    <BackupSection />
   </div>
 </section>
 
