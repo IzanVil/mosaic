@@ -11,6 +11,7 @@
   import type { Tag, TagWithCount } from '../types';
   import { dismissable } from '../utils/dismissable';
   import { normalizeText } from '../utils/text';
+  import { opensUpward } from '../utils/placement';
   import { DEFAULT_TAG_COLOR, TAG_COLORS } from '../utils/tagColors';
 
   interface Props {
@@ -27,6 +28,8 @@
   let busy = $state(false);
   let trigger = $state<HTMLButtonElement | null>(null);
   let input = $state<HTMLInputElement | null>(null);
+  let panel = $state<HTMLDivElement | null>(null);
+  let upward = $state(false);
 
   let assignedIds = $derived(new Set(assigned.map((tag) => tag.id)));
 
@@ -52,6 +55,7 @@
   let canCreate = $derived(query.trim() !== '' && exactMatch === undefined);
 
   function openPicker() {
+    upward = false;
     open = true;
     query = '';
     newColor = DEFAULT_TAG_COLOR;
@@ -64,6 +68,15 @@
 
   $effect(() => {
     if (open && input !== null) input.focus();
+  });
+
+  $effect(() => {
+    if (panel === null || trigger === null) return;
+    upward = opensUpward(
+      trigger.getBoundingClientRect(),
+      panel.offsetHeight,
+      window.innerHeight,
+    );
   });
 
   async function toggle(tag: TagWithCount | Tag) {
@@ -115,7 +128,14 @@
   </button>
 
   {#if open}
-    <div use:dismissable={{ onDismiss: close }} role="dialog" aria-label="Asignar etiquetas" class="panel">
+    <div
+      use:dismissable={{ onDismiss: close }}
+      bind:this={panel}
+      role="dialog"
+      aria-label="Asignar etiquetas"
+      class="panel"
+      class:arriba={upward}
+    >
       <input
         bind:this={input}
         bind:value={query}
@@ -209,6 +229,12 @@
     border-radius: var(--radius-md);
     background: var(--surface-overlay);
     box-shadow: var(--shadow-lg);
+  }
+  .panel.arriba {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: var(--space-1);
   }
 
   /*
