@@ -12,9 +12,11 @@
 
   interface Props {
     project: ProjectWithTags;
+    /** Sin ruta ni pie, para que quepan más filas en el modo compacto. */
+    compact?: boolean;
   }
 
-  let { project }: Props = $props();
+  let { project, compact = false }: Props = $props();
 
   const VISIBLE_TAGS = 3;
 
@@ -76,7 +78,9 @@
     </button>
   </header>
 
-  <p class="ruta" title={project.path}>{shortPath}</p>
+  {#if !compact}
+    <p class="ruta" title={project.path}>{shortPath}</p>
+  {/if}
 
   <div class="etiquetas">
     {#each shownTags as tag (tag.id)}
@@ -123,27 +127,29 @@
     {/if}
   </p>
 
-  <footer>
-    <span class="apertura">
-      {project.last_opened_at === null
-        ? 'Sin abrir'
-        : `Abierto ${formatRelativeTime(project.last_opened_at)}`}
-    </span>
+  {#if !compact}
+    <footer>
+      <span class="apertura">
+        {project.last_opened_at === null
+          ? 'Sin abrir'
+          : `Abierto ${formatRelativeTime(project.last_opened_at)}`}
+      </span>
 
-    <div class="acciones">
-      {#each ACTIONS as action (action.kind)}
-        <button
-          type="button"
-          onclick={() => openProject(action.kind, project.id)}
-          disabled={project.missing}
-          title={action.label}
-          aria-label="{action.label}: {project.name}"
-        >
-          <action.icon size={14} strokeWidth={1.75} />
-        </button>
-      {/each}
-    </div>
-  </footer>
+      <div class="acciones">
+        {#each ACTIONS as action (action.kind)}
+          <button
+            type="button"
+            onclick={() => openProject(action.kind, project.id)}
+            disabled={project.missing}
+            title={action.label}
+            aria-label="{action.label}: {project.name}"
+          >
+            <action.icon size={14} strokeWidth={1.75} />
+          </button>
+        {/each}
+      </div>
+    </footer>
+  {/if}
 </article>
 
 <style>

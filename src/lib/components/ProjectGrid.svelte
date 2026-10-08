@@ -37,7 +37,7 @@
         <h2><Pin size={12} strokeWidth={1.75} /> Fijados</h2>
         <div class="rejilla">
           {#each pinned as project (project.id)}
-            <ProjectCard {project} />
+            <ProjectCard {project} compact={density === 'compacto'} />
           {/each}
         </div>
       </section>
@@ -51,7 +51,7 @@
       <section aria-label="Resto de proyectos">
         <div class="rejilla">
           {#each rest as project (project.id)}
-            <ProjectCard {project} />
+            <ProjectCard {project} compact={density === 'compacto'} />
           {/each}
         </div>
       </section>

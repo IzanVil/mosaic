@@ -141,6 +141,11 @@ el producto promete cientos.
 - **Compacta**: columna mínima de 220px, relleno de 12, hueco de 8. Cuatro o
   cinco columnas en pantalla ancha.
 
+En compacta la tarjeta pierde además la ruta y el pie (la última apertura y los
+tres botones de abrir): las columnas solas no bastaban, porque ganaban ancho
+pero no alto. Es la única vez que la tarjeta sabe la densidad, por su prop
+`compact`. Abrir sigue a mano desde el detalle o con Ctrl+Enter en la paleta.
+
 La preferencia se recuerda en `settings`, como el resto de la vista.
 
 ---
