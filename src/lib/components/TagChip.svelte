@@ -36,7 +36,7 @@
   }: Props = $props();
 
   /**
-   * Una sola gramática: fondo y borde tintados, texto en el color pleno.
+   * Una sola gramática: fondo y borde tintados, texto en el color mezclado con la tinta.
    *
    * Antes había una variante rellena para los filtros activos, con texto
    * blanco sobre el color de la etiqueta. Con etiquetas de luminosidad alta el
@@ -51,7 +51,7 @@
     `--chip-color: ${tag.color};` +
       ' background-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-bg), transparent);' +
       ' border-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);' +
-      ' color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), transparent);',
+      ' color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), var(--tag-chip-ink));',
   );
 </script>
 

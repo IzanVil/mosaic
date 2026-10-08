@@ -61,38 +61,13 @@
   --info: oklch(50% 0.12 250);
   --info-surface: oklch(50% 0.12 250 / 0.12);
 
-  /* --- Etiquetas ---------------------------------------------------------
-   * Dieciséis matices repartidos por los 310 grados que quedan fuera de la
-   * franja reservada al acento, con la luminosidad alternando entre vecinos.
-   *
-   * Corrige dos cosas medidas en oklab. La primera es el problema 6:
-   * `archivado` desaparecía por ser un gris oscuro entre colores vivos, y
-   * ahora ninguna etiqueta baja de 71% de luminosidad sobre un fondo del 15%.
-   * La segunda no estaba en la auditoría: `turquesa` y `cian` estaban a
-   * Δ=0.038 entre sí, es decir, eran el mismo color con dos nombres. Ningún
-   * par baja hoy de Δ=0.091, y el acento queda a Δ=0.116 del más parecido.
-   */
-  --tag-cian: oklch(52% 0.1 222);
-  --tag-celeste: oklch(44% 0.14 244);
-  --tag-azul: oklch(52% 0.14 266);
-  --tag-indigo: oklch(44% 0.14 288);
-  --tag-violeta: oklch(52% 0.14 309);
-  --tag-fucsia: oklch(44% 0.15 331);
-  --tag-rosa: oklch(52% 0.14 353);
-  --tag-rojo: oklch(44% 0.16 15);
-  --tag-naranja: oklch(52% 0.14 37);
-  --tag-ambar: oklch(44% 0.13 59);
-  --tag-amarillo: oklch(52% 0.13 81);
-  --tag-lima: oklch(44% 0.13 102);
-  --tag-verde: oklch(52% 0.14 124);
-  --tag-esmeralda: oklch(44% 0.11 146);
-  --tag-turquesa: oklch(52% 0.1 168);
-  --tag-piedra: oklch(48% 0.015 75);
-
-  /* Receta del chip. El componente aplica estas tres, nunca un hex suelto. */
+  /* Receta del chip. El texto se mezcla con una tinta para pasar de 4,5:1
+   * con los dieciséis colores de `tagColors.ts`: sin ella, el amarillo
+   * quedaba en 1,58:1 en claro y el gris en 3,11:1 en oscuro. */
   --tag-chip-bg: 14%;
   --tag-chip-border: 34%;
-  --tag-chip-text: 100%;
+  --tag-chip-text: 55%;
+  --tag-chip-ink: oklch(15% 0.02 75);
 
   /* --- Sombras -----------------------------------------------------------
    * Teñidas con el matiz cálido de la paleta: una sombra negra pura sobre un
@@ -136,25 +111,10 @@
     --info: oklch(74% 0.12 250);
     --info-surface: oklch(74% 0.12 250 / 0.16);
 
-    --tag-cian: oklch(80% 0.1 222);
-  --tag-celeste: oklch(71% 0.14 244);
-  --tag-azul: oklch(80% 0.14 266);
-  --tag-indigo: oklch(71% 0.14 288);
-  --tag-violeta: oklch(80% 0.14 309);
-  --tag-fucsia: oklch(71% 0.14 331);
-  --tag-rosa: oklch(80% 0.14 353);
-  --tag-rojo: oklch(71% 0.14 15);
-  --tag-naranja: oklch(80% 0.14 37);
-  --tag-ambar: oklch(71% 0.14 59);
-  --tag-amarillo: oklch(80% 0.13 81);
-  --tag-lima: oklch(71% 0.14 102);
-  --tag-verde: oklch(80% 0.14 124);
-  --tag-esmeralda: oklch(71% 0.1 146);
-  --tag-turquesa: oklch(80% 0.1 168);
-  --tag-piedra: oklch(76% 0.015 75);
-
     --tag-chip-bg: 18%;
     --tag-chip-border: 40%;
+    --tag-chip-text: 75%;
+    --tag-chip-ink: oklch(97% 0.01 75);
 
     --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
     --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);
@@ -194,25 +154,10 @@
   --info: oklch(74% 0.12 250);
   --info-surface: oklch(74% 0.12 250 / 0.16);
 
-  --tag-cian: oklch(80% 0.1 222);
-  --tag-celeste: oklch(71% 0.14 244);
-  --tag-azul: oklch(80% 0.14 266);
-  --tag-indigo: oklch(71% 0.14 288);
-  --tag-violeta: oklch(80% 0.14 309);
-  --tag-fucsia: oklch(71% 0.14 331);
-  --tag-rosa: oklch(80% 0.14 353);
-  --tag-rojo: oklch(71% 0.14 15);
-  --tag-naranja: oklch(80% 0.14 37);
-  --tag-ambar: oklch(71% 0.14 59);
-  --tag-amarillo: oklch(80% 0.13 81);
-  --tag-lima: oklch(71% 0.14 102);
-  --tag-verde: oklch(80% 0.14 124);
-  --tag-esmeralda: oklch(71% 0.1 146);
-  --tag-turquesa: oklch(80% 0.1 168);
-  --tag-piedra: oklch(76% 0.015 75);
-
   --tag-chip-bg: 18%;
   --tag-chip-border: 40%;
+  --tag-chip-text: 75%;
+  --tag-chip-ink: oklch(97% 0.01 75);
 
   --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
   --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);

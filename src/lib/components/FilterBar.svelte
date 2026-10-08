@@ -362,7 +362,7 @@
     font-size: var(--text-meta);
     line-height: 16px;
     font-weight: var(--text-meta-weight);
-    color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), transparent);
+    color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), var(--tag-chip-ink));
   }
 
   /* Mismo hueco y misma X que `TagChip`, para que las dos filas casen. */

@@ -38,13 +38,11 @@ para parecer sepia.
 **Acento turquesa, no azul.** Evita el choque con las etiquetas azules, que son
 las más usadas, y distingue el producto de sus referencias.
 
-**La rueda de etiquetas se redistribuyó para dejarle sitio.** Medido en oklab,
-el acento turquesa original quedaba a Δ=0.035 de las etiquetas `turquesa` y
-`cian`, que es indistinguible. Y esas dos estaban a Δ=0.038 **entre sí**: eran el
-mismo color con dos nombres. Ahora los quince matices cromáticos se reparten por
-los 310 grados que quedan fuera de la franja del acento, con la luminosidad
-alternando entre vecinos. Ningún par de etiquetas baja de Δ=0.091 y el acento
-queda a Δ=0.116 de la más parecida.
+**Las etiquetas usan los dieciséis tonos 500 de Tailwind** de `tagColors.ts`,
+que son los que guarda la base de datos. Hubo una rueda medida en oklab
+(`--tag-*` en `tokens.css`) que corregía el parecido entre `turquesa` y `cian` y
+su cercanía al acento, pero no la usaba ningún componente: se retiró el
+2026-10-08 para no mantener dos paletas.
 
 **Cuatro niveles de texto.** Primario, secundario, terciario y deshabilitado. El
 terciario es el suelo de lo legible: todo lo que sea contenido está por encima.
@@ -52,14 +50,13 @@ terciario es el suelo de lo legible: todo lo que sea contenido está por encima.
 **Semánticos con su superficie incluida.** Cada color de estado trae su fondo
 translúcido ya calculado, para que ningún componente improvise una opacidad.
 
-**Las dieciséis etiquetas comparten luminosidad y croma.** Solo cambia el matiz.
-Eso arregla el problema 6: `archivado` era un gris pizarra oscuro entre colores
-vivos y desaparecía sobre el fondo. Ahora el neutro tiene la misma presencia,
-solo que sin color.
-
-**El chip de etiqueta se construye con tres porcentajes**, no con hexadecimales
-sueltos en el componente. Cambiar el contraste de todos los chips es cambiar una
-variable.
+**El chip de etiqueta se construye con cuatro tokens**, no con hexadecimales
+sueltos en el componente: fondo y borde son el color a un porcentaje, y el texto
+es el color mezclado con una tinta (`--tag-chip-ink`), oscura en claro y clara en
+oscuro. Sin la tinta, el texto de los tonos 500 se quedaba en 1,58:1 en claro
+(amarillo) y en 3,11:1 en oscuro (gris). Con el 55 % de color en claro y el 75 %
+en oscuro, los dieciséis pasan de 4,5:1: el peor es el amarillo en claro, con
+4,87:1, y el gris en oscuro, con 4,76:1. Medido en sRGB sobre `--surface-raised`.
 
 ---
 
