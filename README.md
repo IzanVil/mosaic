@@ -104,12 +104,28 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
     </td>
   </tr>
   <tr>
+    <td valign="top">
+      <h3>⌨️ Todo con el teclado</h3>
+      <kbd>Ctrl</kbd>+<kbd>K</kbd> abre una paleta para saltar a cualquier proyecto o acción. <kbd>Ctrl</kbd>+<kbd>R</kbd> relee Git y <kbd>?</kbd> enseña el resto.
+    </td>
+    <td valign="top">
+      <h3>🧱 Cómodo o compacto</h3>
+      En compacto cada tarjeta se queda en lo esencial y caben más del doble en pantalla.
+    </td>
+    <td valign="top">
+      <h3>💾 Copia de seguridad</h3>
+      Exporta tus ajustes, etiquetas y notas a un fichero. Importar te enseña antes qué cambia y nunca borra nada.
+    </td>
+  </tr>
+  <tr>
     <td colspan="3" valign="top">
       <h3>📂 Y una ficha por proyecto</h3>
       Pulsa el nombre de una tarjeta y ves su README, sus ramas, sus últimos commits y tus notas, que se guardan solas mientras escribes. Escape te devuelve al tablero.
     </td>
   </tr>
 </table>
+
+<sub>Los atajos, la copia de seguridad, los ajustes de escaneo y el nuevo modo compacto llegan en la próxima versión; la 0.1.0 trae todo lo demás.</sub>
 
 ## 📸 Capturas
 
@@ -132,6 +148,28 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
     </td>
   </tr>
 </table>
+
+<br>
+
+<table>
+  <tr>
+    <td width="45%" align="center">
+      <img src="docs/img/paleta.png" alt="La paleta de comandos abierta con Ctrl+K: las acciones con sus atajos y debajo los proyectos abiertos hace poco">
+      <br><sub><b>La paleta</b>: acciones y proyectos a un <kbd>Ctrl</kbd>+<kbd>K</kbd>.</sub>
+    </td>
+    <td width="55%" align="center">
+      <img src="docs/img/copia.png" alt="La sección Copia de seguridad de Ajustes con el resumen de una importación: lo que se añade, las notas que se conservan y las rutas que no existen en este equipo">
+      <br><sub><b>Importar una copia</b>: primero el resumen, luego tú decides.</sub>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<p align="center">
+  <img src="docs/img/compacto.png" alt="El tablero en modo compacto y tema claro: cuatro columnas de tarjetas con nombre, etiquetas, lenguaje y rama">
+  <br><sub><b>Modo compacto</b>: cuatro columnas y más del doble de proyectos a la vista.</sub>
+</p>
 
 <br>
 

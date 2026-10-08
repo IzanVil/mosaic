@@ -107,12 +107,28 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
     </td>
   </tr>
   <tr>
+    <td valign="top">
+      <h3>⌨️ Keyboard first</h3>
+      <kbd>Ctrl</kbd>+<kbd>K</kbd> opens a palette to jump to any project or action. <kbd>Ctrl</kbd>+<kbd>R</kbd> re-reads Git and <kbd>?</kbd> shows the rest.
+    </td>
+    <td valign="top">
+      <h3>🧱 Comfortable or compact</h3>
+      In compact mode each card keeps only the essentials and more than twice as many fit on screen.
+    </td>
+    <td valign="top">
+      <h3>💾 Backup</h3>
+      Export your settings, tags and notes to a file. Importing shows you what will change first and never deletes anything.
+    </td>
+  </tr>
+  <tr>
     <td colspan="3" valign="top">
       <h3>📂 And a page for each project</h3>
       Click a card's name to see its README, branches, latest commits and your notes, which save themselves as you type. Escape takes you back to the board.
     </td>
   </tr>
 </table>
+
+<sub>Shortcuts, backup, the scan settings and the new compact mode arrive in the next release; 0.1.0 has everything else.</sub>
 
 ## 📸 Screenshots
 
@@ -135,6 +151,28 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
     </td>
   </tr>
 </table>
+
+<br>
+
+<table>
+  <tr>
+    <td width="45%" align="center">
+      <img src="docs/img/paleta.png" alt="The command palette opened with Ctrl+K: actions with their shortcuts and, below, recently opened projects">
+      <br><sub><b>The palette</b>: actions and projects one <kbd>Ctrl</kbd>+<kbd>K</kbd> away.</sub>
+    </td>
+    <td width="55%" align="center">
+      <img src="docs/img/copia.png" alt="The Backup section in Settings with an import summary: what gets added, which notes are kept and which folders don't exist on this computer">
+      <br><sub><b>Importing a backup</b>: the summary first, then you decide.</sub>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+<p align="center">
+  <img src="docs/img/compacto.png" alt="The board in compact mode and light theme: four columns of cards with name, tags, language and branch">
+  <br><sub><b>Compact mode</b>: four columns and more than twice the projects in view.</sub>
+</p>
 
 <br>
 
