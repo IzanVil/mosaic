@@ -215,17 +215,16 @@ Deuda conocida del rediseño:
 
 A medias:
 
-- [ ] **Problema 1, densidad.** El modo compacto gana columnas pero no alto:
-      pasa de 6,5 tarjetas visibles a 11, cuando el objetivo eran 17. Para
-      llegar, la tarjeta tiene que perder filas en compacto, no solo apretarse,
-      y eso obliga a que `ProjectCard` conozca la densidad. Sin decidir.
+- [x] **Problema 1, densidad.** Cerrado en la Sesión G: en compacto la
+      tarjeta pierde la ruta y el pie, y en una ventana de 1370x890 se ven 18
+      tarjetas enteras y 4 cortadas, frente a 11 antes; el objetivo eran 17
 
 Sin empezar:
 
 
 ---
 
-## Fase 6 — Pulido, atajos y ajustes avanzados · EN CURSO
+## Fase 6 — Pulido, atajos y ajustes avanzados · HECHA
 
 Planificada el 2026-10-06 en cuatro sesiones (D, E, F y G) con las decisiones
 ya cerradas por el usuario.
@@ -258,8 +257,14 @@ Pendiente:
       ajeno, dañado o de una versión más nueva se rechaza sin tocar nada, y la
       importación va en una sola transacción. Falta probar a mano los diálogos
       de guardar y abrir en la app instalada
-- [ ] Sesión G: modo compacto que oculta ruta y pie; colores de Tailwind con
-      mejor contraste en claro, retirando la rueda medida del sistema de diseño
+- [x] Sesión G (hecha el 2026-10-08): el modo compacto oculta la ruta y el
+      pie de la tarjeta; el texto de las etiquetas se mezcla con una tinta y
+      los dieciséis colores pasan de 4,5:1 en los dos temas (antes, 1,58:1 el
+      amarillo en claro); la rueda `--tag-*`, que no usaba nadie, se retira; el
+      selector de etiquetas se abre hacia arriba si no cabe abajo
+- [ ] Destello al arrancar, diagnosticado y sin arreglar: `index.html` nace
+      con `class="dark"` y el tema guardado se aplica tras leer la vista, así
+      que con el tema claro puede verse un instante oscuro
 - [x] Tema claro, oscuro y del sistema (adelantado con el rediseño)
 - [x] IDE y terminal preferidos configurables (hecho desde la Fase 3; el
       roadmap lo daba por pendiente)

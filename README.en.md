@@ -247,7 +247,7 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 | ✅ | **Tags and filters** | Fuzzy search and a view that's saved between sessions |
 | ✅ | **Design** | Its own design system, light and dark themes |
 | ✅ | **Project page** | README, history, branches and notes |
-| 🟡 | **Polish** | Advanced settings and shortcuts done; backup done; compact mode to go |
+| ✅ | **Polish** | Advanced settings, shortcuts, backup and compact mode |
 | 🟡 | **Distribution** | 0.1.0 released for all three platforms; signing still to do |
 
 ## 📦 Download

@@ -243,7 +243,7 @@ En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
 | ✅ | **Etiquetas y filtros** | Búsqueda difusa y vista guardada entre sesiones |
 | ✅ | **Diseño** | Sistema propio, tema claro y oscuro |
 | ✅ | **Detalle de proyecto** | README, historial, ramas y notas |
-| 🟡 | **Pulido** | Ajustes avanzados y atajos hechos; copia de seguridad hechos; falta el modo compacto |
+| ✅ | **Pulido** | Ajustes avanzados, atajos, copia de seguridad y modo compacto |
 | 🟡 | **Distribución** | 0.1.0 publicada para las tres plataformas; faltan las firmas |
 
 ## 📦 Descargas
