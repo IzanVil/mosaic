@@ -262,9 +262,12 @@ Pendiente:
       los dieciséis colores pasan de 4,5:1 en los dos temas (antes, 1,58:1 el
       amarillo en claro); la rueda `--tag-*`, que no usaba nadie, se retira; el
       selector de etiquetas se abre hacia arriba si no cabe abajo
-- [ ] Destello al arrancar, diagnosticado y sin arreglar: `index.html` nace
-      con `class="dark"` y el tema guardado se aplica tras leer la vista, así
-      que con el tema claro puede verse un instante oscuro
+- [x] Destello al arrancar (2026-10-09): un script en línea de `index.html`
+      aplica el tema desde una copia en `localStorage` antes de pintar. Medido
+      en WebKit: sin él, el primer fotograma con tema claro salía oscuro. Tauri
+      añade el hash del script a la CSP al empaquetar (comprobado en el binario)
+- [x] En compacto, el «+» oculto de la tarjeta ya no reserva una línea
+- [x] El aviso de cómo abrir el detalle pasa a ser un tooltip en el nombre
 - [x] Tema claro, oscuro y del sistema (adelantado con el rediseño)
 - [x] IDE y terminal preferidos configurables (hecho desde la Fase 3; el
       roadmap lo daba por pendiente)
