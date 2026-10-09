@@ -1,6 +1,6 @@
 [package]
 name = "mosaic"
-version = "0.1.0"
+version = "0.2.0"
 description = "Organizador visual local-first de proyectos de código"
 authors = ["Izan Vilchez"]
 edition = "2021"
