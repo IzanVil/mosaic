@@ -12,6 +12,9 @@ import type { ThemeMode } from '../types';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
+/** Clave de la copia del tema que lee el script de `index.html` antes de pintar. */
+export const THEME_STORAGE_KEY = 'mosaic.theme';
+
 /**
  * Pone la clase del tema y, en modo `system`, la mantiene al día si el
  * sistema cambia de preferencia con la aplicación abierta.
@@ -21,6 +24,11 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
  */
 export function applyTheme(mode: ThemeMode): () => void {
   const root = document.documentElement;
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, mode);
+  } catch {
+    // Sin almacenamiento solo se pierde el arranque sin parpadeo.
+  }
 
   const paint = (dark: boolean) => {
     root.classList.toggle('dark', dark);
