@@ -4,14 +4,24 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   backend:
-    name: Backend (Linux)
-    runs-on: ubuntu-latest
+    name: Backend (${{ matrix.nombre }})
+    runs-on: ${{ matrix.so }}
+
+    # Los tres sistemas a la vez: un fallo en uno no debe ocultar los otros.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { nombre: Linux, so: ubuntu-latest }
+          - { nombre: macOS, so: macos-latest }
+          - { nombre: Windows, so: windows-latest }
 
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +29,7 @@ jobs:
       # El crate `tauri` enlaza contra webkit2gtk vía pkg-config, así que las
       # cabeceras de desarrollo hacen falta incluso para `cargo check`.
       - name: Instalar dependencias de sistema de Tauri
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -33,8 +44,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          key: ${{ matrix.so }}
 
+      # El formato no depende del sistema: basta con mirarlo una vez.
       - name: Formato
+        if: runner.os == 'Linux'
         working-directory: src-tauri
         run: cargo fmt --check
 
@@ -47,8 +61,16 @@ jobs:
         run: cargo test
 
   frontend:
-    name: Frontend
-    runs-on: ubuntu-latest
+    name: Frontend (${{ matrix.nombre }})
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { nombre: Linux, so: ubuntu-latest }
+          - { nombre: macOS, so: macos-latest }
+          - { nombre: Windows, so: windows-latest }
 
     steps:
       - uses: actions/checkout@v4
