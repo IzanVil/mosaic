@@ -9,8 +9,6 @@
 
 import { get, writable } from 'svelte/store';
 
-import { dismissDetailTip } from './filters';
-
 /** La pantalla que se está viendo. */
 export type Route =
   | { view: 'dashboard' }
@@ -31,8 +29,6 @@ let returnFocusTo: number | null = null;
 
 /** Abre el detalle de un proyecto, recordando de qué tarjeta se vino. */
 export function openProjectDetail(projectId: number): void {
-  // Quien ya ha abierto un detalle sabe cómo se hace: el aviso sobra.
-  dismissDetailTip();
   returnFocusTo = projectId;
   route.set({ view: 'project', projectId });
 }

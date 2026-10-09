@@ -36,7 +36,6 @@ import {
   openProjectDetail,
   route,
 } from '../../src/lib/stores/navigation';
-import { detailTipDismissed } from '../../src/lib/stores/filters';
 
 const save = vi.mocked(setProjectNotes);
 
@@ -108,13 +107,6 @@ describe('volver del detalle', () => {
     expect(get(route)).toEqual({ view: 'project', projectId: 7 });
     expect(leaveProjectDetail()).toBe(7);
     expect(get(route)).toEqual({ view: 'dashboard' });
-  });
-
-  it('abrir un detalle retira el aviso de cómo se abre', () => {
-    detailTipDismissed.set(false);
-    openProjectDetail(3);
-    expect(get(detailTipDismissed)).toBe(true);
-    leaveProjectDetail();
   });
 
   it('olvida la tarjeta si la navegación pasó por Ajustes', () => {

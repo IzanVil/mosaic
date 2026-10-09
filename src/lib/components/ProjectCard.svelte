@@ -47,17 +47,20 @@
 
 <article class="tarjeta" class:fijada={project.pinned} class:ausente={project.missing}>
   <header>
-    <h3>
-      <button
-        type="button"
-        class="nombre"
-        data-proyecto={project.id}
-        onclick={() => openProjectDetail(project.id)}
-        title="Ver el detalle de {project.name}"
-      >
-        {project.name}
-      </button>
-    </h3>
+    <div class="titulo">
+      <h3>
+        <button
+          type="button"
+          class="nombre"
+          data-proyecto={project.id}
+          onclick={() => openProjectDetail(project.id)}
+          aria-describedby="pista-{project.id}"
+        >
+          {project.name}
+        </button>
+      </h3>
+      <span class="pista" id="pista-{project.id}" role="tooltip">Click para abrir el detalle</span>
+    </div>
 
     <button
       type="button"
@@ -226,6 +229,35 @@
     color: var(--accent);
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  /* Fuera del `h3`, que recorta con `overflow: hidden`. */
+  .titulo {
+    position: relative;
+    min-width: 0;
+  }
+  .pista {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 5;
+    margin-top: var(--space-1);
+    padding: 2px var(--space-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: var(--surface-overlay);
+    box-shadow: var(--shadow-sm);
+    font-size: var(--text-meta);
+    line-height: var(--text-meta-lh);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  .titulo:has(.nombre:hover) .pista,
+  .titulo:has(.nombre:focus-visible) .pista {
+    opacity: 1;
   }
 
   .ruta {

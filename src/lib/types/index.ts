@@ -249,8 +249,6 @@ export interface ViewState {
   sidebar_collapsed: boolean;
   density: Density;
   theme: ThemeMode;
-  /** Ya se cerró (o ya no hace falta) el aviso de que el nombre abre el detalle. */
-  detail_tip_dismissed: boolean;
 }
 
 /** Espejo de `core::backup::ExportSummary`. */

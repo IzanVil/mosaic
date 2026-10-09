@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FolderSearch, Info, LayoutGrid, Rows3 } from '@lucide/svelte';
+  import { FolderSearch, LayoutGrid, Rows3 } from '@lucide/svelte';
 
   import EmptyState from '../components/EmptyState.svelte';
   import FilterBar from '../components/FilterBar.svelte';
@@ -12,8 +12,6 @@
   import { appsError } from '../stores/apps';
   import {
     density,
-    detailTipDismissed,
-    dismissDetailTip,
     hasActiveFilters,
     sidebarCollapsed,
     toggleDensity,
@@ -103,17 +101,6 @@
           </button>
         </div>
         <FilterBar />
-
-        {#if !$detailTipDismissed}
-          <!-- Abrir el detalle no se descubre solo: el usuario lo buscó con doble clic. -->
-          <p class="pista" role="note">
-            <Info size={14} strokeWidth={1.75} />
-            <span>
-              Pulsa el nombre de un proyecto para ver su README, sus commits, sus ramas y tus notas.
-            </span>
-            <button type="button" onclick={dismissDetailTip}>Entendido</button>
-          </p>
-        {/if}
 
         {#if muestraAviso}
           <p class="aviso-pocos">
@@ -220,45 +207,6 @@
     color: var(--text-primary);
   }
   .densidad:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  .pista {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius-md);
-    background: var(--accent-surface);
-    font-size: var(--text-meta);
-    line-height: var(--text-meta-lh);
-    color: var(--text-primary);
-  }
-  .pista :global(svg) {
-    flex: none;
-    color: var(--accent);
-  }
-  .pista span {
-    flex: 1;
-  }
-  .pista button {
-    flex: none;
-    padding: 3px var(--space-2);
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    font: inherit;
-    color: var(--accent);
-    cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-out);
-  }
-  .pista button:hover {
-    background: var(--accent-surface);
-  }
-  .pista button:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }

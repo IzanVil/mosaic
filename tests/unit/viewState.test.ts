@@ -13,7 +13,6 @@ import {
   currentViewState,
   cycleTheme,
   density,
-  detailTipDismissed,
   filters,
   setGitState,
   sanitizeViewState,
@@ -29,14 +28,12 @@ beforeEach(() => {
   sidebarCollapsed.set(false);
   density.set('comodo');
   theme.set('dark');
-  detailTipDismissed.set(false);
 });
 
 describe('lo que se guarda', () => {
   it('incluye todos los campos del estado de vista', () => {
     expect(Object.keys(currentViewState()).sort()).toEqual([
       'density',
-      'detail_tip_dismissed',
       'filters',
       'sidebar_collapsed',
       'theme',
@@ -120,19 +117,5 @@ describe('el tema', () => {
     cycleTheme();
     const recuperado = sanitizeViewState(JSON.parse(JSON.stringify(currentViewState())));
     expect(recuperado.theme).toBe('system');
-  });
-});
-
-describe('el aviso de cómo abrir el detalle', () => {
-  it('sale por defecto, también con una vista guardada por una versión anterior', () => {
-    expect(sanitizeViewState({ density: 'compacto', theme: 'light' }).detail_tip_dismissed).toBe(
-      false,
-    );
-  });
-
-  it('una vez cerrado, sobrevive al viaje completo por JSON', () => {
-    detailTipDismissed.set(true);
-    const recuperado = sanitizeViewState(JSON.parse(JSON.stringify(currentViewState())));
-    expect(recuperado.detail_tip_dismissed).toBe(true);
   });
 });
