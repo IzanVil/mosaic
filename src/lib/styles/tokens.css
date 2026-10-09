@@ -64,6 +64,9 @@
   /* Receta del chip. El texto se mezcla con una tinta para pasar de 4,5:1
    * con los dieciséis colores de `tagColors.ts`: sin ella, el amarillo
    * quedaba en 1,58:1 en claro y el gris en 3,11:1 en oscuro. */
+  /* Sitio de los tres botones de ventana de macOS, que se dibujan encima de la cabecera. */
+  --titlebar-inset-mac: 84px;
+
   --tag-chip-bg: 14%;
   --tag-chip-border: 34%;
   --tag-chip-text: 55%;

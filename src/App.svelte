@@ -203,8 +203,9 @@
 <svelte:window onkeydown={onGlobalKeydown} />
 
 <div class="armazon">
-  <header class="cabecera">
-    <h1 class="marca">Mosaic</h1>
+  <!-- En macOS la cabecera ocupa el sitio de la barra de título: tiene que arrastrar la ventana. -->
+  <header class="cabecera" class:mac data-tauri-drag-region={mac || undefined}>
+    <h1 class="marca" data-tauri-drag-region={mac || undefined}>Mosaic</h1>
 
     <nav class="pestanas" aria-label="Secciones">
       <button
@@ -228,7 +229,7 @@
       </button>
     </nav>
 
-    <p class="metadatos">
+    <p class="metadatos" data-tauri-drag-region={mac || undefined}>
       <span>
         {$projects.length}
         {$projects.length === 1 ? 'proyecto' : 'proyectos'}
@@ -357,6 +358,9 @@
     padding: 0 var(--space-5);
     border-bottom: 1px solid var(--border-subtle);
     background: var(--surface-raised);
+  }
+  .cabecera.mac {
+    padding-left: var(--titlebar-inset-mac);
   }
 
   .marca {

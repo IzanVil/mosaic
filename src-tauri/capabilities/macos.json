@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "macos",
+  "description": "Arrastrar la ventana desde la cabecera, que en macOS hace de barra de título",
+  "windows": [
+    "main"
+  ],
+  "platforms": [
+    "macOS"
+  ],
+  "permissions": [
+    "core:window:allow-start-dragging"
+  ]
+}
