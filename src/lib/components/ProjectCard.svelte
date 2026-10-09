@@ -257,18 +257,17 @@
   }
 
   /*
-   * El selector solo asoma al pasar por la tarjeta. Ese era el motivo de
-   * quitarlo en la auditoría: trece botones punteados repartidos por la
-   * rejilla eran ruido de fondo. En hover no lo es.
+   * El selector solo asoma al pasar por la tarjeta o al entrar en ella con el
+   * teclado. Oculto con `display: none` y no con opacidad: invisible seguía
+   * ocupando sitio y, con tres etiquetas en compacto, reservaba una segunda
+   * línea vacía.
    */
   .anadir {
-    display: inline-flex;
-    opacity: 0;
-    transition: opacity var(--duration-fast) var(--ease-out);
+    display: none;
   }
   .tarjeta:hover .anadir,
   .tarjeta:focus-within .anadir {
-    opacity: 1;
+    display: inline-flex;
   }
 
   /*
