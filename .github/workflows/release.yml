@@ -141,17 +141,18 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: '1'
           MOSAIC_LOG: debug
         run: |
-          sudo apt-get install -y xvfb imagemagick x11-utils
-          xvfb-run -a -s "-screen 0 1280x800x24" bash -c '
+          sudo apt-get install -y xvfb imagemagick x11-utils dbus-x11
+          # WebKitGTK se quedaba colgado al arrancar sin una sesión de D-Bus.
+          dbus-run-session -- xvfb-run -a -s "-screen 0 1280x800x24" bash -c '
             src-tauri/target/release/mosaic > arranque-linux.log 2>&1 & pid=$!
-            sleep 20
-            xwininfo -root -tree | tee -a arranque-linux.log | grep -i mosaic || true
-            id=$(xwininfo -root -tree | grep -i "\"Mosaic\"" | head -1 | awk "{print \$1}")
+            sleep 25
+            xwininfo -root -tree >> arranque-linux.log
             import -window root arranque-linux.png
-            [ -n "$id" ] && import -window "$id" arranque-linux-ventana.png
             kill -0 $pid || { echo "Mosaic se cerró solo"; cat arranque-linux.log; exit 1; }
-            kill $pid'
-          tail -20 arranque-linux.log
+            kill $pid
+            # Que siga vivo no basta: la ventana tiene que estar en pantalla.
+            grep -qE "\"Mosaic\".* [0-9]{3,}x[0-9]{3,}" arranque-linux.log ||
+              { echo "La ventana de Mosaic no llegó a aparecer"; cat arranque-linux.log; exit 1; }'
 
       - name: Arranque (Windows)
         if: runner.os == 'Windows'
