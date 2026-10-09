@@ -287,13 +287,23 @@ Pendiente:
 - [x] Rutas verbatim de Windows (`\\?\C:\...`) normalizadas antes de guardarlas
 - [x] Mosaic 0.1.0 publicado el 2026-10-06, con los seis instaladores y notas
       bilingües; el README enlaza cada uno
-- [ ] Barra de título propia, aplazada desde la Fase 6. La del sistema sigue
-      el tema de KDE y no el de Mosaic. No es CSS: hay que quitar las
-      decoraciones y dibujarla dentro, con arrastre y redimensionado propios,
-      y comprobar antes cómo se redimensiona en Wayland sin decoraciones
-- [ ] **Verificar los tres binarios en su sistema**: nadie ha ejecutado todavía
-      el `.dmg` ni el `.msi`
-- [ ] Firma de código en macOS y Windows, que requiere certificados de pago
-- [ ] CI multiplataforma para los tests, no solo para los builds
-- [ ] Validar la CSP en un build de release de cada plataforma
-- [ ] `CONTRIBUTING.md`
+- [x] Barra de título (decidido el 2026-10-10 con dos experimentos en KDE
+      Wayland): la del sistema la dibuja KWin y no obedece al tema de la app, y
+      una ventana sin ella no se puede estirar en Wayland. Se queda la del
+      sistema en Linux y Windows; en macOS la cabecera de Mosaic hace de barra,
+      con los botones nativos (`tauri.macos.conf.json`)
+- [x] **Los tres binarios arrancan en su sistema**: cada release abre la app
+      en macOS (desde el `.dmg`), Windows y Linux (Xvfb con D-Bus), comprueba
+      que la ventana aparece y sigue viva pasados 20 segundos, y guarda una
+      captura. Es la primera vez que se ve Mosaic en macOS y Windows
+- [x] La CSP no bloquea nada en los builds de release: en las tres capturas
+      carga la interfaz con sus fuentes y estilos
+- [x] Tests de backend y frontend en Linux, macOS y Windows (en Windows uno
+      menos: el de enlaces simbólicos es solo de Unix)
+- [x] `SHA256SUMS.txt` con las sumas de los seis instaladores en cada release
+- [x] Firma *ad hoc* en macOS. No quita el aviso de Gatekeeper, que necesita
+      el programa de desarrolladores de Apple (99 $/año), descartado por ahora
+- [ ] Firma gratuita en Windows con SignPath Foundation: falta la solicitud,
+      que tiene que enviar el usuario, y la política de firma en la web
+- [x] `CONTRIBUTING.md` en español e inglés
+- [ ] Mosaic 0.2.0
