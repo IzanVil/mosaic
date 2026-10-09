@@ -17,5 +17,10 @@
         }
       }
     ]
+  },
+  "bundle": {
+    "macOS": {
+      "signingIdentity": "-"
+    }
   }
 }

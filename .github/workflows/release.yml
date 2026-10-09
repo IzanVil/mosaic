@@ -80,9 +80,9 @@ jobs:
           releaseBody: |
             Binarios compilados por el CI para las tres plataformas.
 
-            Mosaic no va firmado: macOS pedirá permiso en Ajustes, Privacidad y
-            seguridad la primera vez que lo abras, y Windows mostrará el aviso de
-            SmartScreen.
+            Mosaic no va firmado con certificado: macOS pedirá permiso en Ajustes,
+            Privacidad y seguridad la primera vez que lo abras, y Windows mostrará
+            el aviso de SmartScreen. Comprueba la descarga con `SHA256SUMS.txt`.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
@@ -108,3 +108,102 @@ jobs:
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           if-no-files-found: error
+
+      # Sumas de lo que sale de esta máquina; el último job las junta en un solo
+      # SHA256SUMS.txt.
+      - name: Sumas SHA-256
+        shell: bash
+        run: |
+          mkdir -p sumas
+          find src-tauri/target -path '*/bundle/*' -type f \
+            \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.msi' \
+               -o -name '*-setup.exe' -o -name '*.dmg' \) -print0 |
+            while IFS= read -r -d '' f; do
+              (cd "$(dirname "$f")" && shasum -a 256 "$(basename "$f")") >> "sumas/${{ runner.os }}.txt"
+            done
+          cat "sumas/${{ runner.os }}.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sumas-${{ matrix.so }}
+          path: sumas/
+          if-no-files-found: error
+
+      # Prueba de humo: la app arranca, sigue viva a los 20 segundos y se guarda
+      # una captura. No sustituye a probarla a mano, pero caza el arranque roto
+      # y la pantalla en blanco, que es lo que haría una CSP que bloquea algo.
+      - name: Arranque (Linux)
+        if: runner.os == 'Linux'
+        env:
+          WEBKIT_DISABLE_COMPOSITING_MODE: '1'
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          sudo apt-get install -y xvfb imagemagick
+          xvfb-run -a -s "-screen 0 1280x800x24" bash -c '
+            src-tauri/target/release/mosaic & pid=$!
+            sleep 20
+            import -window root arranque-linux.png
+            kill -0 $pid || { echo "Mosaic se cerró solo"; exit 1; }
+            kill $pid'
+
+      - name: Arranque (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath src-tauri\target\release\mosaic.exe -PassThru
+          Start-Sleep -Seconds 20
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          $g = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          $bmp.Save("arranque-windows.png")
+          if ($p.HasExited) { throw "Mosaic se cerró solo (código $($p.ExitCode))" }
+          Stop-Process -Id $p.Id
+
+      - name: Arranque (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          app=src-tauri/target/universal-apple-darwin/release/bundle/macos/Mosaic.app
+          codesign -dv "$app" 2>&1 | grep -E 'Signature|Identifier' || true
+          open "$app"
+          sleep 20
+          screencapture -x arranque-macos.png
+          # El ejecutable de dentro del .app puede llamarse «Mosaic» o «mosaic».
+          pgrep -ix mosaic || { echo "Mosaic se cerró solo"; exit 1; }
+          pkill -ix mosaic
+
+      - name: Guardar la captura de arranque
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arranque-${{ matrix.so }}
+          path: arranque-*.png
+          if-no-files-found: warn
+
+  sumas:
+    name: SHA256SUMS.txt
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sumas-*
+          merge-multiple: true
+          path: sumas
+
+      - name: Juntar las sumas
+        run: sort -k2 sumas/*.txt > SHA256SUMS.txt && cat SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SHA256SUMS
+          path: SHA256SUMS.txt
+
+      - name: Subirlas al release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" SHA256SUMS.txt --clobber --repo "${{ github.repository }}"
