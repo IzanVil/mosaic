@@ -123,7 +123,7 @@ function compareBy(a: ProjectWithTags, b: ProjectWithTags, current: FilterState)
     case 'name':
       return compareNames(a.name, b.name);
     case 'last_opened':
-      return compareNullableNumbers(a.last_opened_at, b.last_opened_at);
+      return (a.last_opened_at ?? 0) - (b.last_opened_at ?? 0);
     case 'created':
       return a.created_at - b.created_at;
     case 'updated':
@@ -132,17 +132,17 @@ function compareBy(a: ProjectWithTags, b: ProjectWithTags, current: FilterState)
 }
 
 /**
- * Ordena números que pueden faltar dejando los ausentes al final.
- *
- * Un proyecto sin abrir no es «el más antiguo»: es otra categoría, y debe
- * quedar al final se ordene en ascendente o en descendente. Por eso el signo
- * se decide aquí y no se invierte con la dirección.
+ * Manda al final los proyectos que nunca se han abierto, al ordenar por última
+ * apertura. Un proyecto sin abrir no es «el más antiguo»: es otra categoría, y
+ * queda al final en las dos direcciones, así que esto se aplica antes de la
+ * dirección y no se invierte con ella.
  */
-function compareNullableNumbers(a: number | null, b: number | null): number {
-  if (a === b) return 0;
-  if (a === null) return 1;
-  if (b === null) return -1;
-  return a - b;
+function neverOpenedLast(a: ProjectWithTags, b: ProjectWithTags, current: FilterState): number {
+  if (current.sort !== 'last_opened') return 0;
+  const aNever = a.last_opened_at === null;
+  const bNever = b.last_opened_at === null;
+  if (aNever === bNever) return 0;
+  return aNever ? 1 : -1;
 }
 
 /**
@@ -162,6 +162,9 @@ export const visibleProjects = derived([projects, filters], ([source, current]) 
   const direction = current.sort_dir === 'asc' ? 1 : -1;
   return filtered.sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+
+    const never = neverOpenedLast(a, b, current);
+    if (never !== 0) return never;
 
     const bySort = compareBy(a, b, current) * direction;
     // El nombre desempata para que el orden no baile entre renders cuando dos
