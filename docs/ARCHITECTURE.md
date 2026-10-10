@@ -40,8 +40,9 @@ Las reglas de dependencia:
 
 ### `errors.rs`
 
-`AppError` con `thiserror`: `Db`, `Migration`, `Io`, `InvalidPath`, `NotFound`,
-`Internal`. Implementa `From<AppError> for String` para la frontera con el
+`AppError` con `thiserror`: `Db`, `Migration`, `Io`, `Git`, `InvalidPath`,
+`NotFound`, `Validation` (una regla de negocio que no se cumple, con un mensaje
+para el usuario) e `Internal`. Implementa `From<AppError> for String` para la frontera con el
 frontend. No se usa `unwrap()` fuera de los tests.
 
 ### `db/`
@@ -55,8 +56,8 @@ frontend. No se usa `unwrap()` fuera de los tests.
   `rusqlite_migration` al abrir la base de datos. Para añadir una, se crea
   `migrations/NNN_nombre.sql` y se añade al final del vector; el orden existente
   nunca se reordena.
-- **`repositories/`** — `projects` y `scan_paths`. Devuelven structs de dominio,
-  no filas.
+- **`repositories/`** — `projects`, `scan_paths`, `git_status`, `tags` y
+  `project_tags`. Devuelven structs de dominio, no filas.
 
 ### `core/scanner.rs`
 
@@ -124,7 +125,9 @@ mostrar datos rancios.
 
 Una tarea lanzada en el `setup` de Tauri refresca el estado Git cada N minutos
 (5 por defecto, configurable; `0` lo desactiva). El intervalo se relee en cada
-vuelta, así que un cambio en los ajustes surte efecto sin reiniciar. Hace un
+vuelta, y además la espera se puede interrumpir: `GitRefreshSignal` (un `Notify`
+de tokio) la despierta cuando el usuario cambia el intervalo en Ajustes. Sin
+eso, bajar de 60 a 1 minuto tardaría hasta una hora en notarse. Hace un
 primer refresco a los 5 segundos del arranque porque la caché que quedó de la
 sesión anterior puede estar muy desactualizada.
 
@@ -152,9 +155,86 @@ La elección de aplicación es "la preferida si sigue instalada, si no la primer
 disponible". Si el usuario eligió un editor y luego lo desinstaló, se avisa por el
 log y se usa otro en vez de fallar.
 
+Los enlaces del README se abren en el navegador con `open_external`, que solo
+acepta `http` y `https` y exige un host. La URL se parsea con el crate `url`
+(estándar WHATWG, el mismo que los navegadores) y no con comparaciones de
+prefijo: `javascript:` o `file:` no pasan, y esquemas propios como `vscode:`
+tampoco, porque lanzarían aplicaciones.
+
 `last_opened_at` solo se registra si el lanzamiento tuvo éxito. Ni eso ni la marca
 de favorito tocan `updated_at`: son preferencias de presentación, no metadatos que
 describan la carpeta.
+
+### `core/readme.rs`
+
+El README de un proyecto es contenido de terceros, así que se renderiza en
+Rust (`pulldown-cmark`) y no en el webview: el Markdown de origen nunca se
+procesa dentro de la ventana y las reglas de saneado quedan cubiertas por
+`cargo test`. El HTML crudo pasa por una lista blanca de `ammonia` (alineación,
+tablas, bloques plegables…), sin scripts, estilos, iframes ni manejadores de
+eventos.
+
+Ninguna imagen se carga. Las del HTML se sustituyen por su texto alternativo, y
+las imágenes, vídeos, iframes y SVG que se quitan se cuentan en
+`ReadmePreview`, para que la vista avise de que falta algo y ofrezca abrirlo en
+GitHub, GitLab… o en el editor.
+
+### `config/settings.rs`
+
+Los ajustes son una tabla clave-valor con valores por defecto: una base recién
+creada es válida sin precargar nada, y un valor ilegible cae a su defecto.
+
+Los cinco ajustes de escaneo y Git que se editan desde la interfaz forman
+`AdvancedSettings`, con sus límites en `LIMITS` (profundidad de 1 a 8, tope de
+1.000 a 500.000 entradas, intervalo de Git de 0 a 60 minutos, hasta 100
+carpetas excluidas). Los límites viajan al frontend junto a los valores, para
+que la pantalla valide con los mismos números que `validate_advanced` en vez de
+copiarlos.
+
+### `core/backup.rs`
+
+Exporta a un JSON los ajustes, las rutas de escaneo y, si se pide, el trabajo
+del usuario: etiquetas y, de cada proyecto, si está fijado, sus notas y sus
+etiquetas. Los proyectos se identifican por ruta y las etiquetas por nombre,
+porque los ids no significan nada en otro equipo. Por la misma razón no viaja
+la vista guardada, cuyos filtros apuntan a ids de etiqueta.
+
+El fichero lleva `format` y `version`. Uno ajeno, dañado o de una versión más
+nueva se rechaza entero antes de tocar nada, y cada dato se valida con las
+mismas reglas que al crearlo desde la interfaz.
+
+Importar **suma y nunca borra**: añade las rutas que faltan y existen en este
+equipo, une las carpetas excluidas, crea las etiquetas que no existan (sin
+cambiar el color de las que ya hay), fija pero no desfija, etiqueta pero no
+desetiqueta, y nunca pisa unas notas: si difieren, se quedan las de aquí y se
+avisa. Los proyectos que no están en este equipo no se crean; aparecerán al
+escanear.
+
+`plan_import` (lo que se enseña antes) y `apply_import` recorren el mismo
+código, de modo que el resumen previo es exactamente lo que se hace. La
+importación va en una sola transacción.
+
+### Comandos
+
+Treinta y cinco, agrupados como en `commands/`:
+
+```
+projects  list_projects, list_projects_with_tags, get_project,
+          set_project_pinned, set_project_notes, get_project_readme
+scanner   add_scan_path, list_scan_paths, remove_scan_path,
+          set_scan_path_enabled, scan_all_paths
+git       list_git_status, refresh_git_status, refresh_all_git_status,
+          get_project_history, get_project_branches
+system    list_detected_apps, open_in, open_external, get_preferred_apps,
+          set_preferred_app
+tags      create_tag, list_tags, update_tag, delete_tag, assign_tag,
+          unassign_tag, list_tags_for_project
+settings  get_view_state, set_view_state, get_advanced_settings,
+          set_advanced_settings
+backup    export_backup, preview_import, apply_import
+```
+
+Y un evento del backend al frontend: `git-status-refreshed`.
 
 ## Modelo de datos
 
@@ -243,8 +323,8 @@ La búsqueda difusa es `fuse.js` sobre el nombre y la ruta, con el texto
 normalizado —sin acentos y en minúsculas— en los dos lados de la comparación. El
 índice se reconstruye solo cuando cambia la lista de proyectos, no en cada
 pulsación. El filtrado es del frontend a propósito: la lista completa ya está en
-memoria y con cientos de proyectos la respuesta es instantánea. Se reevaluará en
-la Fase 7 si con miles se nota.
+memoria y con cientos de proyectos la respuesta es instantánea. Falta medirlo
+con miles (issue #5).
 
 Las etiquetas de un filtro múltiple se combinan en OR entre sí, igual que los
 lenguajes; el resto de filtros se combinan en AND. Borrar una etiqueta la saca
@@ -257,20 +337,55 @@ El estado Git que llega con el refresco automático se **mezcla** por
 lista: con cientos de proyectos, reescribir el array completo cada cinco minutos
 haría parpadear el tablero.
 
-Tailwind 4 con configuración CSS-first: no hay `tailwind.config.js`. Los colores
-se definen como tokens en `@theme` dentro de `src/app.css` y se redefinen bajo
-`.dark`, de modo que las utilidades de Tailwind cambian de tema sin recompilar.
+El estilo de cada componente va en su `<style>` con scope y lee los tokens de
+`lib/styles/tokens.css`: color, tipografía, espaciado, radios, sombras y
+duraciones. `:root` define el tema claro y `.dark` el oscuro. Tailwind 4 (sin
+`tailwind.config.js`) queda solo para maquetación. El porqué de cada decisión
+está en [`DESIGN.md`](DESIGN.md).
+
+El tema guardado vive en `ui.view_state`, que llega por IPC después del primer
+pintado. Para no enseñar un fotograma con el tema equivocado, la app guarda
+una copia en `localStorage` y un script en línea de `index.html` la aplica
+antes de pintar nada. Tauri añade el hash de ese script a la CSP al empaquetar.
+
+La navegación es una unión discriminada en `stores/navigation.ts`, sin router:
+tablero, ajustes o el detalle de un proyecto. El detalle no se guarda entre
+sesiones. Sus notas se autoguardan 1,5 s después de la última tecla, se
+vuelcan en el acto al salir de la vista y no se escriben si el texto no cambió
+(`stores/projectDetail.ts`).
+
+Los atajos (`utils/shortcuts.ts`) se reconocen con una función pura que acepta
+Ctrl o Cmd según el sistema. La paleta de comandos (`utils/palette.ts`) busca
+con el mismo índice que el tablero (`rankProjects`), así que nunca discrepa de
+la barra de búsqueda.
 
 ## Seguridad
 
 - Mosaic **solo lee** de los repositorios. Nunca escribe en ellos.
-- Las capacidades de Tauri están al mínimo: `core:default` y `dialog:allow-open`.
+- Las capacidades de Tauri están al mínimo: `core:default`, los diálogos de
+  abrir y de guardar, y escribir (no leer) en el portapapeles. En macOS, además,
+  arrastrar la ventana desde la cabecera (`capabilities/macos.json`), porque
+  ahí hace de barra de título.
 - La CSP de producción es `default-src 'self'` con las excepciones justas para
   imágenes y para los estilos que Svelte inyecta en runtime. En desarrollo la
   página la sirve Vite desde un origen externo, sobre el que Tauri no inyecta la
   cabecera, así que la política solo se ejerce de verdad en los builds de
-  release.
+  release. Cada release comprueba en los tres sistemas que la interfaz carga
+  entera con esa política.
 - Cero red, cero telemetría, cero cuentas, cero IA.
+
+## Plataformas
+
+El código es el mismo en las tres. Las diferencias viven en la configuración:
+
+- **macOS**: `tauri.macos.conf.json` se superpone a la configuración común.
+  La ventana usa la barra de título transparente con los botones nativos
+  encima de la cabecera, y el `.app` va firmado *ad hoc*.
+- **Windows**: `core::strip_verbatim_prefix` quita el prefijo `\\?\` que
+  `canonicalize` pone en las rutas, para no guardarlo en `projects.path`.
+- **Linux y Windows**: barra de título del sistema. En KDE Wayland la dibuja
+  KWin con el tema del escritorio y no obedece al de la app, y una ventana sin
+  ella no se puede redimensionar; se probó el 2026-10-10.
 
 ## Tests
 
@@ -283,4 +398,10 @@ se definen como tokens en `@theme` dentro de `src/app.css` y se redefinen bajo
   marca ausentes sin borrar. `git_flow.rs` construye repositorios reales y los
   refresca hasta la caché. `tags_flow.rs` etiqueta proyectos descubiertos,
   reescanea y borra la etiqueta comprobando que los proyectos siguen.
+- **Frontend**: vitest en `tests/unit/`, sobre los stores y las funciones puras,
+  con la API de Tauri simulada. Incluye las reglas de filtrado del tablero y el
+  script de arranque del tema.
+- **CI**: los tests de Rust y del frontend corren en Linux, macOS y Windows.
+  Cada release, además, abre la app en los tres sistemas, comprueba que la
+  ventana aparece y guarda una captura.
 - El `tests/` de la raíz queda reservado para los end-to-end del frontend.
