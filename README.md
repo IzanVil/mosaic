@@ -20,7 +20,7 @@ Local, privado y sin una sola petición de red.</p>
 </p>
 
 <p>
-<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Descargar-Mosaic%200.1.0-2c8c8c?style=for-the-badge" alt="Descargar Mosaic 0.1.0" height="36"></a>
+<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Descargar-Mosaic%200.2.0-2c8c8c?style=for-the-badge" alt="Descargar Mosaic 0.2.0" height="36"></a>
 </p>
 
 <p>
@@ -125,8 +125,6 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
   </tr>
 </table>
 
-<sub>Los atajos, la copia de seguridad, los ajustes de escaneo y el nuevo modo compacto llegan en la próxima versión; la 0.1.0 trae todo lo demás.</sub>
-
 ## 📸 Capturas
 
 <p align="center">
@@ -189,7 +187,7 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
 El estado de Git se lee solo a los cinco segundos de arrancar y después cada
 cinco minutos. El botón **Git** de la cabecera fuerza una relectura.
 
-**Atajos** (desde la próxima versión): <kbd>Ctrl</kbd>+<kbd>K</kbd> abre una
+**Atajos**: <kbd>Ctrl</kbd>+<kbd>K</kbd> abre una
 paleta para saltar a cualquier proyecto o acción, <kbd>Ctrl</kbd>+<kbd>R</kbd>
 relee Git, <kbd>/</kbd> busca y <kbd>?</kbd> enseña todos los atajos. En macOS,
 <kbd>⌘</kbd> en lugar de <kbd>Ctrl</kbd>.
@@ -230,14 +228,6 @@ Sí: en **Ajustes → Escaneo**, «Escanear al arrancar». Mosaic recorrerá tus
 rutas ocho segundos después de abrirse. Ahí mismo se cambian también la
 profundidad, las carpetas que se saltan y la frecuencia con la que relee Git.
 
-Esa sección llega en la próxima versión. En la 0.1.0 se activa así:
-
-```bash
-sqlite3 ~/.local/share/mosaic/mosaic.db \
-  "INSERT INTO settings (key, value) VALUES ('scan.on_startup', 'true')
-   ON CONFLICT(key) DO UPDATE SET value = 'true';"
-```
-
 </details>
 
 <details>
@@ -248,8 +238,7 @@ sqlite3 ~/.local/share/mosaic/mosaic.db \
 En **Ajustes → Copia de seguridad**, «Exportar…» guarda un fichero JSON con
 tus ajustes y rutas y, si dejas marcada la casilla, tus etiquetas, notas y
 fijados. En el otro equipo, «Importar…» te enseña antes qué va a cambiar.
-Importar solo añade: no borra nada ni pisa notas que ya tengas. Llega en la
-próxima versión.
+Importar solo añade: no borra nada ni pisa notas que ya tengas.
 
 </details>
 
@@ -282,11 +271,11 @@ En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
 | ✅ | **Diseño** | Sistema propio, tema claro y oscuro |
 | ✅ | **Detalle de proyecto** | README, historial, ramas y notas |
 | ✅ | **Pulido** | Ajustes avanzados, atajos, copia de seguridad y modo compacto |
-| 🟡 | **Distribución** | 0.1.0 publicada para las tres plataformas; faltan las firmas |
+| 🟡 | **Distribución** | 0.2.0 publicada para las tres plataformas, probada en cada una por el CI; faltan las firmas |
 
 ## 📦 Descargas
 
-**Mosaic 0.1.0** ya está publicado para las tres plataformas. Elige tu sistema:
+**Mosaic 0.2.0** ya está publicado para las tres plataformas. Elige tu sistema:
 
 <table>
   <tr>
@@ -296,37 +285,43 @@ En un único fichero SQLite. Para empezar de cero, cierra Mosaic y bórralo.
   </tr>
   <tr>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Descargar el .dmg universal"></a>
-      <br><sub>Intel y Apple Silicon · 8,3 MB</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Descargar el .dmg universal"></a>
+      <br><sub>Intel y Apple Silicon · 8,5 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-instalador-2c8c8c?style=flat-square" alt="Descargar el instalador .exe"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-instalador-2c8c8c?style=flat-square" alt="Descargar el instalador .exe"></a>
       <br><sub>Recomendado · 3,4 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-paquete-555?style=flat-square" alt="Descargar el paquete .msi"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-paquete-555?style=flat-square" alt="Descargar el paquete .msi"></a>
       <br><sub>Para despliegues · 4,6 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-cualquier%20distro-2c8c8c?style=flat-square" alt="Descargar el .AppImage"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-cualquier%20distro-2c8c8c?style=flat-square" alt="Descargar el .AppImage"></a>
       <br><sub>Sin instalar · 79 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Descargar el .deb"></a>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic-0.1.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Descargar el .rpm"></a>
-      <br><sub>4,6 MB cada uno</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Descargar el .deb"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic-0.2.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Descargar el .rpm"></a>
+      <br><sub>4,7 MB cada uno</sub>
     </td>
   </tr>
 </table>
 
 Todas las versiones, con sus notas, están en
-[releases](https://github.com/IzanVil/mosaic/releases).
+[releases](https://github.com/IzanVil/mosaic/releases). Para comprobar que una
+descarga llegó entera, compárala con
+[`SHA256SUMS.txt`](https://github.com/IzanVil/mosaic/releases/download/v0.2.0/SHA256SUMS.txt):
+
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing
+```
 
 <details>
 <summary><b>Cómo instalarlo en cada sistema</b></summary>
 
 <br>
 
-**macOS.** Abre el `.dmg` y arrastra Mosaic a Aplicaciones. Como el binario no
-va firmado, la primera vez macOS lo bloquea: ve a *Ajustes del Sistema →
+**macOS.** Abre el `.dmg` y arrastra Mosaic a Aplicaciones. Como no va firmado
+con un certificado de Apple, la primera vez macOS lo bloquea: ve a *Ajustes del Sistema →
 Privacidad y seguridad* y pulsa «Abrir igualmente».
 
 **Windows.** Ejecuta el `.exe`. SmartScreen avisará de que el editor es
@@ -337,13 +332,13 @@ después «Ejecutar de todas formas».
 
 ```bash
 # Fedora, openSUSE y derivadas
-sudo dnf install ./Mosaic-0.1.0-1.x86_64.rpm
+sudo dnf install ./Mosaic-0.2.0-1.x86_64.rpm
 
 # Debian, Ubuntu y derivadas
-sudo apt install ./Mosaic_0.1.0_amd64.deb
+sudo apt install ./Mosaic_0.2.0_amd64.deb
 
 # Cualquier distribución, sin instalar nada
-chmod +x Mosaic_0.1.0_amd64.AppImage && ./Mosaic_0.1.0_amd64.AppImage
+chmod +x Mosaic_0.2.0_amd64.AppImage && ./Mosaic_0.2.0_amd64.AppImage
 ```
 
 </details>
@@ -352,6 +347,8 @@ Los binarios no van firmados: firmar cuesta dinero en macOS y en Windows. El
 código es abierto, así que siempre puedes [compilarlo tú](#-compilar).
 
 ## 🔧 Compilar
+
+¿Quieres echar una mano? Empieza por [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Necesitas Rust estable, Node 20 o superior, [pnpm](https://pnpm.io) y
 [las dependencias de Tauri 2](https://tauri.app/start/prerequisites/) para tu

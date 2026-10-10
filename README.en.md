@@ -20,7 +20,7 @@ Local, private, and not a single network request.</p>
 </p>
 
 <p>
-<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Download-Mosaic%200.1.0-2c8c8c?style=for-the-badge" alt="Download Mosaic 0.1.0" height="36"></a>
+<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Download-Mosaic%200.2.0-2c8c8c?style=for-the-badge" alt="Download Mosaic 0.2.0" height="36"></a>
 </p>
 
 <p>
@@ -128,8 +128,6 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
   </tr>
 </table>
 
-<sub>Shortcuts, backup, the scan settings and the new compact mode arrive in the next release; 0.1.0 has everything else.</sub>
-
 ## 📸 Screenshots
 
 <p align="center">
@@ -192,7 +190,7 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 Git status is read five seconds after launch and every five minutes after that.
 The **Git** button in the header forces a fresh read.
 
-**Shortcuts** (from the next release on): <kbd>Ctrl</kbd>+<kbd>K</kbd> opens a
+**Shortcuts**: <kbd>Ctrl</kbd>+<kbd>K</kbd> opens a
 palette to jump to any project or action, <kbd>Ctrl</kbd>+<kbd>R</kbd>
 re-reads Git, <kbd>/</kbd> searches and <kbd>?</kbd> lists every shortcut. On
 macOS, <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.
@@ -234,14 +232,6 @@ Mosaic will walk your roots eight seconds after opening. The same section also
 lets you change the scan depth, the folders it skips and how often it re-reads
 Git.
 
-That section arrives in the next release. In 0.1.0, turn it on like this:
-
-```bash
-sqlite3 ~/.local/share/mosaic/mosaic.db \
-  "INSERT INTO settings (key, value) VALUES ('scan.on_startup', 'true')
-   ON CONFLICT(key) DO UPDATE SET value = 'true';"
-```
-
 </details>
 
 <details>
@@ -253,7 +243,7 @@ In **Ajustes → Copia de seguridad** (Settings → Backup), “Exportar…” s
 JSON file with your settings and folders and, if the box stays ticked, your
 tags, notes and pins. On the other computer, “Importar…” shows you what will
 change first. Importing only adds: it never deletes anything or overwrites
-notes you already have. Coming in the next release.
+notes you already have.
 
 </details>
 
@@ -286,11 +276,11 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 | ✅ | **Design** | Its own design system, light and dark themes |
 | ✅ | **Project page** | README, history, branches and notes |
 | ✅ | **Polish** | Advanced settings, shortcuts, backup and compact mode |
-| 🟡 | **Distribution** | 0.1.0 released for all three platforms; signing still to do |
+| 🟡 | **Distribution** | 0.2.0 released for all three platforms, tested on each by CI; signing still to do |
 
 ## 📦 Download
 
-**Mosaic 0.1.0** is out for all three platforms. Pick your system:
+**Mosaic 0.2.0** is out for all three platforms. Pick your system:
 
 <table>
   <tr>
@@ -300,37 +290,43 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
   </tr>
   <tr>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Download the universal .dmg"></a>
-      <br><sub>Intel and Apple Silicon · 8.3 MB</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Download the universal .dmg"></a>
+      <br><sub>Intel and Apple Silicon · 8.5 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-installer-2c8c8c?style=flat-square" alt="Download the .exe installer"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-installer-2c8c8c?style=flat-square" alt="Download the .exe installer"></a>
       <br><sub>Recommended · 3.4 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-package-555?style=flat-square" alt="Download the .msi package"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-package-555?style=flat-square" alt="Download the .msi package"></a>
       <br><sub>For managed deployments · 4.6 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-any%20distro-2c8c8c?style=flat-square" alt="Download the .AppImage"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-any%20distro-2c8c8c?style=flat-square" alt="Download the .AppImage"></a>
       <br><sub>No install needed · 79 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic_0.1.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Download the .deb"></a>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.1.0/Mosaic-0.1.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Download the .rpm"></a>
-      <br><sub>4.6 MB each</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Download the .deb"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic-0.2.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Download the .rpm"></a>
+      <br><sub>4.7 MB each</sub>
     </td>
   </tr>
 </table>
 
 Every version, with its notes, is on the
-[releases](https://github.com/IzanVil/mosaic/releases) page.
+[releases](https://github.com/IzanVil/mosaic/releases) page. To check that a
+download arrived intact, compare it with
+[`SHA256SUMS.txt`](https://github.com/IzanVil/mosaic/releases/download/v0.2.0/SHA256SUMS.txt):
+
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing
+```
 
 <details>
 <summary><b>How to install it on each system</b></summary>
 
 <br>
 
-**macOS.** Open the `.dmg` and drag Mosaic into Applications. The binary isn't
-signed, so macOS blocks it the first time: go to *System Settings → Privacy &
+**macOS.** Open the `.dmg` and drag Mosaic into Applications. It isn't signed
+with an Apple certificate, so macOS blocks it the first time: go to *System Settings → Privacy &
 Security* and click “Open Anyway”.
 
 **Windows.** Run the `.exe`. SmartScreen will warn that the publisher is
@@ -341,13 +337,13 @@ anyway”.
 
 ```bash
 # Fedora, openSUSE and derivatives
-sudo dnf install ./Mosaic-0.1.0-1.x86_64.rpm
+sudo dnf install ./Mosaic-0.2.0-1.x86_64.rpm
 
 # Debian, Ubuntu and derivatives
-sudo apt install ./Mosaic_0.1.0_amd64.deb
+sudo apt install ./Mosaic_0.2.0_amd64.deb
 
 # Any distribution, nothing to install
-chmod +x Mosaic_0.1.0_amd64.AppImage && ./Mosaic_0.1.0_amd64.AppImage
+chmod +x Mosaic_0.2.0_amd64.AppImage && ./Mosaic_0.2.0_amd64.AppImage
 ```
 
 </details>
@@ -356,6 +352,8 @@ The binaries aren't signed: signing costs money on both macOS and Windows. The
 code is open, so you can always [build it yourself](#-build).
 
 ## 🔧 Build
+
+Want to help? Start with [`CONTRIBUTING.en.md`](CONTRIBUTING.en.md).
 
 You need stable Rust, Node 20 or later, [pnpm](https://pnpm.io) and
 [the Tauri 2 dependencies](https://tauri.app/start/prerequisites/) for your
