@@ -306,4 +306,6 @@ Pendiente:
 - [ ] Firma gratuita en Windows con SignPath Foundation: falta la solicitud,
       que tiene que enviar el usuario, y la política de firma en la web
 - [x] `CONTRIBUTING.md` en español e inglés
-- [ ] Mosaic 0.2.0
+- [x] Mosaic 0.2.0 publicado el 2026-10-10, con los seis instaladores, sus
+      sumas comprobadas una a una contra los ficheros publicados y notas
+      bilingües; el README y la web enlazan la 0.2.0
