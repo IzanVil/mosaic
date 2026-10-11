@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:1280px;height:800px;overflow:hidden;background:radial-gradient(ellipse 70% 60% at 50% 0%,#0f4f52 0%,#121212 72%);font-family:Inter,system-ui,sans-serif}
+.win{position:absolute;left:50px;top:44px;width:1180px;border-radius:10px 10px 0 0;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
+.bar{height:36px;background:#2a2e32;color:#fcfcfc;display:flex;align-items:center;justify-content:center;font-size:13px}
+iframe{display:block;border:0;width:1180px;height:720px}
+#cursor{position:absolute;left:640px;top:420px;width:22px;height:22px;z-index:9;pointer-events:none;transition:left .32s ease,top .32s ease;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+#teclas{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:6px;opacity:0;transition:opacity .2s;z-index:9}
+#teclas.ver{opacity:1}
+#teclas kbd{font:600 15px/1 Inter,system-ui,sans-serif;color:#f5f3ef;background:rgba(30,30,30,.92);border:1px solid rgba(255,255,255,.25);border-bottom-width:3px;border-radius:7px;padding:8px 12px}
+</style></head><body>
+<div class="win"><div class="bar">Mosaic</div><iframe id="app" src="/index.html"></iframe></div>
+<svg id="cursor" viewBox="0 0 24 24"><path d="M4 2l15 10.5-6.6 1.4 3.9 7.3-2.6 1.4-3.9-7.3L4 20z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg>
+<div id="teclas"></div>
+<script>
+window.doc=()=>document.getElementById('app').contentDocument;window.buscar=(sel)=>sel.startsWith('etiqueta:')?[...doc().querySelectorAll('button.fila')].find(b=>b.querySelector('.nombre')?.textContent.trim()===sel.slice(9)):doc().querySelector(sel);
+window.mover=(sel,dx=0,dy=0)=>{const el=buscar(sel);if(!el)return'NO '+sel;const r=el.getBoundingClientRect();const c=document.getElementById('cursor');c.style.left=(50+r.left+Math.min(r.width/2,60)+dx)+'px';c.style.top=(44+36+r.top+r.height/2+dy)+'px';return'ok'};
+window.aparcar=()=>{const c=document.getElementById('cursor');c.style.left='1150px';c.style.top='700px';return'ok'};window.teclas=(...k)=>{const t=document.getElementById('teclas');t.innerHTML=k.map(x=>'<kbd>'+x+'</kbd>').join('');t.classList.toggle('ver',k.length>0)};
+window.escribir=(sel,texto)=>{const el=doc().querySelector(sel);el.focus();const set=Object.getOwnPropertyDescriptor(el.ownerDocument.defaultView.HTMLInputElement.prototype,'value').set;set.call(el,texto);el.dispatchEvent(new Event('input',{bubbles:true}));return'ok'};
+window.tecla=(key,ctrl=false)=>{const w=doc().defaultView;const t=doc().activeElement||doc().body;t.dispatchEvent(new w.KeyboardEvent('keydown',{key,ctrlKey:ctrl,bubbles:true}));return'ok'};
+window.clic=(sel)=>{const el=buscar(sel);if(!el)return'NO '+sel;el.click();return'ok'};
+</script></body></html>
