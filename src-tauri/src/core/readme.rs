@@ -46,8 +46,10 @@ pub struct ReadmePreview {
     pub html: String,
     /// El fichero pasaba de [`MAX_BYTES`] y se ha recortado.
     pub truncated: bool,
-    /// Imágenes que no se cargan (del Markdown o del HTML).
+    /// Imágenes que no se cargan (del Markdown o del HTML), sin las insignias.
     pub images_omitted: u32,
+    /// Insignias (licencia, versión, CI…) que no se cargan.
+    pub badges_omitted: u32,
     /// Vídeos, audios, iframes, SVG y otros elementos que no se muestran.
     pub media_omitted: u32,
 }
@@ -57,10 +59,46 @@ pub struct ReadmePreview {
 pub struct Rendered {
     /// HTML saneado, listo para insertar.
     pub html: String,
-    /// Imágenes que no se cargan.
+    /// Imágenes que no se cargan, sin las insignias.
     pub images_omitted: u32,
+    /// Insignias que no se cargan.
+    pub badges_omitted: u32,
     /// Otros elementos que no se muestran.
     pub media_omitted: u32,
+}
+
+/// Servicios cuyas imágenes son siempre insignias.
+const BADGE_HOSTS: &[&str] = &[
+    "img.shields.io",
+    "shields.io",
+    "badgen.net",
+    "badge.fury.io",
+    "badges.gitter.im",
+    "ci.appveyor.com",
+    "api.netlify.com",
+    "travis-ci.org",
+    "travis-ci.com",
+];
+
+/// Si una imagen es una insignia y no una captura o un dibujo.
+///
+/// Un README con doce insignias y nueve capturas no tiene «veintiún imágenes»
+/// para quien lo lee: las insignias se cuentan aparte para que el aviso diga
+/// lo que de verdad falta. Además de los servicios conocidos, cuenta como
+/// insignia lo que viva en una ruta `badge`/`badges` o se llame `badge.svg`,
+/// que es como las sirven GitHub Actions, GitLab, Codecov o Coveralls.
+pub fn is_badge(src: &str) -> bool {
+    let src = src.trim().to_ascii_lowercase();
+    let Some((_, resto)) = src.split_once("://") else {
+        return false;
+    };
+    let resto = resto.split(['?', '#']).next().unwrap_or("");
+    let (host, ruta) = resto.split_once('/').unwrap_or((resto, ""));
+    if BADGE_HOSTS.contains(&host) || host.starts_with("badge") {
+        return true;
+    }
+    ruta.split('/')
+        .any(|tramo| tramo == "badge" || tramo == "badges" || tramo.starts_with("badge."))
 }
 
 /// Etiquetas de HTML que no se muestran y se cuentan como contenido omitido.
@@ -118,12 +156,17 @@ pub fn render_with_report(markdown: &str) -> Rendered {
     let mut eventos = Vec::new();
     let mut en_imagen: Option<String> = None;
     let mut imagenes = 0u32;
+    let mut insignias = 0u32;
     let mut medios = 0u32;
 
     for evento in Parser::new_ext(markdown, options) {
         match evento {
             Event::Start(Tag::Image { dest_url, .. }) => {
-                imagenes += 1;
+                if is_badge(&dest_url) {
+                    insignias += 1;
+                } else {
+                    imagenes += 1;
+                }
                 en_imagen = Some(dest_url.to_string());
                 eventos.push(Event::Html("".into()));
             }
@@ -145,7 +188,7 @@ pub fn render_with_report(markdown: &str) -> Rendered {
             // lista blanca de abajo.
             Event::Html(fragmento) | Event::InlineHtml(fragmento) => {
                 medios += contar_medios(&fragmento);
-                let limpio = sustituir_imagenes_html(&fragmento, &mut imagenes);
+                let limpio = sustituir_imagenes_html(&fragmento, &mut imagenes, &mut insignias);
                 eventos.push(Event::Html(limpio.into()));
             }
             otro => eventos.push(otro),
@@ -176,6 +219,7 @@ pub fn render_with_report(markdown: &str) -> Rendered {
     Rendered {
         html,
         images_omitted: imagenes,
+        badges_omitted: insignias,
         media_omitted: medios,
     }
 }
@@ -203,13 +247,13 @@ fn contar_medios(fragmento: &str) -> u32 {
 }
 
 /// Sustituye cada `<img>` de un fragmento de HTML por su texto alternativo y
-/// suma cuántas había.
+/// suma cuántas había, separando las insignias.
 ///
 /// Es un reemplazo de presentación, no de seguridad: lo que quede, bien o mal
 /// formado, lo filtra después `ammonia`, que además quita cualquier `<img>`
 /// que se escape de aquí. Dentro de un enlace (las insignias, por ejemplo) el
 /// texto alternativo queda como texto del enlace, que es lo que se espera.
-fn sustituir_imagenes_html(fragmento: &str, contador: &mut u32) -> String {
+fn sustituir_imagenes_html(fragmento: &str, imagenes: &mut u32, insignias: &mut u32) -> String {
     let minusculas = fragmento.to_ascii_lowercase();
     let mut salida = String::with_capacity(fragmento.len());
     let mut resto = 0;
@@ -232,7 +276,11 @@ fn sustituir_imagenes_html(fragmento: &str, contador: &mut u32) -> String {
             "<span class=\"readme-imagen\">{}</span>",
             escapar(alt.as_deref().unwrap_or("imagen"))
         ));
-        *contador += 1;
+        if atributo(etiqueta, "src").is_some_and(|src| is_badge(&src)) {
+            *insignias += 1;
+        } else {
+            *imagenes += 1;
+        }
         resto = inicio + fin;
     }
     salida.push_str(&fragmento[resto..]);
@@ -327,6 +375,7 @@ pub fn read(dir: &Path) -> Result<Option<ReadmePreview>> {
         html: rendered.html,
         truncated,
         images_omitted: rendered.images_omitted,
+        badges_omitted: rendered.badges_omitted,
         media_omitted: rendered.media_omitted,
     }))
 }
@@ -463,7 +512,58 @@ mod tests {
     #[test]
     fn render_reports_nothing_omitted_for_plain_markdown() {
         let rendered = render_with_report("# Hola\n\nSin imágenes ni vídeos.\n");
-        assert_eq!((rendered.images_omitted, rendered.media_omitted), (0, 0));
+        assert_eq!(
+            (
+                rendered.images_omitted,
+                rendered.badges_omitted,
+                rendered.media_omitted
+            ),
+            (0, 0, 0)
+        );
+    }
+
+    #[test]
+    fn is_badge_recognises_the_usual_badge_services() {
+        for src in [
+            "https://img.shields.io/badge/licencia-Apache%202.0-2c8c8c",
+            "https://badgen.net/npm/v/mosaic",
+            "https://github.com/IzanVil/mosaic/actions/workflows/ci.yml/badge.svg",
+            "https://github.com/IzanVil/mosaic/actions/workflows/ci.yml/badge.svg?branch=main",
+            "https://codecov.io/gh/IzanVil/mosaic/graph/badge.svg?token=x",
+            "https://gitlab.com/grupo/proyecto/badges/main/pipeline.svg",
+            "HTTPS://IMG.SHIELDS.IO/github/stars/IzanVil/mosaic",
+        ] {
+            assert!(is_badge(src), "debería ser insignia: {src}");
+        }
+    }
+
+    #[test]
+    fn is_badge_leaves_screenshots_and_icons_alone() {
+        for src in [
+            "docs/img/portada-oscura.png",
+            "src-tauri/icons/128x128@2x.png",
+            "https://example.invalid/captura.png",
+            "https://raw.githubusercontent.com/IzanVil/mosaic/main/docs/img/badgeless.png",
+            "https://example.invalid/badger/foto.png",
+            "",
+        ] {
+            assert!(!is_badge(src), "no debería ser insignia: {src}");
+        }
+    }
+
+    #[test]
+    fn render_counts_badges_apart_from_images() {
+        // Lo que tiene el README de Mosaic: el icono, la portada y capturas,
+        // más las insignias de licencia y de descarga.
+        let markdown = "<p><img src=\"src-tauri/icons/128x128@2x.png\" alt=\"Icono\"></p>\n\n<p><img src=\"https://img.shields.io/badge/licencia-Apache-2c8c8c\" alt=\"Licencia\">\n<a href=\"https://example.invalid\"><img src=\"https://img.shields.io/badge/Descargar-0.2.0-2c8c8c\" alt=\"Descargar\"></a></p>\n\n![CI](https://github.com/IzanVil/mosaic/actions/workflows/ci.yml/badge.svg)\n\n![Captura](docs/img/paleta.png)\n";
+        let rendered = render_with_report(markdown);
+        assert_eq!(rendered.images_omitted, 2, "{rendered:?}");
+        assert_eq!(rendered.badges_omitted, 3, "{rendered:?}");
+        assert!(
+            rendered.html.contains("Descargar"),
+            "la insignia deja su texto: {}",
+            rendered.html
+        );
     }
 
     #[test]

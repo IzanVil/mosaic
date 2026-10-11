@@ -176,7 +176,8 @@ eventos.
 
 Ninguna imagen se carga. Las del HTML se sustituyen por su texto alternativo, y
 las imágenes, vídeos, iframes y SVG que se quitan se cuentan en
-`ReadmePreview`, para que la vista avise de que falta algo y ofrezca abrirlo en
+`ReadmePreview`, con las insignias (shields.io, GitHub Actions…) aparte de las
+imágenes, para que la vista avise de que falta algo y ofrezca abrirlo en
 GitHub, GitLab… o en el editor.
 
 ### `config/settings.rs`

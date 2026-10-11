@@ -6,6 +6,7 @@
   import { openProject } from '../stores/apps';
   import type { Section } from '../stores/projectDetail';
   import type { ReadmePreview } from '../types';
+  import { omittedText } from '../utils/readmeNotice';
   import { remoteWebUrl } from '../utils/remote';
 
   interface Props {
@@ -22,18 +23,6 @@
   let { section, missing, projectId, remoteUrl }: Props = $props();
 
   let web = $derived(remoteWebUrl(remoteUrl));
-
-  /**
-   * Qué se ha quedado fuera, dicho con números. Si el README tiene imágenes y
-   * no se dice, el lector cree que no las tiene o que algo ha fallado.
-   */
-  function omittedText(images: number, media: number): string | null {
-    const parts: string[] = [];
-    if (images > 0) parts.push(images === 1 ? '1 imagen' : `${images} imágenes`);
-    if (media > 0) parts.push(media === 1 ? '1 vídeo o elemento incrustado' : `${media} vídeos o elementos incrustados`);
-    if (parts.length === 0) return null;
-    return `Este README tiene ${parts.join(' y ')} que Mosaic no muestra.`;
-  }
 
   function openElsewhere() {
     if (web) {
@@ -99,7 +88,7 @@
     <code>{section.data.file_name}</code>
     {#if notice}<span class="aviso" role="status">{notice}</span>{/if}
   </div>
-  {@const omitted = omittedText(section.data.images_omitted, section.data.media_omitted)}
+  {@const omitted = omittedText(section.data)}
   {#if omitted}
     <div class="omitido" role="note">
       <ImageOff size={16} strokeWidth={1.75} />
