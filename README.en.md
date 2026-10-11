@@ -131,6 +131,13 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 ## 📸 Screenshots
 
 <p align="center">
+  <img src="docs/img/demo.gif" alt="An animated tour of Mosaic: searching for “api” on the board, filtering by the client tag, opening the palette with Ctrl+K, opening a project's details with its README, notes and branches, going back with Escape, then switching to the light theme and compact mode" width="960">
+  <br><sub><b>Mosaic in 25 seconds:</b> search, tag filter, command palette, project details, light theme and compact mode.</sub>
+</p>
+
+<br>
+
+<p align="center">
   <img src="docs/img/filtros.png" alt="A search for “api” with five active filters shown as chips (two tags, two languages and “hide missing”), a “Filters 5” counter and a note that two projects match">
   <br><sub><b>Search and filter.</b> Each filter is a chip with its own X, and the counter shows how many are on.</sub>
 </p>

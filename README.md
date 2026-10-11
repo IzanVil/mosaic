@@ -128,6 +128,13 @@ no recuerdas, y para abrir la que buscas toca `cd`, `ls` y adivinar.
 ## 📸 Capturas
 
 <p align="center">
+  <img src="docs/img/demo.gif" alt="Recorrido animado por Mosaic: buscar «api» en el tablero, filtrar por la etiqueta cliente, abrir la paleta con Ctrl+K, entrar en el detalle de un proyecto con su README, notas y ramas, volver con Escape, pasar al tema claro y al modo compacto" width="960">
+  <br><sub><b>Mosaic en 25 segundos:</b> búsqueda, filtro por etiqueta, paleta de comandos, detalle de un proyecto, tema claro y modo compacto.</sub>
+</p>
+
+<br>
+
+<p align="center">
   <img src="docs/img/filtros.png" alt="Búsqueda «api» con cinco filtros activos en chips (dos etiquetas, dos lenguajes y «Ausentes ocultos»), el contador «Filtros 5» y el aviso de que dos proyectos coinciden">
   <br><sub><b>Busca y filtra.</b> Cada filtro es un chip con su X, y el contador dice cuántos hay puestos.</sub>
 </p>
