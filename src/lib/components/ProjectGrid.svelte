@@ -2,7 +2,7 @@
   import { Pin, SearchX } from '@lucide/svelte';
 
   import EmptyState from './EmptyState.svelte';
-  import ProjectCard from './ProjectCard.svelte';
+  import LazyCard from './LazyCard.svelte';
   import { clearFilters } from '../stores/filters';
   import type { Density, ProjectWithTags } from '../types';
 
@@ -17,6 +17,10 @@
   let { pinned, rest, density }: Props = $props();
 
   let total = $derived(pinned.length + rest.length);
+
+  // Las que caben en la primera pantalla se montan sin esperar al observador, para
+  // que el tablero no aparezca a saltos al abrirlo.
+  const EAGER = 24;
 </script>
 
 {#if total === 0}
@@ -36,8 +40,8 @@
       <section aria-label="Proyectos fijados">
         <h2><Pin size={12} strokeWidth={1.75} /> Fijados</h2>
         <div class="rejilla">
-          {#each pinned as project (project.id)}
-            <ProjectCard {project} compact={density === 'compacto'} />
+          {#each pinned as project, i (project.id)}
+            <LazyCard {project} compact={density === 'compacto'} eager={i < EAGER} />
           {/each}
         </div>
       </section>
@@ -50,8 +54,8 @@
     {#if rest.length > 0}
       <section aria-label="Resto de proyectos">
         <div class="rejilla">
-          {#each rest as project (project.id)}
-            <ProjectCard {project} compact={density === 'compacto'} />
+          {#each rest as project, i (project.id)}
+            <LazyCard {project} compact={density === 'compacto'} eager={i < EAGER} />
           {/each}
         </div>
       </section>
