@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- Ventana de Mosaic para las capturas. Parámetros: an, al (tamaño de la ventana), marco=1 (fondo con
+     degradado de 1600x940 alrededor) y vista (JSON de la vista guardada, que lee backend_simulado.py). -->
+<style>
+  html, body { margin: 0; overflow: hidden; background: transparent; font-family: Inter, system-ui, sans-serif; }
+  body.marco { width: 1600px; height: 940px; }
+  body.marco.oscuro { background: radial-gradient(ellipse 70% 55% at 50% 0%, #0f4f52 0%, #121212 70%); }
+  body.marco.claro { background: radial-gradient(ellipse 70% 55% at 50% 0%, #a9e3e1 0%, #f1f0ee 70%); }
+  .ventana { overflow: hidden; }
+  body.marco .ventana { position: absolute; left: 173px; top: 156px; border-radius: 10px 10px 0 0; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.25); }
+  .barra { height: 40px; background: #2a2e32; color: #fcfcfc; display: flex; align-items: center; justify-content: center; font-size: 14px; position: relative; }
+  .barra span { position: absolute; right: 14px; top: 0; height: 40px; display: flex; gap: 22px; align-items: center; }
+  iframe { display: block; border: 0; }
+</style>
+</head>
+<body>
+<div class="ventana">
+  <div class="barra">Mosaic<span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fcfcfc" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fcfcfc" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fcfcfc" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </span></div>
+  <iframe id="app"></iframe>
+</div>
+<script>
+  const p = new URLSearchParams(location.search);
+  const an = Number(p.get('an') || 1280), al = Number(p.get('al') || 800);
+  const vista = p.get('vista') || '{}';
+  const tema = JSON.parse(vista).theme === 'light' ? 'claro' : 'oscuro';
+  if (p.get('marco') === '1') document.body.classList.add('marco', tema);
+  const ventana = document.querySelector('.ventana');
+  ventana.style.width = an + 'px';
+  const app = document.getElementById('app');
+  app.style.width = an + 'px';
+  app.style.height = (al - 40) + 'px';
+  try { localStorage.setItem('mosaic.theme', JSON.parse(vista).theme || 'dark'); } catch (e) {}
+  app.src = '/index.html?vista=' + encodeURIComponent(vista);
+  window.doc = () => app.contentDocument;
+  window.rect = (sel) => {
+    const el = doc().querySelector(sel);
+    if (!el) return null;
+    const r = el.getBoundingClientRect(), f = app.getBoundingClientRect();
+    return { x: f.left + r.left, y: f.top + r.top, w: r.width, h: r.height };
+  };
+</script>
+</body>
+</html>
