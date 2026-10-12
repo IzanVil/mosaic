@@ -5,9 +5,11 @@ Uso: backend_simulado.py salida.js vista_json
 Define `window.__TAURI_INTERNALS__` con proyectos, etiquetas y un detalle de
 proyecto inventados, para que la interfaz compilada funcione sin Tauri.
 """
-import json, sys
+import json, sys, time
 out, view = sys.argv[1], sys.argv[2]
-now = 1791470000
+# Las fechas cuelgan del reloj actual: así «hace 3 horas» sale igual cualquier día
+# y las capturas no cambian solo porque haya pasado el tiempo.
+now = int(time.time())
 TAGS = [('cliente','#3B82F6'),('trabajo','#F97316'),('personal','#8B5CF6'),('urgente','#EF4444'),('aprendizaje','#22C55E'),('archivado','#64748B'),('idea','#EAB308'),('web','#06B6D4'),('ml','#84CC16'),('demo','#D946EF')]
 tags = [{'id':i+1,'name':n,'color':c,'created_at':now} for i,(n,c) in enumerate(TAGS)]
 T = {t['name']:t for t in tags}
