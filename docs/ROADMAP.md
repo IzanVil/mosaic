@@ -158,10 +158,12 @@ con unión discriminada, sin router y sin persistir el detalle.
 
 ---
 
-## Rediseño visual · CONGELADO
+## Rediseño visual · CERRADO
 
-Trabajo abierto fuera del plan de fases, a partir de la auditoría visual del
-2026-09-20, que listó diez problemas por gravedad.
+Trabajo fuera del plan de fases, a partir de la auditoría visual del
+2026-09-20, que listó diez problemas por gravedad. Se congeló del 20 de
+septiembre al 1 de octubre y se cerró ese día; el problema 1 (densidad) se
+resolvió en la Sesión G de la Fase 6.
 
 Terminado:
 
@@ -173,7 +175,9 @@ Terminado:
       aplicación caía a la fuente del sistema.
 - [x] Rueda de etiquetas rehecha con medidas en oklab. Resuelve el problema 6
       y un fallo que no estaba en la lista: `turquesa` y `cian` eran el mismo
-      color con dos nombres.
+      color con dos nombres. Se retiró en la Sesión G porque no la usaba
+      ningún componente; el contraste se resolvió mezclando el texto del chip
+      con una tinta.
 - [x] `ProjectCard` migrado, con ranura de etiquetas reservada.
 - [x] `ProjectGrid` con dos densidades y `Dashboard` con el fondo migrado, que
       es lo que hace visible el contraste entre lienzo y tarjeta.
@@ -201,26 +205,19 @@ Terminado:
       propios ni puente con `@theme`; Tailwind queda para la maquetación.
 - [x] Conmutador de tema en la cabecera: oscuro, claro y sistema. Se guarda
       en `ui.view_state` y se aplica antes de montar la aplicación.
+- [x] **Problema 1, densidad.** Cerrado en la Sesión G: en compacto la
+      tarjeta pierde la ruta y el pie, y en una ventana de 1370x890 se ven 18
+      tarjetas enteras y 4 cortadas, frente a 11 antes; el objetivo eran 17
 
 Deuda conocida del rediseño:
 
 - [ ] `ProjectCard` reestiliza el disparador de `TagPicker` con
       `.anadir.fantasma :global(button)`, que alcanza también a los botones del
-      panel. `TagPicker` lo neutraliza anidando sus selectores en `.panel`
-      (comentado allí). Lo correcto es que la tarjeta no alcance hijos ajenos.
+      panel ([#12](https://github.com/IzanVil/mosaic/issues/12)).
 - Peculiaridad conocida, no es un fallo: en `pnpm tauri dev`, Vite puede
   registrar `window.__TAURI_INTERNALS__ undefined` al arrancar, antes de que
   el binario abra su ventana. Es una carrera entre Vite y el binario; no pasa
   en un build de release, que no usa Vite.
-
-A medias:
-
-- [x] **Problema 1, densidad.** Cerrado en la Sesión G: en compacto la
-      tarjeta pierde la ruta y el pie, y en una ventana de 1370x890 se ven 18
-      tarjetas enteras y 4 cortadas, frente a 11 antes; el objetivo eran 17
-
-Sin empezar:
-
 
 ---
 
@@ -275,7 +272,7 @@ Pendiente:
 
 ---
 
-## Fase 7 — Empaquetado y distribución
+## Fase 7 — Empaquetado y distribución · HECHA salvo la firma de Windows
 
 - [x] Metadatos completos en `tauri.conf.json`
 - [x] Iconos propios para todas las plataformas, generados con `tauri icon`
@@ -303,8 +300,9 @@ Pendiente:
 - [x] `SHA256SUMS.txt` con las sumas de los seis instaladores en cada release
 - [x] Firma *ad hoc* en macOS. No quita el aviso de Gatekeeper, que necesita
       el programa de desarrolladores de Apple (99 $/año), descartado por ahora
-- [ ] Firma gratuita en Windows con SignPath Foundation: falta la solicitud,
-      que tiene que enviar el usuario, y la política de firma en la web
+- [ ] Firma gratuita en Windows con SignPath Foundation: la política de firma
+      ya está en la web; falta enviar la solicitud
+      ([#1](https://github.com/IzanVil/mosaic/issues/1))
 - [x] `CONTRIBUTING.md` en español e inglés
 - [x] Mosaic 0.2.0 publicado el 2026-10-10, con los seis instaladores, sus
       sumas comprobadas una a una contra los ficheros publicados y notas
