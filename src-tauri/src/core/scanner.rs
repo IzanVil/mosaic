@@ -183,14 +183,18 @@ fn register_candidates(
     // De menos a más profundo: todo ancestro se decide antes que sus descendientes.
     candidates.sort_by(|a, b| a.depth.cmp(&b.depth).then_with(|| a.path.cmp(&b.path)));
 
-    let mut registered: Vec<PathBuf> = Vec::new();
+    let mut registered: HashSet<PathBuf> = HashSet::new();
     let mut projects = Vec::new();
 
     for candidate in candidates {
         let has_own_git = candidate.markers.iter().any(|marker| marker == ".git");
-        let inside_registered_project = registered
-            .iter()
-            .any(|root| candidate.path.starts_with(root) && candidate.path != *root);
+        // Se miran solo las carpetas padre del candidato, no todos los registrados:
+        // comparar con cada uno hacía el escaneo cuadrático con miles de proyectos.
+        let inside_registered_project = candidate
+            .path
+            .ancestors()
+            .skip(1)
+            .any(|ancestor| registered.contains(ancestor));
 
         if !has_own_git && inside_registered_project {
             continue;
@@ -203,7 +207,7 @@ fn register_candidates(
             markers: candidate.markers,
             path: candidate.path.clone(),
         });
-        registered.push(candidate.path);
+        registered.insert(candidate.path);
     }
 
     projects
