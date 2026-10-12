@@ -54,6 +54,8 @@ escaneo: la carpeta más grande, con 3.000 proyectos, tiene unas 42.000.
 
 ## Frontend
 
+Antes del arreglo de la #13:
+
 | Proyectos | Tablero pintado | Búsqueda | Borrar la búsqueda | Memoria |
 |---|---|---|---|---|
 | 24 | 0,6 s | 29 ms | 0,2 s | 176 MB |
@@ -61,9 +63,9 @@ escaneo: la carpeta más grande, con 3.000 proyectos, tiene unas 42.000.
 | 2.000 | 12,3 s | 0,6 s | 7,6 s | 1,7 GB |
 | 5.000 | 27 s | 1,5 s | 18 s | 2,9 GB |
 
-**Con 500 proyectos ya no se cumple el principio.** Cada tarjeta cuesta unos
-6 ms y 0,6 MB, y el coste se paga cada vez que la lista vuelve a crecer: borrar
-una búsqueda vuelve a montar todas las tarjetas.
+**Con 500 proyectos no se cumplía el principio.** Cada tarjeta costaba unos
+6 ms y 0,6 MB, y el coste se pagaba cada vez que la lista volvía a crecer:
+borrar una búsqueda volvía a montar todas las tarjetas.
 
 ### Dónde está el coste
 
@@ -81,6 +83,38 @@ Experimentos con 500 proyectos, quitando una pieza cada vez de `ProjectCard`
 
 No hay una pieza culpable: cada tarjeta monta muchos componentes pequeños
 (unos seis iconos, contando la X de cada chip, y dos o tres chips), y con 500
-tarjetas son miles. Aligerar la tarjeta ayudaría, pero el coste seguiría
-creciendo con cada proyecto. Lo que lo deja constante es no montar las
-tarjetas que no se ven. Las opciones están en la issue que sale de aquí.
+tarjetas son miles.
+
+### Solo se montan las tarjetas que se ven
+
+Arreglado para la issue [#13](https://github.com/IzanVil/mosaic/issues/13).
+Cada hueco de la rejilla es ahora un `LazyCard`: un botón vacío del alto de una
+tarjeta, que se convierte en la tarjeta de verdad cuando está a menos de 800 px
+de lo visible y vuelve a ser hueco cuando se aleja. Un solo
+`IntersectionObserver` por contenedor con scroll (`utils/nearViewport.ts`)
+vigila todos los huecos. Las 24 primeras de cada grupo se montan al abrir, para
+que la primera pantalla no aparezca a saltos.
+
+La rejilla sigue siendo CSS: no hay cálculos de filas ni de columnas. Y el
+hueco lleva el mismo `data-proyecto` que el nombre de la tarjeta, de modo que
+volver del detalle con Escape o recorrer con Tab llega también a una tarjeta
+que está lejos: al recibir el foco se monta y le pasa el foco a su nombre.
+
+| Proyectos | Tablero pintado | Borrar la búsqueda | Memoria |
+|---|---|---|---|
+| 24 | 0,9 s → 0,9 s | 0,2 s → 0,2 s | 182 → 184 MB |
+| 500 | 3,6 s → **1,0 s** | 1,9 s → **0,32 s** | 474 → **206 MB** |
+| 2.000 | 12,3 s → **1,0 s** | 7,6 s → **0,46 s** | 1,7 GB → **254 MB** |
+| 5.000 | 27 s → **1,4 s** | 18 s → **0,97 s** | 2,9 GB → **372 MB** |
+
+Los «ahora» y los «antes» de 24 y 500 se midieron en la misma tanda; los
+«antes» de 2.000 y 5.000 son de la medición anterior. Los tiempos absolutos
+varían con la carga de la máquina: con el mismo código, 24 proyectos tardaron
+0,6 s en una tanda y 0,9 s en otra. Lo que importa es la diferencia con la fila de 24: con 500 y con
+2.000 proyectos, abrir el tablero cuesta casi lo mismo que con 24.
+
+Comprobado en WebKit con 500 proyectos: al abrir hay 24 tarjetas montadas; tras
+bajar hasta la mitad, 42, todas alrededor de lo visible, y las de arriba se han
+desmontado; y dar el foco al hueco de la tarjeta 480 la monta y deja el foco en
+su nombre. Las capturas del README salen iguales que antes, salvo la fecha
+relativa de «Abierto hace N días».
