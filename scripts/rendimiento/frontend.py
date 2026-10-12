@@ -27,7 +27,9 @@ resultados = []
 MEDIR = """
 (async () => {
   const doc = document;
-  const tarjetas = () => doc.querySelectorAll('article.tarjeta').length;
+  // Cada proyecto es una celda con `data-proyecto`: la tarjeta montada o su hueco.
+  const tarjetas = () => doc.querySelectorAll('[data-proyecto]').length;
+  const montadas = () => doc.querySelectorAll('article.tarjeta').length;
   const total = window.__N;
   const t0 = performance.now();
   while (tarjetas() < total && performance.now() - t0 < 60000) await new Promise(r => setTimeout(r, 20));
@@ -46,7 +48,7 @@ MEDIR = """
   };
   const b1 = await buscar('facturas');
   const b2 = await buscar('');
-  document.title = 'R' + JSON.stringify({ pintado, busqueda: b1, vuelta: b2, nodos: doc.getElementsByTagName('*').length });
+  document.title = 'R' + JSON.stringify({ pintado, busqueda: b1, vuelta: b2, nodos: doc.getElementsByTagName('*').length, montadas: montadas() });
 })();
 """
 
@@ -108,6 +110,6 @@ Gtk.main()
 for r in resultados:
     print(
         f"{r['n']:>5} proyectos: tablero pintado en {r['pintado']:.0f} ms, {r['nodos']} nodos, "
-        f"búsqueda {r['busqueda']['ms']:.0f} ms (quedan {r['busqueda']['quedan']}), "
+        f"{r['montadas']} tarjetas montadas, búsqueda {r['busqueda']['ms']:.0f} ms (quedan {r['busqueda']['quedan']}), "
         f"volver a todos {r['vuelta']['ms']:.0f} ms, memoria {r['memoria_mb']} MB"
     )
