@@ -4,6 +4,7 @@
   import { get } from 'svelte/store';
 
   import { filters, setQuery } from '../stores/filters';
+  import { t } from '../i18n';
   import { projects, visibleProjects } from '../stores/projects';
   import { debounce } from '../utils/debounce';
 
@@ -44,16 +45,16 @@
       bind:value
       oninput={onInput}
       type="search"
-      placeholder="Buscar por nombre o ruta…"
-      aria-label="Buscar proyectos"
+      placeholder={$t('busqueda.placeholder')}
+      aria-label={$t('busqueda.etiqueta')}
     />
     {#if value !== ''}
       <button
         type="button"
         class="borrar"
         onclick={clear}
-        aria-label="Limpiar la búsqueda"
-        title="Limpiar la búsqueda"
+        aria-label={$t('busqueda.limpiar')}
+        title={$t('busqueda.limpiar')}
       >
         <X size={13} strokeWidth={1.75} />
       </button>
@@ -62,7 +63,7 @@
 
   {#if showCount}
     <p class="cuenta" aria-live="polite">
-      {$visibleProjects.length} de {$projects.length}
+      {$t('busqueda.cuenta', { visibles: $visibleProjects.length, total: $projects.length })}
     </p>
   {/if}
 </div>

@@ -29,6 +29,7 @@
   import { loadProjects, projects, runScan, scanning } from './lib/stores/projects';
   import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
   import { loadTags } from './lib/stores/tags';
+  import { lang, t, tNow, translate } from './lib/i18n';
   import { formatRelativeTime, now_ts } from './lib/utils/format';
   import type { PaletteAction } from './lib/utils/palette';
   import { isMac, isTypingTarget, matchShortcut, shortcutList } from './lib/utils/shortcuts';
@@ -38,9 +39,6 @@
   const GIT_REFRESHED = 'git-status-refreshed';
   /** Lo emite el backend cuando el escaneo al arrancar encontró proyectos. */
   const PROJECTS_RESCANNED = 'projects-rescanned';
-  const GIT_BUTTON_HINT =
-    'Relee del disco la rama, los cambios sin commitear y el último commit de cada ' +
-    'repositorio. No hace fetch: no toca la red. También se refresca solo cada 5 minutos.';
   /** Segundos que el resultado de un refresco manual desplaza al «hace X». */
   const OUTCOME_VISIBLE_SECONDS = 8;
   /**
@@ -58,12 +56,13 @@
    * una sorpresa.
    */
   const THEME_INFO = {
-    dark: { icon: Moon, label: 'Tema oscuro', next: 'claro' },
-    light: { icon: Sun, label: 'Tema claro', next: 'el del sistema' },
-    system: { icon: Monitor, label: 'Tema del sistema', next: 'oscuro' },
+    dark: { icon: Moon, label: 'app.temaOscuro', next: 'app.temaSiguienteClaro' },
+    light: { icon: Sun, label: 'app.temaClaro', next: 'app.temaSiguienteSistema' },
+    system: { icon: Monitor, label: 'app.temaSistema', next: 'app.temaSiguienteOscuro' },
   } as const;
 
   let themeInfo = $derived(THEME_INFO[$theme]);
+  let themeText = $derived({ actual: $t(themeInfo.label), siguiente: $t(themeInfo.next) });
 
   const mac = isMac();
   const modKey = mac ? '⌘' : 'Ctrl+';
@@ -71,15 +70,30 @@
   let helpOpen = $state(false);
 
   /** Lo que se puede hacer desde la paleta, además de abrir proyectos. */
-  const PALETTE_ACTIONS: PaletteAction[] = [
-    { id: 'git', label: 'Releer el estado de Git', keywords: ['refrescar', 'actualizar'], shortcut: `${modKey}R` },
-    { id: 'scan', label: 'Escanear las rutas', keywords: ['buscar proyectos', 'actualizar'] },
-    { id: 'dashboard', label: 'Ir a Proyectos', keywords: ['tablero', 'inicio'] },
-    { id: 'settings', label: 'Ir a Ajustes', keywords: ['preferencias', 'configuración'], shortcut: `${modKey},` },
-    { id: 'tags', label: 'Gestionar etiquetas', keywords: ['tags', 'colores'] },
-    { id: 'theme', label: 'Cambiar el tema', keywords: ['claro', 'oscuro', 'sistema'] },
-    { id: 'help', label: 'Ver los atajos de teclado', keywords: ['ayuda', 'teclas'], shortcut: '?' },
-  ];
+  const ACCIONES = [
+    { id: 'git', label: 'paleta.git', keywords: 'paleta.gitClaves', shortcut: `${modKey}R` },
+    { id: 'scan', label: 'paleta.escanear', keywords: 'paleta.escanearClaves' },
+    { id: 'dashboard', label: 'paleta.proyectos', keywords: 'paleta.proyectosClaves' },
+    { id: 'settings', label: 'paleta.ajustes', keywords: 'paleta.ajustesClaves', shortcut: `${modKey},` },
+    { id: 'tags', label: 'paleta.etiquetas', keywords: 'paleta.etiquetasClaves' },
+    { id: 'theme', label: 'paleta.tema', keywords: 'paleta.temaClaves' },
+    { id: 'help', label: 'paleta.ayuda', keywords: 'paleta.ayudaClaves', shortcut: '?' },
+  ] as const;
+
+  // Las palabras clave van en los dos idiomas: quien busca «settings» con la
+  // interfaz en español también tiene que encontrar Ajustes.
+  let paletteActions = $derived<PaletteAction[]>(
+    ACCIONES.map(({ id, label, keywords, ...rest }) => ({
+      id,
+      label: $t(label),
+      keywords: [...$t(keywords).split(' '), ...tOtro(keywords).split(' ')],
+      ...rest,
+    })),
+  );
+
+  function tOtro(clave: (typeof ACCIONES)[number]['keywords']): string {
+    return tNow(clave) === translate('es', clave) ? translate('en', clave) : translate('es', clave);
+  }
 
   function runAction(id: string) {
     if (id === 'git') void refreshGit();
@@ -140,27 +154,26 @@
   let canScan = $derived($scanPaths.length > 0);
 
   let gitLabel = $derived.by(() => {
-    if ($refreshingGit) return 'Leyendo los repositorios…';
+    if ($refreshingGit) return $t('app.gitLeyendoRepos');
 
     const last = $lastGitRefresh;
     if (last === null) return '';
 
     const age = tick - last.at;
     if (last.manual && age <= OUTCOME_VISIBLE_SECONDS) {
-      const read = `${last.read} ${last.read === 1 ? 'repositorio leído' : 'repositorios leídos'}`;
-      const parts = [read];
+      const parts = [$t('app.gitLeidos', { n: last.read })];
       if (last.changed === 0) {
-        parts.push('sin cambios');
+        parts.push($t('app.gitSinCambios'));
       } else {
-        parts.push(`${last.changed} ${last.changed === 1 ? 'actualizado' : 'actualizados'}`);
+        parts.push($t('app.gitActualizados', { n: last.changed }));
       }
       if (last.failed > 0) {
-        parts.push(`${last.failed} ${last.failed === 1 ? 'ilegible' : 'ilegibles'}`);
+        parts.push($t('app.gitIlegibles', { n: last.failed }));
       }
       return parts.join(' · ');
     }
 
-    return `Git leído ${formatRelativeTime(last.at)}`;
+    return $t('app.gitLeidoHace', { cuando: formatRelativeTime(last.at, $lang) });
   });
 
   onMount(() => {
@@ -207,7 +220,7 @@
   <header class="cabecera" class:mac data-tauri-drag-region={mac || undefined}>
     <h1 class="marca" data-tauri-drag-region={mac || undefined}>Mosaic</h1>
 
-    <nav class="pestanas" aria-label="Secciones">
+    <nav class="pestanas" aria-label={$t('app.secciones')}>
       <button
         type="button"
         class="pestana"
@@ -215,7 +228,7 @@
         aria-current={$route.view !== 'settings' ? 'page' : undefined}
       >
         <LayoutList size={16} strokeWidth={1.75} />
-        Proyectos
+        {$t('app.proyectos')}
       </button>
 
       <button
@@ -225,15 +238,12 @@
         aria-current={$route.view === 'settings' ? 'page' : undefined}
       >
         <SettingsIcon size={16} strokeWidth={1.75} />
-        Ajustes
+        {$t('app.ajustes')}
       </button>
     </nav>
 
     <p class="metadatos" data-tauri-drag-region={mac || undefined}>
-      <span>
-        {$projects.length}
-        {$projects.length === 1 ? 'proyecto' : 'proyectos'}
-      </span>
+      <span>{$t('app.numProyectos', { n: $projects.length })}</span>
       {#if gitLabel !== ''}
         <span class="sep" aria-hidden="true">·</span>
         <span aria-live="polite">{gitLabel}</span>
@@ -244,26 +254,26 @@
       type="button"
       class="tema"
       onclick={cycleTheme}
-      title="{themeInfo.label}. Pulsa para pasar a {themeInfo.next}."
-      aria-label="{themeInfo.label}. Cambiar a {themeInfo.next}"
+      title={$t('app.temaTitulo', themeText)}
+      aria-label={$t('app.temaEtiqueta', themeText)}
     >
       <themeInfo.icon size={16} strokeWidth={1.75} />
     </button>
 
-    <div class="acciones" role="group" aria-label="Acciones">
+    <div class="acciones" role="group" aria-label={$t('app.acciones')}>
       <button
         type="button"
         class="accion"
         onclick={refreshGit}
         disabled={$refreshingGit}
-        title={GIT_BUTTON_HINT}
+        title={$t('app.gitAyuda')}
       >
         <GitBranch
           size={14}
           strokeWidth={1.75}
           class={$refreshingGit ? 'animate-pulse' : ''}
         />
-        {$refreshingGit ? 'Leyendo…' : 'Git'}
+        {$refreshingGit ? $t('app.gitLeyendo') : $t('app.git')}
       </button>
 
       <button
@@ -271,12 +281,10 @@
         class="accion"
         onclick={scan}
         disabled={$scanning || !canScan}
-        title={canScan
-          ? 'Recorrer las rutas configuradas y actualizar la lista de proyectos'
-          : 'Añade una carpeta en Ajustes para poder escanear'}
+        title={canScan ? $t('app.escanearAyuda') : $t('app.escanearSinRutas')}
       >
         <RefreshCw size={14} strokeWidth={1.75} class={$scanning ? 'animate-spin' : ''} />
-        {$scanning ? 'Escaneando…' : 'Escanear'}
+        {$scanning ? $t('app.escaneando') : $t('app.escanear')}
       </button>
     </div>
   </header>
@@ -301,7 +309,7 @@
 
 {#if paletteOpen}
   <CommandPalette
-    actions={PALETTE_ACTIONS}
+    actions={paletteActions}
     onAction={runAction}
     onClose={() => (paletteOpen = false)}
     {modKey}

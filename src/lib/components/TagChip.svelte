@@ -1,6 +1,7 @@
 <script lang="ts">
   import { X } from '@lucide/svelte';
 
+  import { t } from '../i18n';
   import type { Tag } from '../types';
 
   interface Props {
@@ -74,8 +75,8 @@
         class="quitar"
         class:oculta={revealOnHover}
         onclick={onRemove}
-        aria-label="Quitar la etiqueta {tag.name}"
-        title="Quitar la etiqueta {tag.name}"
+        aria-label={$t('chip.quitar', { nombre: tag.name })}
+        title={$t('chip.quitar', { nombre: tag.name })}
       >
         <X size={10} />
       </button>

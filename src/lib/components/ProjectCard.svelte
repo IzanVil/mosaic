@@ -3,6 +3,7 @@
 
   import TagChip from './TagChip.svelte';
   import TagPicker from './TagPicker.svelte';
+  import { lang, t } from '../i18n';
   import { openProject } from '../stores/apps';
   import { openProjectDetail } from '../stores/navigation';
   import { togglePinned } from '../stores/projects';
@@ -39,9 +40,9 @@
   );
 
   const ACTIONS = [
-    { kind: 'ide', icon: Code, label: 'Abrir en el editor' },
-    { kind: 'terminal', icon: SquareTerminal, label: 'Abrir en la terminal' },
-    { kind: 'file_manager', icon: FolderOpen, label: 'Abrir la carpeta' },
+    { kind: 'ide', icon: Code, label: 'tarjeta.abrirEditor' },
+    { kind: 'terminal', icon: SquareTerminal, label: 'tarjeta.abrirTerminal' },
+    { kind: 'file_manager', icon: FolderOpen, label: 'tarjeta.abrirCarpeta' },
   ] as const;
 </script>
 
@@ -59,7 +60,7 @@
           {project.name}
         </button>
       </h3>
-      <span class="pista" id="pista-{project.id}" role="tooltip">Click para abrir el detalle</span>
+      <span class="pista" id="pista-{project.id}" role="tooltip">{$t('tarjeta.pista')}</span>
     </div>
 
     <button
@@ -67,10 +68,10 @@
       class="pin"
       class:activo={project.pinned}
       onclick={() => togglePinned(project.id, !project.pinned)}
-      title={project.pinned ? 'Dejar de destacar' : 'Destacar el proyecto'}
+      title={project.pinned ? $t('tarjeta.dejarDestacar') : $t('tarjeta.destacar')}
       aria-label={project.pinned
-        ? `Dejar de destacar ${project.name}`
-        : `Destacar ${project.name}`}
+        ? $t('tarjeta.dejarDestacarNombre', { nombre: project.name })
+        : $t('tarjeta.destacarNombre', { nombre: project.name })}
       aria-pressed={project.pinned}
     >
       {#if project.pinned}
@@ -113,19 +114,19 @@
     {#if project.primary_language}<span class="lenguaje">{project.primary_language}</span>{/if}
     {#if branchLabel}
       {#if project.primary_language}<span class="sep">·</span>{/if}
-      <span class="rama" title={status?.branch === null ? 'HEAD separado' : undefined}>
+      <span class="rama" title={status?.branch === null ? $t('tarjeta.headSeparado') : undefined}>
         {branchLabel}
       </span>
       {#if status?.is_dirty}
-        <span class="sucio" title="Tiene cambios sin commitear">●</span>
+        <span class="sucio" title={$t('tarjeta.sucio')}>●</span>
       {/if}
-      {#if status?.ahead}<span class="delta" title="Commits por delante">↑{status.ahead}</span>{/if}
-      {#if status?.behind}<span class="delta" title="Commits por detrás">↓{status.behind}</span>{/if}
+      {#if status?.ahead}<span class="delta" title={$t('tarjeta.porDelante')}>↑{status.ahead}</span>{/if}
+      {#if status?.behind}<span class="delta" title={$t('tarjeta.porDetras')}>↓{status.behind}</span>{/if}
     {/if}
     {#if project.missing}
-      <span class="ausente-aviso" title="El último escaneo no encontró esta carpeta">
+      <span class="ausente-aviso" title={$t('tarjeta.ausente')}>
         <TriangleAlert size={12} strokeWidth={1.75} />
-        No encontrado
+        {$t('tarjeta.noEncontrado')}
       </span>
     {/if}
   </p>
@@ -134,8 +135,8 @@
     <footer>
       <span class="apertura">
         {project.last_opened_at === null
-          ? 'Sin abrir'
-          : `Abierto ${formatRelativeTime(project.last_opened_at)}`}
+          ? $t('tarjeta.sinAbrir')
+          : $t('tarjeta.abierto', { cuando: formatRelativeTime(project.last_opened_at, $lang) })}
       </span>
 
       <div class="acciones">
@@ -144,8 +145,8 @@
             type="button"
             onclick={() => openProject(action.kind, project.id)}
             disabled={project.missing}
-            title={action.label}
-            aria-label="{action.label}: {project.name}"
+            title={$t(action.label)}
+            aria-label="{$t(action.label)}: {project.name}"
           >
             <action.icon size={14} strokeWidth={1.75} />
           </button>

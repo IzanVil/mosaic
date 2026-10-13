@@ -2,6 +2,7 @@
   import { Check, ListFilter, Pin, TriangleAlert, X } from '@lucide/svelte';
 
   import TagChip from './TagChip.svelte';
+  import { t, type Key } from '../i18n';
   import {
     clearFilters,
     filterChipCount,
@@ -20,12 +21,12 @@
 
   const VISIBLE_TAG_CHIPS = 3;
 
-  const GIT_STATES: { value: GitStateFilter; label: string }[] = [
-    { value: 'all', label: 'Cualquiera' },
-    { value: 'dirty', label: 'Con cambios' },
-    { value: 'clean', label: 'Sin cambios' },
-    { value: 'no_repo', label: 'Sin repositorio' },
-  ];
+  const GIT_STATES = [
+    { value: 'all', label: 'filtros.gitCualquiera' },
+    { value: 'dirty', label: 'filtros.gitConCambios' },
+    { value: 'clean', label: 'filtros.gitSinCambios' },
+    { value: 'no_repo', label: 'filtros.gitSinRepo' },
+  ] as const satisfies readonly { value: GitStateFilter; label: Key }[];
 
   let open = $state(false);
   let expandTags = $state(false);
@@ -43,7 +44,7 @@
   let hiddenTagCount = $derived(selectedTags.length - shownTags.length);
 
   let gitStateLabel = $derived(
-    GIT_STATES.find((state) => state.value === $filters.git_state)?.label ?? 'Cualquiera',
+    $t(GIT_STATES.find((state) => state.value === $filters.git_state)?.label ?? 'filtros.gitCualquiera'),
   );
 
   let count = $derived(filterChipCount($filters));
@@ -65,15 +66,15 @@
       aria-haspopup="dialog"
     >
       <ListFilter size={14} strokeWidth={1.75} />
-      Filtros
+      {$t('filtros.boton')}
       {#if count > 0}
         <span class="contador">{count}</span>
       {/if}
     </button>
 
     {#if open}
-      <div use:dismissable={{ onDismiss: close }} role="dialog" aria-label="Filtros" class="panel">
-        <p class="rotulo">Estado Git</p>
+      <div use:dismissable={{ onDismiss: close }} role="dialog" aria-label={$t('filtros.boton')} class="panel">
+        <p class="rotulo">{$t('filtros.git')}</p>
         {#each GIT_STATES as state (state.value)}
           <button
             type="button"
@@ -82,7 +83,7 @@
             aria-checked={$filters.git_state === state.value}
             onclick={() => setGitState(state.value)}
           >
-            {state.label}
+            {$t(state.label)}
             {#if $filters.git_state === state.value}
               <Check size={14} strokeWidth={1.75} class="marca" />
             {/if}
@@ -90,7 +91,7 @@
         {/each}
 
         {#if $availableLanguages.length > 0}
-          <p class="rotulo separado">Lenguaje</p>
+          <p class="rotulo separado">{$t('filtros.lenguaje')}</p>
           <div class="lenguajes">
             {#each $availableLanguages as language (language)}
               <button
@@ -117,7 +118,7 @@
             aria-checked={$filters.pinned_only}
             onclick={() => setPinnedOnly(!$filters.pinned_only)}
           >
-            Solo destacados
+            {$t('filtros.soloDestacados')}
             {#if $filters.pinned_only}
               <Check size={14} strokeWidth={1.75} class="marca" />
             {/if}
@@ -130,7 +131,7 @@
             aria-checked={!$filters.include_missing}
             onclick={() => setIncludeMissing(!$filters.include_missing)}
           >
-            Ocultar ausentes
+            {$t('filtros.ocultarAusentes')}
             {#if !$filters.include_missing}
               <Check size={14} strokeWidth={1.75} class="marca" />
             {/if}
@@ -154,7 +155,7 @@
         .map((tag) => tag.name)
         .join(', ')}
     >
-      +{hiddenTagCount} etiquetas
+      {$t('filtros.masEtiquetas', { n: hiddenTagCount })}
     </button>
   {/if}
 
@@ -165,7 +166,7 @@
         type="button"
         class="quitar"
         onclick={() => toggleLanguageFilter(language)}
-        aria-label="Quitar el filtro de lenguaje {language}"
+        aria-label={$t('filtros.quitarLenguaje', { lenguaje: language })}
       >
         <X size={10} />
       </button>
@@ -174,12 +175,12 @@
 
   {#if $filters.git_state !== 'all'}
     <span class="chip">
-      Git: {gitStateLabel}
+      {$t('filtros.chipGit', { estado: gitStateLabel })}
       <button
         type="button"
         class="quitar"
         onclick={() => setGitState('all')}
-        aria-label="Quitar el filtro de estado Git"
+        aria-label={$t('filtros.quitarGit')}
       >
         <X size={10} />
       </button>
@@ -189,12 +190,12 @@
   {#if $filters.pinned_only}
     <span class="chip">
       <Pin size={10} />
-      Solo destacados
+      {$t('filtros.soloDestacados')}
       <button
         type="button"
         class="quitar"
         onclick={() => setPinnedOnly(false)}
-        aria-label="Quitar el filtro de destacados"
+        aria-label={$t('filtros.quitarDestacados')}
       >
         <X size={10} />
       </button>
@@ -204,12 +205,12 @@
   {#if !$filters.include_missing}
     <span class="chip">
       <TriangleAlert size={10} />
-      Ausentes ocultos
+      {$t('filtros.ausentesOcultos')}
       <button
         type="button"
         class="quitar"
         onclick={() => setIncludeMissing(true)}
-        aria-label="Volver a mostrar los proyectos ausentes"
+        aria-label={$t('filtros.mostrarAusentes')}
       >
         <X size={10} />
       </button>
@@ -225,7 +226,7 @@
         clearFilters();
       }}
     >
-      Limpiar filtros
+      {$t('filtros.limpiar')}
     </button>
   {/if}
 </div>

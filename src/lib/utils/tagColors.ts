@@ -9,30 +9,34 @@
  * type="color">`) del gestor de etiquetas admite cualquier otro valor.
  */
 
+/** Identificador de un color; su nombre visible sale del diccionario (`color.<id>`). */
+export type TagColorId =
+  | 'slate' | 'gray' | 'red' | 'orange' | 'amber' | 'yellow' | 'lime' | 'green'
+  | 'emerald' | 'teal' | 'cyan' | 'sky' | 'blue' | 'indigo' | 'violet' | 'fuchsia';
+
 export interface TagColor {
-  /** Nombre visible, para el `title` y el texto accesible. */
-  name: string;
+  id: TagColorId;
   /** Hexadecimal en mayúsculas, la forma que normaliza el backend. */
   hex: string;
 }
 
 export const TAG_COLORS: readonly TagColor[] = [
-  { name: 'Pizarra', hex: '#64748B' },
-  { name: 'Gris', hex: '#6B7280' },
-  { name: 'Rojo', hex: '#EF4444' },
-  { name: 'Naranja', hex: '#F97316' },
-  { name: 'Ámbar', hex: '#F59E0B' },
-  { name: 'Amarillo', hex: '#EAB308' },
-  { name: 'Lima', hex: '#84CC16' },
-  { name: 'Verde', hex: '#22C55E' },
-  { name: 'Esmeralda', hex: '#10B981' },
-  { name: 'Turquesa', hex: '#14B8A6' },
-  { name: 'Cian', hex: '#06B6D4' },
-  { name: 'Celeste', hex: '#0EA5E9' },
-  { name: 'Azul', hex: '#3B82F6' },
-  { name: 'Índigo', hex: '#6366F1' },
-  { name: 'Violeta', hex: '#8B5CF6' },
-  { name: 'Fucsia', hex: '#D946EF' },
+  { id: 'slate', hex: '#64748B' },
+  { id: 'gray', hex: '#6B7280' },
+  { id: 'red', hex: '#EF4444' },
+  { id: 'orange', hex: '#F97316' },
+  { id: 'amber', hex: '#F59E0B' },
+  { id: 'yellow', hex: '#EAB308' },
+  { id: 'lime', hex: '#84CC16' },
+  { id: 'green', hex: '#22C55E' },
+  { id: 'emerald', hex: '#10B981' },
+  { id: 'teal', hex: '#14B8A6' },
+  { id: 'cyan', hex: '#06B6D4' },
+  { id: 'sky', hex: '#0EA5E9' },
+  { id: 'blue', hex: '#3B82F6' },
+  { id: 'indigo', hex: '#6366F1' },
+  { id: 'violet', hex: '#8B5CF6' },
+  { id: 'fuchsia', hex: '#D946EF' },
 ] as const;
 
 /** Color con el que se crea una etiqueta si el usuario no elige otro. */

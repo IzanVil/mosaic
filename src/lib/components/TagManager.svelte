@@ -3,6 +3,7 @@
 
   import { createTag, deleteTag, tags, tagsError, updateTag } from '../stores/tags';
   import { dismissable } from '../utils/dismissable';
+  import { t } from '../i18n';
   import { colorInputValue, DEFAULT_TAG_COLOR, TAG_COLORS } from '../utils/tagColors';
 
   interface Props {
@@ -94,8 +95,8 @@
                     newColor = color.hex;
                     colorEditing = null;
                   }}
-                  title={color.name}
-                  aria-label="Color {color.name}"
+                  title={$t(`color.${color.id}`)}
+                  aria-label={$t('selector.color', { nombre: $t(`color.${color.id}`) })}
                   style="background-color: {color.hex};"
                 ></button>
               {/each}
@@ -170,8 +171,8 @@
                             type="button"
                             class="muestra"
                             onclick={() => recolor(tag.id, tag.name, color.hex)}
-                            title={color.name}
-                            aria-label="Color {color.name}"
+                            title={$t(`color.${color.id}`)}
+                            aria-label={$t('selector.color', { nombre: $t(`color.${color.id}`) })}
                             style="background-color: {color.hex};"
                           ></button>
                         {/each}

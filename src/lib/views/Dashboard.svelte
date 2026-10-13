@@ -9,6 +9,7 @@
   import Sidebar from '../components/Sidebar.svelte';
   import SortMenu from '../components/SortMenu.svelte';
   import TagManager from '../components/TagManager.svelte';
+  import { t } from '../i18n';
   import { appsError } from '../stores/apps';
   import {
     density,
@@ -84,12 +85,8 @@
           <button
             type="button"
             onclick={toggleDensity}
-            title={$density === 'comodo'
-              ? 'Cambiar a vista compacta'
-              : 'Cambiar a vista cómoda'}
-            aria-label={$density === 'comodo'
-              ? 'Cambiar a vista compacta'
-              : 'Cambiar a vista cómoda'}
+            title={$density === 'comodo' ? $t('tablero.compacta') : $t('tablero.comoda')}
+            aria-label={$density === 'comodo' ? $t('tablero.compacta') : $t('tablero.comoda')}
             aria-pressed={$density === 'compacto'}
             class="densidad"
           >
@@ -104,21 +101,19 @@
 
         {#if muestraAviso}
           <p class="aviso-pocos">
-            {visibles === 1
-              ? '1 proyecto coincide con los filtros aplicados.'
-              : `${visibles} proyectos coinciden con los filtros aplicados.`}
+            {$t('tablero.coinciden', { n: visibles })}
           </p>
         {/if}
       </div>
     {/if}
 
     {#if $loadingProjects && !hasProjects}
-      <p class="cargando">Cargando proyectos…</p>
+      <p class="cargando">{$t('tablero.cargando')}</p>
     {:else if !hasProjects && !hasScanPaths}
       <EmptyState
-        title="Todavía no hay rutas que escanear"
-        description="Añade la carpeta donde guardas tus proyectos y Mosaic los encontrará por ti."
-        actionLabel="Configurar rutas"
+        title={$t('tablero.sinRutasTitulo')}
+        description={$t('tablero.sinRutasTexto')}
+        actionLabel={$t('tablero.sinRutasAccion')}
         onAction={onGoToSettings}
       >
         {#snippet icon()}
@@ -127,9 +122,9 @@
       </EmptyState>
     {:else if !hasProjects}
       <EmptyState
-        title="Ningún proyecto encontrado"
-        description="Las rutas están configuradas pero aún no se ha escaneado, o no hay proyectos dentro."
-        actionLabel={$scanning ? 'Escaneando…' : 'Escanear ahora'}
+        title={$t('tablero.sinProyectosTitulo')}
+        description={$t('tablero.sinProyectosTexto')}
+        actionLabel={$scanning ? $t('app.escaneando') : $t('tablero.escanearAhora')}
         onAction={onScan}
       >
         {#snippet icon()}

@@ -9,6 +9,7 @@
   } from '@lucide/svelte';
 
   import { clearFilters, filters, setPinnedOnly, toggleTagFilter } from '../stores/filters';
+  import { t } from '../i18n';
   import { pinnedProjects, projects } from '../stores/projects';
   import { tags } from '../stores/tags';
 
@@ -30,13 +31,13 @@
 </script>
 
 {#if collapsed}
-  <nav class="panel plegado" aria-label="Colecciones">
+  <nav class="panel plegado" aria-label={$t('lateral.colecciones')}>
     <button
       type="button"
       class="icono"
       onclick={onToggle}
-      aria-label="Desplegar el panel lateral"
-      title="Desplegar el panel lateral"
+      aria-label={$t('lateral.desplegar')}
+      title={$t('lateral.desplegar')}
     >
       <PanelLeftOpen size={16} strokeWidth={1.75} />
     </button>
@@ -46,8 +47,8 @@
       class="icono"
       class:activo={showingAll}
       onclick={showAll}
-      aria-label="Todos los proyectos"
-      title="Todos los proyectos"
+      aria-label={$t('lateral.todos')}
+      title={$t('lateral.todos')}
     >
       <LayoutGrid size={16} strokeWidth={1.75} />
     </button>
@@ -58,8 +59,8 @@
         class="icono"
         class:activo={$filters.pinned_only}
         onclick={() => setPinnedOnly(!$filters.pinned_only)}
-        aria-label="Solo destacados"
-        title="Solo destacados"
+        aria-label={$t('lateral.soloDestacados')}
+        title={$t('lateral.soloDestacados')}
       >
         <Pin size={16} strokeWidth={1.75} />
       </button>
@@ -72,7 +73,7 @@
           class="punto"
           class:elegido={$filters.tag_ids.includes(tag.id)}
           onclick={() => toggleTagFilter(tag.id)}
-          aria-label="Filtrar por {tag.name}"
+          aria-label={$t('lateral.filtrarPor', { nombre: tag.name })}
           aria-pressed={$filters.tag_ids.includes(tag.id)}
           title="{tag.name} ({tag.project_count})"
           style="background-color: {tag.color};"
@@ -84,22 +85,22 @@
       type="button"
       class="icono final"
       onclick={onManageTags}
-      aria-label="Gestionar etiquetas"
-      title="Gestionar etiquetas"
+      aria-label={$t('lateral.gestionar')}
+      title={$t('lateral.gestionar')}
     >
       <Settings2 size={16} strokeWidth={1.75} />
     </button>
   </nav>
 {:else}
-  <nav class="panel" aria-label="Colecciones">
+  <nav class="panel" aria-label={$t('lateral.colecciones')}>
     <div class="cabecera">
-      <span class="rotulo">Vistas</span>
+      <span class="rotulo">{$t('lateral.vistas')}</span>
       <button
         type="button"
         class="icono pequeno"
         onclick={onToggle}
-        aria-label="Plegar el panel lateral"
-        title="Plegar el panel lateral"
+        aria-label={$t('lateral.plegar')}
+        title={$t('lateral.plegar')}
       >
         <PanelLeftClose size={14} strokeWidth={1.75} />
       </button>
@@ -107,7 +108,7 @@
 
     <button type="button" class="fila" class:activo={showingAll} onclick={showAll}>
       <LayoutGrid size={14} strokeWidth={1.75} class="glifo" />
-      <span class="nombre">Todos los proyectos</span>
+      <span class="nombre">{$t('lateral.todos')}</span>
       <span class="numero">{$projects.length}</span>
     </button>
 
@@ -120,26 +121,26 @@
         aria-pressed={$filters.pinned_only}
       >
         <Pin size={14} strokeWidth={1.75} class="glifo" />
-        <span class="nombre">Fijados</span>
+        <span class="nombre">{$t('lateral.fijados')}</span>
         <span class="numero">{$pinnedProjects.length}</span>
       </button>
     {/if}
 
     <div class="cabecera separada">
-      <span class="rotulo">Etiquetas</span>
+      <span class="rotulo">{$t('lateral.etiquetas')}</span>
       <button
         type="button"
         class="icono pequeno"
         onclick={onManageTags}
-        aria-label="Gestionar etiquetas"
-        title="Gestionar etiquetas"
+        aria-label={$t('lateral.gestionar')}
+        title={$t('lateral.gestionar')}
       >
         <Settings2 size={14} strokeWidth={1.75} />
       </button>
     </div>
 
     {#if $tags.length === 0}
-      <p class="vacio">Ninguna todavía. Etiqueta un proyecto desde su tarjeta.</p>
+      <p class="vacio">{$t('lateral.sinEtiquetas')}</p>
     {:else}
       {#each $tags as tag (tag.id)}
         <button
@@ -158,7 +159,7 @@
 
     <button type="button" class="fila gestionar" onclick={onManageTags}>
       <Tags size={14} strokeWidth={1.75} class="glifo" />
-      <span class="nombre">Gestionar etiquetas</span>
+      <span class="nombre">{$t('lateral.gestionar')}</span>
     </button>
   </nav>
 {/if}

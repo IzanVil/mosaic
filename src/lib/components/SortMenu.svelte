@@ -2,21 +2,22 @@
   import { ArrowDown, ArrowUp, ArrowUpDown } from '@lucide/svelte';
 
   import { filters, setSort, setSortDirection } from '../stores/filters';
+  import { t, type Key } from '../i18n';
   import type { SortOption } from '../types';
   import { dismissable } from '../utils/dismissable';
 
-  const OPTIONS: { value: SortOption; label: string }[] = [
-    { value: 'name', label: 'Nombre' },
-    { value: 'last_opened', label: 'Última apertura' },
-    { value: 'created', label: 'Fecha de alta' },
-    { value: 'updated', label: 'Última actualización' },
-  ];
+  const OPTIONS = [
+    { value: 'name', label: 'orden.nombre' },
+    { value: 'last_opened', label: 'orden.ultimaApertura' },
+    { value: 'created', label: 'orden.alta' },
+    { value: 'updated', label: 'orden.actualizacion' },
+  ] as const satisfies readonly { value: SortOption; label: Key }[];
 
   let open = $state(false);
   let trigger = $state<HTMLButtonElement | null>(null);
 
   let activeLabel = $derived(
-    OPTIONS.find((option) => option.value === $filters.sort)?.label ?? 'Nombre',
+    $t(OPTIONS.find((option) => option.value === $filters.sort)?.label ?? 'orden.nombre'),
   );
   let ascending = $derived($filters.sort_dir === 'asc');
 
@@ -39,7 +40,7 @@
     onclick={() => (open ? close() : (open = true))}
     aria-expanded={open}
     aria-haspopup="menu"
-    title="Cambiar la ordenación"
+    title={$t('orden.cambiar')}
   >
     <ArrowUpDown size={14} strokeWidth={1.75} />
     {activeLabel}
@@ -49,8 +50,8 @@
     type="button"
     class="boton icono"
     onclick={() => setSortDirection(ascending ? 'desc' : 'asc')}
-    aria-label={ascending ? 'Orden ascendente, cambiar a descendente' : 'Orden descendente, cambiar a ascendente'}
-    title={ascending ? 'Ascendente' : 'Descendente'}
+    aria-label={ascending ? $t('orden.ascACambiar') : $t('orden.descACambiar')}
+    title={ascending ? $t('orden.ascendente') : $t('orden.descendente')}
   >
     {#if ascending}
       <ArrowUp size={14} strokeWidth={1.75} />
@@ -60,7 +61,7 @@
   </button>
 
   {#if open}
-    <div use:dismissable={{ onDismiss: close }} role="menu" aria-label="Ordenar por" class="menu">
+    <div use:dismissable={{ onDismiss: close }} role="menu" aria-label={$t('orden.menu')} class="menu">
       {#each OPTIONS as option (option.value)}
         <button
           type="button"
@@ -69,7 +70,7 @@
           aria-checked={$filters.sort === option.value}
           onclick={() => choose(option.value)}
         >
-          {option.label}
+          {$t(option.label)}
           {#if $filters.sort === option.value}
             {#if ascending}
               <ArrowUp size={14} strokeWidth={1.75} class="marca" />

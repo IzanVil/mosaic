@@ -31,6 +31,7 @@
     scanPathsError,
     setScanPathEnabled,
   } from '../stores/scanPaths';
+  import { LANG_PREFERENCES, langPreference, systemLang, t } from '../i18n';
   import { formatRelativeTime } from '../utils/format';
 
   let picking = $state(false);
@@ -100,6 +101,20 @@
   {/if}
 
   <div class="contenido">
+    <label class="app idioma">
+      <span class="etiqueta">{$t('idioma.titulo')}</span>
+      <span class="desplegable">
+        <select bind:value={$langPreference}>
+          {#each LANG_PREFERENCES as preference (preference)}
+            <option value={preference}>
+              {preference === 'system' ? `${$t('idioma.sistema')} (${$t(`idioma.${systemLang()}`)})` : $t(`idioma.${preference}`)}
+            </option>
+          {/each}
+        </select>
+        <ChevronDown size={14} strokeWidth={1.75} class="flecha" />
+      </span>
+    </label>
+
     <header class="cabecera">
       <div>
         <h2>Rutas de escaneo</h2>
@@ -543,6 +558,15 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
+  }
+  /* El idioma va primero y aparte: es lo que busca quien no entiende el resto. */
+  .app.idioma {
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .app.idioma .etiqueta {
+    width: auto;
+    white-space: nowrap;
   }
 
   .etiqueta {

@@ -9,6 +9,7 @@
     unassignTagFromProject,
   } from '../stores/tags';
   import type { Tag, TagWithCount } from '../types';
+  import { t } from '../i18n';
   import { dismissable } from '../utils/dismissable';
   import { normalizeText } from '../utils/text';
   import { opensUpward } from '../utils/placement';
@@ -121,10 +122,10 @@
     onclick={() => (open ? close() : openPicker())}
     aria-expanded={open}
     aria-haspopup="dialog"
-    title="Asignar etiquetas"
+    title={$t('selector.asignar')}
   >
     <Plus size={11} strokeWidth={1.75} />
-    {#if !compact}Etiqueta{/if}
+    {#if !compact}{$t('selector.etiqueta')}{/if}
   </button>
 
   {#if open}
@@ -132,7 +133,7 @@
       use:dismissable={{ onDismiss: close }}
       bind:this={panel}
       role="dialog"
-      aria-label="Asignar etiquetas"
+      aria-label={$t('selector.asignar')}
       class="panel"
       class:arriba={upward}
     >
@@ -141,7 +142,7 @@
         bind:value={query}
         onkeydown={onKeydown}
         type="text"
-        placeholder="Buscar o crear…"
+        placeholder={$t('selector.buscar')}
         maxlength="32"
       />
 
@@ -167,7 +168,7 @@
         <div class="crear">
           <button type="button" class="opcion" onclick={create} disabled={busy}>
             <TagIcon size={14} strokeWidth={1.75} style="color: {newColor};" />
-            <span class="nombre">Crear «{query.trim()}»</span>
+            <span class="nombre">{$t('selector.crear', { nombre: query.trim() })}</span>
           </button>
 
           <div class="paleta">
@@ -177,8 +178,8 @@
                 class="muestra"
                 class:elegida={newColor === color.hex}
                 onclick={() => (newColor = color.hex)}
-                title={color.name}
-                aria-label="Color {color.name}"
+                title={$t(`color.${color.id}`)}
+                aria-label={$t('selector.color', { nombre: $t(`color.${color.id}`) })}
                 aria-pressed={newColor === color.hex}
                 style="background-color: {color.hex};"
               ></button>

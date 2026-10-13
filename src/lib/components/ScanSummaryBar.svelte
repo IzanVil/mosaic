@@ -2,6 +2,7 @@
   import { CircleCheck, TriangleAlert } from '@lucide/svelte';
 
   import type { ScanSummary } from '../types';
+  import { t } from '../i18n';
   import { formatDuration } from '../utils/format';
 
   interface Props {
@@ -13,23 +14,17 @@
   /** Detalles que solo merece la pena mostrar si no son cero. */
   let details = $derived(
     [
-      summary.projects_new > 0 ? `${summary.projects_new} nuevos` : null,
-      summary.projects_updated > 0 ? `${summary.projects_updated} actualizados` : null,
-      summary.projects_missing > 0 ? `${summary.projects_missing} ya no están` : null,
+      summary.projects_new > 0 ? $t('escaneo.nuevos', { n: summary.projects_new }) : null,
+      summary.projects_updated > 0 ? $t('escaneo.actualizados', { n: summary.projects_updated }) : null,
+      summary.projects_missing > 0 ? $t('escaneo.yaNoEstan', { n: summary.projects_missing }) : null,
     ].filter((detail) => detail !== null),
   );
 
   let warnings = $derived(
     [
-      summary.truncated
-        ? 'El escaneo se detuvo al alcanzar el tope de entradas, así que puede faltar algo. Súbelo en los ajustes o acota las rutas.'
-        : null,
-      summary.roots_unavailable > 0
-        ? `${summary.roots_unavailable} ${summary.roots_unavailable === 1 ? 'ruta no existe' : 'rutas no existen'} en el disco.`
-        : null,
-      summary.roots_scanned === 0 && summary.roots_unavailable === 0
-        ? 'No hay ninguna ruta habilitada que escanear.'
-        : null,
+      summary.truncated ? $t('escaneo.recortado') : null,
+      summary.roots_unavailable > 0 ? $t('escaneo.rutasNoExisten', { n: summary.roots_unavailable }) : null,
+      summary.roots_scanned === 0 && summary.roots_unavailable === 0 ? $t('escaneo.sinRutas') : null,
     ].filter((warning) => warning !== null),
   );
 </script>
@@ -38,14 +33,11 @@
   <p class="linea">
     <CircleCheck size={14} strokeWidth={1.75} class="icono" />
     <span>
-      <span class="total">
-        {summary.projects_found}
-        {summary.projects_found === 1 ? 'proyecto encontrado' : 'proyectos encontrados'}
-      </span>
+      <span class="total">{$t('escaneo.encontrados', { n: summary.projects_found })}</span>
       {#if details.length > 0}
         <span class="detalle">· {details.join(' · ')}</span>
       {/if}
-      <span class="detalle">· en {formatDuration(summary.elapsed_ms)}</span>
+      <span class="detalle">· {$t('escaneo.duracion', { duracion: formatDuration(summary.elapsed_ms) })}</span>
     </span>
   </p>
 

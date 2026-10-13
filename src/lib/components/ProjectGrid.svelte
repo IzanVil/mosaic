@@ -3,6 +3,7 @@
 
   import EmptyState from './EmptyState.svelte';
   import LazyCard from './LazyCard.svelte';
+  import { t } from '../i18n';
   import { clearFilters } from '../stores/filters';
   import type { Density, ProjectWithTags } from '../types';
 
@@ -25,9 +26,9 @@
 
 {#if total === 0}
   <EmptyState
-    title="Ningún proyecto coincide con los filtros"
-    description="Prueba con otra búsqueda, o quita los filtros para volver a ver todo."
-    actionLabel="Limpiar filtros"
+    title={$t('tablero.ningunoCoincideTitulo')}
+    description={$t('tablero.ningunoCoincideTexto')}
+    actionLabel={$t('filtros.limpiar')}
     onAction={clearFilters}
   >
     {#snippet icon()}
@@ -37,8 +38,8 @@
 {:else}
   <div class="tablero" class:compacto={density === 'compacto'}>
     {#if pinned.length > 0}
-      <section aria-label="Proyectos fijados">
-        <h2><Pin size={12} strokeWidth={1.75} /> Fijados</h2>
+      <section aria-label={$t('tablero.fijadosSeccion')}>
+        <h2><Pin size={12} strokeWidth={1.75} /> {$t('tablero.fijados')}</h2>
         <div class="rejilla">
           {#each pinned as project, i (project.id)}
             <LazyCard {project} compact={density === 'compacto'} eager={i < EAGER} />
@@ -52,7 +53,7 @@
     {/if}
 
     {#if rest.length > 0}
-      <section aria-label="Resto de proyectos">
+      <section aria-label={$t('tablero.restoSeccion')}>
         <div class="rejilla">
           {#each rest as project, i (project.id)}
             <LazyCard {project} compact={density === 'compacto'} eager={i < EAGER} />
