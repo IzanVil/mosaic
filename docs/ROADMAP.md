@@ -307,3 +307,6 @@ Pendiente:
 - [x] Mosaic 0.2.0 publicado el 2026-10-10, con los seis instaladores, sus
       sumas comprobadas una a una contra los ficheros publicados y notas
       bilingües; el README y la web enlazan la 0.2.0
+- [x] Mosaic 0.2.1 publicado el 2026-10-13: el tablero solo monta las
+      tarjetas que se ven, el escáner es lineal y los dos arreglos del día 11
+      (orden por última apertura e insignias del README)
