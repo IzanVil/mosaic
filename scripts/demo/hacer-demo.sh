@@ -13,7 +13,7 @@ trap 'kill "$servidor" 2>/dev/null || true; rm -rf "$tmp"' EXIT
 cp -r "$raiz/dist" "$tmp/sitio"
 cp "$aqui/marco.html" "$tmp/sitio/"
 python3 "$aqui/backend_simulado.py" "$tmp/sitio/mock.js" \
-  '{"density":"comodo","theme":"dark","sidebar_collapsed":false}'
+  '{"density":"comodo","theme":"dark","sidebar_collapsed":false,"lang":"es"}'
 # El backend simulado tiene que existir antes que la aplicación.
 sed -i 's|<script type="module"|<script src="/mock.js"></script>\n<script type="module"|' "$tmp/sitio/index.html"
 

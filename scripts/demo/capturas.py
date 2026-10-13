@@ -40,7 +40,7 @@ ABRIR_SELECTOR = (
     "d.querySelector('[data-proyecto=\"1\"]').closest('article').querySelector('.disparador').click();"
 )
 RECORTE_SELECTOR = (
-    "JSON.stringify((()=>{const a=rect('article:has([data-proyecto=\"1\"])'),p=rect('[role=dialog][aria-label^=Asignar]');"
+    "JSON.stringify((()=>{const a=rect('article:has([data-proyecto=\"1\"])'),p=rect('article:has([data-proyecto=\"1\"]) [role=dialog]');"
     "const x=Math.min(a.x,p.x)-16,y=Math.min(a.y,p.y)-16;"
     "return {x,y,w:Math.max(a.x+a.w,p.x+p.w)+16-x,h:Math.max(a.y+a.h,p.y+p.h)+16-y}})())"
 )
@@ -49,8 +49,12 @@ RECORTE_GESTOR = (
 )
 
 
+# Idioma de las capturas: fijo, para que no dependa del sistema de quien las saca.
+IDIOMA = os.environ.get("MOSAIC_IDIOMA", "es")
+
+
 def vista(tema, **extra):
-    v = {"density": "comodo", "theme": tema, "sidebar_collapsed": False}
+    v = {"density": "comodo", "theme": tema, "sidebar_collapsed": False, "lang": IDIOMA}
     v.update(extra)
     return v
 
