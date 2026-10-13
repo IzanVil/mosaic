@@ -13,6 +13,7 @@
 import { derived, get, writable } from 'svelte/store';
 
 import * as api from '../api/settings';
+import { LANG_PREFERENCES, langPreference } from '../i18n';
 import type {
   Density,
   FilterState,
@@ -208,6 +209,7 @@ export async function loadViewState(): Promise<void> {
     sidebarCollapsed.set(parsed.sidebar_collapsed);
     density.set(parsed.density);
     theme.set(parsed.theme);
+    langPreference.set(parsed.lang);
   } catch {
     /* JSON ilegible: se queda lo que hay. */
   }
@@ -241,6 +243,7 @@ export function startPersistingViewState(): () => void {
     sidebarCollapsed.subscribe(onChange),
     density.subscribe(onChange),
     theme.subscribe(onChange),
+    langPreference.subscribe(onChange),
   ];
   subscribing = false;
 
@@ -262,6 +265,7 @@ export function currentViewState(): ViewState {
     sidebar_collapsed: get(sidebarCollapsed),
     density: get(density),
     theme: get(theme),
+    lang: get(langPreference),
   };
 }
 
@@ -293,6 +297,7 @@ export function sanitizeViewState(raw: unknown): ViewState {
     sidebar_collapsed: source.sidebar_collapsed === true,
     density: source.density === 'compacto' ? 'compacto' : 'comodo',
     theme: oneOf(source.theme, THEMES, 'dark'),
+    lang: oneOf(source.lang, LANG_PREFERENCES, 'system'),
   };
 }
 

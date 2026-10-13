@@ -7,6 +7,8 @@
  * equivalente en `src-tauri/src/`.
  */
 
+import type { LangPreference } from '../i18n';
+
 /** Espejo de `core::project::Project`. */
 export interface Project {
   id: number;
@@ -251,6 +253,8 @@ export interface ViewState {
   sidebar_collapsed: boolean;
   density: Density;
   theme: ThemeMode;
+  /** Idioma de la interfaz; `system` sigue al del sistema. */
+  lang: LangPreference;
 }
 
 /** Espejo de `core::backup::ExportSummary`. */

@@ -1,5 +1,9 @@
 /** Utilidades de presentación. */
 
+import { get } from 'svelte/store';
+
+import { lang, translate, type Lang } from '../i18n';
+
 const MINUTE = 60;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -12,23 +16,20 @@ export function now_ts(): number {
 }
 
 /**
- * Convierte una marca de tiempo Unix (segundos) en texto relativo al ahora.
- * Devuelve `'nunca'` si no hay marca.
+ * Convierte una marca de tiempo Unix (segundos) en texto relativo al ahora, en
+ * el idioma que se pida o en el actual. En una plantilla conviene pasar `$lang`
+ * para que el texto cambie al cambiar de idioma.
  */
-export function formatRelativeTime(timestamp: number | null): string {
-  if (timestamp === null) return 'nunca';
+export function formatRelativeTime(timestamp: number | null, language: Lang = get(lang)): string {
+  if (timestamp === null) return translate(language, 'tiempo.nunca');
 
   const seconds = Math.floor(Date.now() / 1000) - timestamp;
-  if (seconds < MINUTE) return 'hace un momento';
-  if (seconds < HOUR) return `hace ${plural(Math.floor(seconds / MINUTE), 'minuto')}`;
-  if (seconds < DAY) return `hace ${plural(Math.floor(seconds / HOUR), 'hora')}`;
-  if (seconds < MONTH) return `hace ${plural(Math.floor(seconds / DAY), 'día')}`;
-  if (seconds < YEAR) return `hace ${plural(Math.floor(seconds / MONTH), 'mes', 'meses')}`;
-  return `hace ${plural(Math.floor(seconds / YEAR), 'año')}`;
-}
-
-function plural(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  if (seconds < MINUTE) return translate(language, 'tiempo.momento');
+  if (seconds < HOUR) return translate(language, 'tiempo.minutos', { n: Math.floor(seconds / MINUTE) });
+  if (seconds < DAY) return translate(language, 'tiempo.horas', { n: Math.floor(seconds / HOUR) });
+  if (seconds < MONTH) return translate(language, 'tiempo.dias', { n: Math.floor(seconds / DAY) });
+  if (seconds < YEAR) return translate(language, 'tiempo.meses', { n: Math.floor(seconds / MONTH) });
+  return translate(language, 'tiempo.anios', { n: Math.floor(seconds / YEAR) });
 }
 
 /**

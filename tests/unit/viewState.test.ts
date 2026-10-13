@@ -35,6 +35,7 @@ describe('lo que se guarda', () => {
     expect(Object.keys(currentViewState()).sort()).toEqual([
       'density',
       'filters',
+      'lang',
       'sidebar_collapsed',
       'theme',
     ]);
