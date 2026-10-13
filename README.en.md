@@ -20,7 +20,7 @@ Local, private, and not a single network request.</p>
 </p>
 
 <p>
-<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Download-Mosaic%200.2.0-2c8c8c?style=for-the-badge" alt="Download Mosaic 0.2.0" height="36"></a>
+<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Download-Mosaic%200.2.1-2c8c8c?style=for-the-badge" alt="Download Mosaic 0.2.1" height="36"></a>
 </p>
 
 <p>
@@ -283,11 +283,11 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 | ✅ | **Design** | Its own design system, light and dark themes |
 | ✅ | **Project page** | README, history, branches and notes |
 | ✅ | **Polish** | Advanced settings, shortcuts, backup and compact mode |
-| 🟡 | **Distribution** | 0.2.0 released for all three platforms, tested on each by CI; signing still to do |
+| 🟡 | **Distribution** | 0.2.1 released for all three platforms, tested on each by CI; signing still to do |
 
 ## 📦 Download
 
-**Mosaic 0.2.0** is out for all three platforms. Pick your system:
+**Mosaic 0.2.1** is out for all three platforms. Pick your system:
 
 <table>
   <tr>
@@ -297,22 +297,22 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
   </tr>
   <tr>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Download the universal .dmg"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Download the universal .dmg"></a>
       <br><sub>Intel and Apple Silicon · 8.5 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-installer-2c8c8c?style=flat-square" alt="Download the .exe installer"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-installer-2c8c8c?style=flat-square" alt="Download the .exe installer"></a>
       <br><sub>Recommended · 3.4 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-package-555?style=flat-square" alt="Download the .msi package"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-package-555?style=flat-square" alt="Download the .msi package"></a>
       <br><sub>For managed deployments · 4.6 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-any%20distro-2c8c8c?style=flat-square" alt="Download the .AppImage"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-any%20distro-2c8c8c?style=flat-square" alt="Download the .AppImage"></a>
       <br><sub>No install needed · 79 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic_0.2.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Download the .deb"></a>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.0/Mosaic-0.2.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Download the .rpm"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Download the .deb"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic-0.2.1-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Download the .rpm"></a>
       <br><sub>4.7 MB each</sub>
     </td>
   </tr>
@@ -321,7 +321,7 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 Every version, with its notes, is on the
 [releases](https://github.com/IzanVil/mosaic/releases) page. To check that a
 download arrived intact, compare it with
-[`SHA256SUMS.txt`](https://github.com/IzanVil/mosaic/releases/download/v0.2.0/SHA256SUMS.txt):
+[`SHA256SUMS.txt`](https://github.com/IzanVil/mosaic/releases/download/v0.2.1/SHA256SUMS.txt):
 
 ```bash
 sha256sum -c SHA256SUMS.txt --ignore-missing
@@ -344,13 +344,13 @@ anyway”.
 
 ```bash
 # Fedora, openSUSE and derivatives
-sudo dnf install ./Mosaic-0.2.0-1.x86_64.rpm
+sudo dnf install ./Mosaic-0.2.1-1.x86_64.rpm
 
 # Debian, Ubuntu and derivatives
-sudo apt install ./Mosaic_0.2.0_amd64.deb
+sudo apt install ./Mosaic_0.2.1_amd64.deb
 
 # Any distribution, nothing to install
-chmod +x Mosaic_0.2.0_amd64.AppImage && ./Mosaic_0.2.0_amd64.AppImage
+chmod +x Mosaic_0.2.1_amd64.AppImage && ./Mosaic_0.2.1_amd64.AppImage
 ```
 
 </details>
