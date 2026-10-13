@@ -227,13 +227,13 @@ export function startPersistingViewState(): () => void {
     });
   }, PERSIST_DELAY_MS);
 
-  let pendingInitial = 5;
+  // Cada store emite su valor al suscribirse, y eso no es un cambio del
+  // usuario. Se ignora todo lo que llega mientras se suscribe en vez de contar
+  // emisiones: con un contador, quitar un store dejó de guardar el primer
+  // cambio de verdad.
+  let subscribing = true;
   const onChange = () => {
-    if (pendingInitial > 0) {
-      pendingInitial -= 1;
-      return;
-    }
-    save();
+    if (!subscribing) save();
   };
 
   const unsubscribes = [
@@ -242,6 +242,7 @@ export function startPersistingViewState(): () => void {
     density.subscribe(onChange),
     theme.subscribe(onChange),
   ];
+  subscribing = false;
 
   return () => {
     save.cancel();
