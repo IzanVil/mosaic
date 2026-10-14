@@ -31,23 +31,15 @@
     scanPathsError,
     setScanPathEnabled,
   } from '../stores/scanPaths';
-  import { LANG_PREFERENCES, langPreference, systemLang, t } from '../i18n';
+  import { lang, LANG_PREFERENCES, langPreference, systemLang, t, type Key } from '../i18n';
   import { formatRelativeTime } from '../utils/format';
 
   let picking = $state(false);
 
   const APP_SECTIONS = [
-    {
-      kind: 'ide',
-      title: 'Editor',
-      empty: 'No se ha encontrado ningún editor reconocido en el PATH.',
-    },
-    {
-      kind: 'terminal',
-      title: 'Terminal',
-      empty: 'No se ha encontrado ningún emulador de terminal reconocido en el PATH.',
-    },
-  ] as const;
+    { kind: 'ide', title: 'comun.editor', empty: 'ajustes.sinEditor' },
+    { kind: 'terminal', title: 'comun.terminal', empty: 'ajustes.sinTerminal' },
+  ] as const satisfies readonly { kind: string; title: Key; empty: Key }[];
 
   /** Abre el selector nativo de carpetas y registra la ruta elegida. */
   async function pickFolder() {
@@ -62,15 +54,15 @@
     }
   }
 
-  /** Opciones del refresco de Git. `0` lo desactiva. */
-  const GIT_INTERVALS = [
-    { value: 0, label: 'Desactivado' },
-    { value: 1, label: 'Cada minuto' },
-    { value: 5, label: 'Cada 5 minutos' },
-    { value: 15, label: 'Cada 15 minutos' },
-    { value: 30, label: 'Cada 30 minutos' },
-    { value: 60, label: 'Cada hora' },
-  ] as const;
+  /** Opciones del refresco de Git, en minutos. `0` lo desactiva. */
+  const GIT_INTERVALS = [0, 1, 5, 15, 30, 60] as const;
+
+  function intervalLabel(minutes: number): string {
+    if (minutes === 0) return $t('ajustes.gitDesactivado');
+    if (minutes === 1) return $t('ajustes.gitCadaMinuto');
+    if (minutes === 60) return $t('ajustes.gitCadaHora');
+    return $t('ajustes.gitCadaMinutos', { n: minutes });
+  }
 
   onMount(() => {
     void loadAdvancedSettings();
@@ -117,15 +109,15 @@
 
     <header class="cabecera">
       <div>
-        <h2>Rutas de escaneo</h2>
+        <h2>{$t('ajustes.rutasTitulo')}</h2>
         <p class="explica">
-          Carpetas donde Mosaic busca proyectos, hasta cuatro niveles de profundidad.
+          {$t('ajustes.rutasTexto')}
         </p>
       </div>
 
       <button type="button" class="primario" onclick={pickFolder} disabled={picking}>
         <FolderPlus size={16} strokeWidth={1.75} />
-        Añadir carpeta
+        {$t('ajustes.anadirCarpeta')}
       </button>
     </header>
 
@@ -134,12 +126,12 @@
     {/if}
 
     {#if $loadingScanPaths && $scanPaths.length === 0}
-      <p class="cargando">Cargando rutas…</p>
+      <p class="cargando">{$t('ajustes.cargandoRutas')}</p>
     {:else if $scanPaths.length === 0}
       <EmptyState
-        title="Ninguna ruta configurada"
-        description="Elige la carpeta donde guardas tus proyectos para empezar."
-        actionLabel="Añadir carpeta"
+        title={$t('ajustes.sinRutasTitulo')}
+        description={$t('ajustes.sinRutasTexto')}
+        actionLabel={$t('ajustes.anadirCarpeta')}
         onAction={pickFolder}
       />
     {:else}
@@ -158,7 +150,7 @@
                   {scanPath.path}
                 </span>
                 <span class="cuando">
-                  Último escaneo: {formatRelativeTime(scanPath.last_scan_at)}
+                  {$t('ajustes.ultimoEscaneo', { cuando: formatRelativeTime(scanPath.last_scan_at, $lang) })}
                 </span>
               </span>
             </label>
@@ -167,8 +159,8 @@
               type="button"
               class="icono"
               onclick={() => removeScanPath(scanPath.id)}
-              title="Eliminar la ruta (los proyectos ya descubiertos se conservan)"
-              aria-label="Eliminar la ruta {scanPath.path}"
+              title={$t('ajustes.eliminarRuta')}
+              aria-label={$t('ajustes.eliminarRutaNombre', { ruta: scanPath.path })}
             >
               <Trash2 size={16} strokeWidth={1.75} />
             </button>
@@ -177,29 +169,28 @@
       </ul>
 
       <p class="nota">
-        Deshabilitar una ruta la excluye de los escaneos sin borrarla. Eliminarla no borra los
-        proyectos ya descubiertos: conservan sus etiquetas y notas.
+        {$t('ajustes.rutasNota')}
       </p>
     {/if}
 
     {#if $advancedSettingsError}
-      <p class="error" role="alert">No se pudieron leer los ajustes: {$advancedSettingsError}</p>
+      <p class="error" role="alert">{$t('ajustes.errorLeer', { error: $advancedSettingsError })}</p>
     {:else if $advancedSettings}
       {@const actual = $advancedSettings.current}
       {@const limites = $advancedSettings.limits}
 
       <section class="bloque" aria-labelledby="titulo-escaneo">
         <div>
-          <h2 id="titulo-escaneo">Escaneo</h2>
-          <p class="explica">Cómo recorre Mosaic tus carpetas. Cada cambio se guarda solo.</p>
+          <h2 id="titulo-escaneo">{$t('ajustes.escaneoTitulo')}</h2>
+          <p class="explica">{$t('ajustes.escaneoTexto')}</p>
         </div>
 
         <div class="ajustes-lista">
           <SettingRow
-            label="Profundidad"
+            label={$t('ajustes.profundidad')}
             controlId="ajuste-profundidad"
             field="max_depth"
-            effect={`Niveles por debajo de cada ruta, de ${limites.max_depth_min} a ${limites.max_depth_max}. Se aplica en el próximo escaneo.`}
+            effect={$t('ajustes.profundidadEfecto', { min: limites.max_depth_min, max: limites.max_depth_max })}
           >
             <input
               id="ajuste-profundidad"
@@ -213,10 +204,10 @@
           </SettingRow>
 
           <SettingRow
-            label="Tope de entradas"
+            label={$t('ajustes.tope')}
             controlId="ajuste-tope"
             field="max_entries_per_scan"
-            effect="Si una ruta tiene más, el escaneo se detiene y avisa. Se aplica en el próximo escaneo."
+            effect={$t('ajustes.topeEfecto')}
           >
             <input
               id="ajuste-tope"
@@ -231,10 +222,10 @@
           </SettingRow>
 
           <SettingRow
-            label="Escanear al arrancar"
+            label={$t('ajustes.arranque')}
             controlId="ajuste-arranque"
             field="scan_on_startup"
-            effect="Recorre las rutas ocho segundos después de abrir Mosaic. Se aplica la próxima vez que lo abras."
+            effect={$t('ajustes.arranqueEfecto')}
           >
             <input
               id="ajuste-arranque"
@@ -246,9 +237,9 @@
           </SettingRow>
 
           <SettingRow
-            label="Carpetas excluidas"
+            label={$t('ajustes.excluidas')}
             field="excluded_dirs"
-            effect="Nombres de carpeta que el escáner salta allí donde aparezcan. Se aplica en el próximo escaneo."
+            effect={$t('ajustes.excluidasEfecto')}
           >
             <ExcludedDirsEditor
               dirs={actual.excluded_dirs}
@@ -262,16 +253,16 @@
 
       <section class="bloque" aria-labelledby="titulo-git">
         <div>
-          <h2 id="titulo-git">Git</h2>
-          <p class="explica">Mosaic relee el estado de tus repositorios en segundo plano, sin red.</p>
+          <h2 id="titulo-git">{$t('app.git')}</h2>
+          <p class="explica">{$t('ajustes.gitTexto')}</p>
         </div>
 
         <div class="ajustes-lista">
           <SettingRow
-            label="Refresco automático"
+            label={$t('ajustes.refresco')}
             controlId="ajuste-git"
             field="git_refresh_interval_minutes"
-            effect="Se aplica en el acto: al cambiarlo, Mosaic relee Git y empieza a contar de nuevo."
+            effect={$t('ajustes.refrescoEfecto')}
           >
             <span class="desplegable">
               <select
@@ -280,13 +271,13 @@
                 onchange={(event) =>
                   void saveAdvancedField('git_refresh_interval_minutes', Number(event.currentTarget.value))}
               >
-                {#each GIT_INTERVALS as option (option.value)}
-                  <option value={option.value}>{option.label}</option>
+                {#each GIT_INTERVALS as minutes (minutes)}
+                  <option value={minutes}>{intervalLabel(minutes)}</option>
                 {/each}
-                {#if !GIT_INTERVALS.some((option) => option.value === actual.git_refresh_interval_minutes)}
+                {#if !GIT_INTERVALS.some((minutes) => minutes === actual.git_refresh_interval_minutes)}
                   <!-- Un valor guardado a mano que no está en la lista se enseña tal cual. -->
                   <option value={actual.git_refresh_interval_minutes}>
-                    Cada {actual.git_refresh_interval_minutes} minutos
+                    {intervalLabel(actual.git_refresh_interval_minutes)}
                   </option>
                 {/if}
               </select>
@@ -299,10 +290,9 @@
 
     <section class="bloque">
       <div>
-        <h2>Aplicaciones</h2>
+        <h2>{$t('ajustes.appsTitulo')}</h2>
         <p class="explica">
-          Con qué se abren los proyectos. Mosaic detecta lo que hay instalado; si no eliges nada,
-          usa el primero de la lista.
+          {$t('ajustes.appsTexto')}
         </p>
       </div>
 
@@ -315,17 +305,17 @@
         {@const selected = section.kind === 'ide' ? $preferredIde : $preferredTerminal}
 
         <label class="app">
-          <span class="etiqueta">{section.title}</span>
+          <span class="etiqueta">{$t(section.title)}</span>
 
           {#if available.length === 0}
-            <span class="explica">{section.empty}</span>
+            <span class="explica">{$t(section.empty)}</span>
           {:else}
             <span class="desplegable">
               <select
                 value={selected}
                 onchange={(event) => setPreferredApp(section.kind, event.currentTarget.value)}
               >
-                <option value="">Automático ({available[0]?.name})</option>
+                <option value="">{$t('ajustes.automatico', { nombre: available[0]?.name ?? '' })}</option>
                 {#each available as app (app.id)}
                   <option value={app.id}>{app.name}</option>
                 {/each}
@@ -337,7 +327,7 @@
       {/each}
 
       <p class="nota">
-        El explorador de archivos no se configura aquí: se usa el que tenga asociado el sistema.
+        {$t('ajustes.explorador')}
       </p>
     </section>
 

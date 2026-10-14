@@ -40,7 +40,7 @@
   async function rename(id: number, name: string, color: string, previous: string) {
     if (name.trim() === previous) return;
     if (name.trim() === '') {
-      tagsError.set('El nombre de la etiqueta no puede estar vacío');
+      tagsError.set($t('gestor.nombreVacio'));
       return;
     }
     await updateTag(id, name, color);
@@ -62,12 +62,12 @@
     use:dismissable={{ onDismiss: onClose, enabled: canDismiss }}
     role="dialog"
     aria-modal="true"
-    aria-label="Gestionar etiquetas"
+    aria-label={$t('lateral.gestionar')}
     class="modal"
   >
     <header>
-      <h2>Etiquetas</h2>
-      <button type="button" class="icono" onclick={onClose} aria-label="Cerrar">
+      <h2>{$t('lateral.etiquetas')}</h2>
+      <button type="button" class="icono" onclick={onClose} aria-label={$t('comun.cerrar')}>
         <X size={16} strokeWidth={1.75} />
       </button>
     </header>
@@ -78,8 +78,8 @@
           type="button"
           class="caja-color"
           onclick={() => (colorEditing = colorEditing === 0 ? null : 0)}
-          aria-label="Elegir el color de la etiqueta nueva"
-          title="Color"
+          aria-label={$t('gestor.colorNueva')}
+          title={$t('gestor.color')}
         >
           <span class="punto" style="background-color: {newColor};"></span>
         </button>
@@ -103,7 +103,7 @@
             </div>
             <label class="personalizado">
               <Palette size={14} strokeWidth={1.75} />
-              Personalizado
+              {$t('gestor.personalizado')}
               <input
                 type="color"
                 value={colorInputValue(newColor)}
@@ -126,7 +126,7 @@
         type="text"
         class="campo"
         maxlength="32"
-        placeholder="Nueva etiqueta…"
+        placeholder={$t('gestor.nueva')}
       />
 
       <button
@@ -136,7 +136,7 @@
         disabled={creating || newName.trim() === ''}
       >
         <Plus size={14} strokeWidth={1.75} />
-        Crear
+        {$t('gestor.crear')}
       </button>
     </div>
 
@@ -146,7 +146,7 @@
 
     <div class="lista">
       {#if $tags.length === 0}
-        <p class="vacio">Todavía no hay etiquetas. Crea la primera arriba.</p>
+        <p class="vacio">{$t('gestor.vacio')}</p>
       {:else}
         <ul>
           {#each $tags as tag (tag.id)}
@@ -157,8 +157,8 @@
                     type="button"
                     class="caja-color pequena"
                     onclick={() => (colorEditing = colorEditing === tag.id ? null : tag.id)}
-                    aria-label="Cambiar el color de {tag.name}"
-                    title="Cambiar el color"
+                    aria-label={$t('gestor.cambiarColorDe', { nombre: tag.name })}
+                    title={$t('gestor.cambiarColor')}
                   >
                     <span class="punto" style="background-color: {tag.color};"></span>
                   </button>
@@ -179,7 +179,7 @@
                       </div>
                       <label class="personalizado">
                         <Palette size={14} strokeWidth={1.75} />
-                        Personalizado
+                        {$t('gestor.personalizado')}
                         <input
                           type="color"
                           value={colorInputValue(tag.color)}
@@ -201,20 +201,19 @@
                   type="text"
                   class="nombre"
                   maxlength="32"
-                  aria-label="Nombre de la etiqueta {tag.name}"
+                  aria-label={$t('gestor.nombreDe', { nombre: tag.name })}
                 />
 
                 <span class="cuenta">
-                  {tag.project_count}
-                  {tag.project_count === 1 ? 'proyecto' : 'proyectos'}
+                  {$t('app.numProyectos', { n: tag.project_count })}
                 </span>
 
                 <button
                   type="button"
                   class="icono"
                   onclick={() => (confirmingId = tag.id)}
-                  aria-label="Borrar la etiqueta {tag.name}"
-                  title="Borrar la etiqueta"
+                  aria-label={$t('gestor.borrarDe', { nombre: tag.name })}
+                  title={$t('gestor.borrar')}
                 >
                   <Trash2 size={14} strokeWidth={1.75} />
                 </button>
@@ -224,17 +223,15 @@
                 <div class="confirmar">
                   <p>
                     {tag.project_count === 0
-                      ? 'Esta etiqueta no está asignada a ningún proyecto.'
-                      : `Esto quitará la etiqueta de ${tag.project_count} ${
-                          tag.project_count === 1 ? 'proyecto' : 'proyectos'
-                        }. No se borran los proyectos.`}
+                      ? $t('gestor.sinAsignar')
+                      : $t('gestor.quitaraDe', { n: tag.project_count })}
                   </p>
                   <div class="botones">
                     <button type="button" class="secundario" onclick={() => (confirmingId = null)}>
-                      Cancelar
+                      {$t('comun.cancelar')}
                     </button>
                     <button type="button" class="peligro" onclick={() => confirmDelete(tag.id)}>
-                      Borrar
+                      {$t('gestor.confirmarBorrar')}
                     </button>
                   </div>
                 </div>

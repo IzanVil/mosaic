@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Section } from '../stores/projectDetail';
   import type { CommitInfo } from '../types';
+  import { lang, t } from '../i18n';
   import { formatRelativeTime } from '../utils/format';
 
   interface Props {
@@ -14,11 +15,11 @@
 </script>
 
 {#if section.status === 'loading'}
-  <p class="nota">Leyendo el historial…</p>
+  <p class="nota">{$t('historial.leyendo')}</p>
 {:else if section.status === 'error'}
-  <p class="nota error">No se pudo leer el historial: {section.message}</p>
+  <p class="nota error">{$t('historial.error', { error: section.message })}</p>
 {:else if section.data.length === 0}
-  <p class="nota">{isRepo ? 'Esta rama todavía no tiene commits.' : 'No es un repositorio Git.'}</p>
+  <p class="nota">{isRepo ? $t('historial.vacio') : $t('comun.noRepo')}</p>
 {:else}
   <ol class="commits">
     {#each section.data as commit (commit.sha)}
@@ -27,7 +28,7 @@
         <span class="meta">
           <code title={commit.sha}>{commit.short_sha}</code>
           <span class="autor">{commit.author_name}</span>
-          <span class="cuando">{formatRelativeTime(commit.committed_at)}</span>
+          <span class="cuando">{formatRelativeTime(commit.committed_at, $lang)}</span>
         </span>
       </li>
     {/each}

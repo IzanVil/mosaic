@@ -3,8 +3,7 @@
 import { writable } from 'svelte/store';
 
 import { applyImport, exportBackup, previewImport } from '../api/backup';
-import type { ImportPlan } from '../types';
-import { describeExport } from '../utils/backup';
+import type { ExportSummary, ImportPlan } from '../types';
 import { loadAdvancedSettings } from './advancedSettings';
 import { loadApps } from './apps';
 import { loadProjects } from './projects';
@@ -15,7 +14,7 @@ import { loadTags } from './tags';
 export type BackupState =
   | { step: 'idle' }
   | { step: 'busy' }
-  | { step: 'exported'; message: string }
+  | { step: 'exported'; summary: ExportSummary; includeWork: boolean }
   | { step: 'preview'; path: string; plan: ImportPlan }
   | { step: 'imported'; plan: ImportPlan }
   | { step: 'error'; message: string };
@@ -28,7 +27,7 @@ export async function exportTo(path: string, includeWork: boolean): Promise<void
   backupState.set({ step: 'busy' });
   try {
     const summary = await exportBackup(path, includeWork);
-    backupState.set({ step: 'exported', message: describeExport(summary, includeWork) });
+    backupState.set({ step: 'exported', summary, includeWork });
   } catch (error) {
     backupState.set({ step: 'error', message: String(error) });
   }

@@ -9,20 +9,21 @@
     exportTo,
     previewFrom,
   } from '../stores/backup';
-  import { backupFileName, describePlan } from '../utils/backup';
+  import { lang, t, tNow } from '../i18n';
+  import { backupFileName, describeExport, describePlan } from '../utils/backup';
   import { formatRelativeTime } from '../utils/format';
 
-  const FILTERS = [{ name: 'Copia de Mosaic', extensions: ['json'] }];
+  const filters = () => [{ name: tNow('copia.filtro'), extensions: ['json'] }];
 
   let includeWork = $state(true);
 
   async function pickExport() {
-    const path = await save({ defaultPath: backupFileName(new Date()), filters: FILTERS });
+    const path = await save({ defaultPath: backupFileName(new Date()), filters: filters() });
     if (path) await exportTo(path, includeWork);
   }
 
   async function pickImport() {
-    const path = await open({ multiple: false, directory: false, filters: FILTERS });
+    const path = await open({ multiple: false, directory: false, filters: filters() });
     if (typeof path === 'string') await previewFrom(path);
   }
 
@@ -31,40 +32,39 @@
 
 <section class="bloque" aria-labelledby="titulo-copia">
   <div>
-    <h2 id="titulo-copia">Copia de seguridad</h2>
+    <h2 id="titulo-copia">{$t('copia.titulo')}</h2>
     <p class="explica">
-      Guarda tus ajustes en un fichero para llevarlos a otro equipo o recuperarlos. Importar
-      solo añade: nunca borra nada de lo que ya tienes.
+      {$t('copia.texto')}
     </p>
   </div>
 
   <label class="casilla">
     <input type="checkbox" bind:checked={includeWork} />
-    Incluir etiquetas y notas
+    {$t('copia.incluir')}
   </label>
 
   <div class="acciones">
     <button type="button" class="boton" onclick={pickExport} disabled={busy}>
       <Download size={16} strokeWidth={1.75} />
-      Exportar…
+      {$t('copia.exportar')}
     </button>
     <button type="button" class="boton" onclick={pickImport} disabled={busy}>
       <Upload size={16} strokeWidth={1.75} />
-      Importar…
+      {$t('copia.importar')}
     </button>
   </div>
 
   {#if $backupState.step === 'exported'}
     <p class="aviso exito" role="status">
-      {$backupState.message}
-      <button type="button" class="cerrar" onclick={dismissBackup} aria-label="Cerrar">
+      {describeExport($backupState.summary, $backupState.includeWork, $lang)}
+      <button type="button" class="cerrar" onclick={dismissBackup} aria-label={$t('comun.cerrar')}>
         <X size={14} strokeWidth={1.75} />
       </button>
     </p>
   {:else if $backupState.step === 'error'}
     <p class="aviso fallo" role="alert">
-      No se pudo: {$backupState.message}
-      <button type="button" class="cerrar" onclick={dismissBackup} aria-label="Cerrar">
+      {$t('copia.error', { error: $backupState.message })}
+      <button type="button" class="cerrar" onclick={dismissBackup} aria-label={$t('comun.cerrar')}>
         <X size={14} strokeWidth={1.75} />
       </button>
     </p>
@@ -73,25 +73,27 @@
     <div class="resumen" role={state.step === 'imported' ? 'status' : undefined}>
       <p class="resumen-titulo">
         {#if state.step === 'preview'}
-          Esto es lo que hará importar la copia de {formatRelativeTime(state.plan.exported_at)}
-          (Mosaic {state.plan.app_version}):
+          {$t('copia.previa', {
+            cuando: formatRelativeTime(state.plan.exported_at, $lang),
+            version: state.plan.app_version,
+          })}
         {:else}
-          Copia importada.
+          {$t('copia.importada')}
         {/if}
       </p>
       <ul>
-        {#each describePlan(state.plan) as line, index (index)}
+        {#each describePlan(state.plan, $lang) as line, index (index)}
           <li class={line.tone}>{line.text}</li>
         {/each}
       </ul>
       <div class="acciones">
         {#if state.step === 'preview'}
           <button type="button" class="primario" onclick={() => confirmImport(state.path)}>
-            Importar
+            {$t('copia.confirmar')}
           </button>
-          <button type="button" class="boton" onclick={dismissBackup}>Cancelar</button>
+          <button type="button" class="boton" onclick={dismissBackup}>{$t('comun.cancelar')}</button>
         {:else}
-          <button type="button" class="boton" onclick={dismissBackup}>Cerrar</button>
+          <button type="button" class="boton" onclick={dismissBackup}>{$t('comun.cerrar')}</button>
         {/if}
       </div>
     </div>

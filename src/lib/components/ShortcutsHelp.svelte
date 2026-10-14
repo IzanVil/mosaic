@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Keyboard, X } from '@lucide/svelte';
 
+  import { t } from '../i18n';
   import { dismissable } from '../utils/dismissable';
   import type { ShortcutInfo } from '../utils/shortcuts';
 
@@ -23,8 +24,8 @@
   >
     <header>
       <Keyboard size={18} strokeWidth={1.75} />
-      <h2 id="titulo-atajos">Atajos de teclado</h2>
-      <button type="button" class="cerrar" onclick={onClose} aria-label="Cerrar">
+      <h2 id="titulo-atajos">{$t('atajos.titulo')}</h2>
+      <button type="button" class="cerrar" onclick={onClose} aria-label={$t('comun.cerrar')}>
         <X size={16} strokeWidth={1.75} />
       </button>
     </header>
@@ -32,7 +33,7 @@
       {#each shortcuts as shortcut (shortcut.keys)}
         <div>
           <dt><kbd>{shortcut.keys}</kbd></dt>
-          <dd>{shortcut.description}</dd>
+          <dd>{$t(shortcut.description)}</dd>
         </div>
       {/each}
     </dl>

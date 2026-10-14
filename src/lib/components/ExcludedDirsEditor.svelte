@@ -2,6 +2,8 @@
   import { Plus, RotateCcw, X } from '@lucide/svelte';
   import { onDestroy } from 'svelte';
 
+  import { t } from '../i18n';
+
   interface Props {
     /** Carpetas excluidas guardadas. */
     dirs: string[];
@@ -30,10 +32,10 @@
    * sin esperar al error. El backend vuelve a comprobarlo de todos modos.
    */
   function problem(name: string): string | null {
-    if (name === '') return 'Escribe el nombre de una carpeta.';
-    if (name.includes('/') || name.includes('\\')) return 'Es un nombre de carpeta, sin barras.';
-    if (dirs.includes(name)) return `«${name}» ya está en la lista.`;
-    if (dirs.length >= max) return `No caben más de ${max}.`;
+    if (name === '') return $t('excluidas.escribeNombre');
+    if (name.includes('/') || name.includes('\\')) return $t('excluidas.sinBarras');
+    if (dirs.includes(name)) return $t('excluidas.yaEsta', { nombre: name });
+    if (dirs.length >= max) return $t('excluidas.noCaben', { n: max });
     return null;
   }
 
@@ -63,13 +65,13 @@
 
 <div class="editor">
   {#if dirs.length === 0}
-    <p class="vacio">Ninguna: el escáner lo recorre todo, incluido <code>node_modules</code>.</p>
+    <p class="vacio">{$t('excluidas.ninguna')} <code>node_modules</code>.</p>
   {:else}
-    <ul class="chips" aria-label="Carpetas excluidas">
+    <ul class="chips" aria-label={$t('ajustes.excluidas')}>
       {#each dirs as dir (dir)}
         <li>
           <code>{dir}</code>
-          <button type="button" onclick={() => remove(dir)} aria-label="Dejar de excluir {dir}" title="Dejar de excluir {dir}">
+          <button type="button" onclick={() => remove(dir)} aria-label={$t('excluidas.dejar', { nombre: dir })} title={$t('excluidas.dejar', { nombre: dir })}>
             <X size={12} strokeWidth={2} />
           </button>
         </li>
@@ -88,17 +90,17 @@
           void add();
         }
       }}
-      placeholder="Nombre de carpeta, por ejemplo vendor"
-      aria-label="Carpeta que excluir"
+      placeholder={$t('excluidas.placeholder')}
+      aria-label={$t('excluidas.campo')}
       spellcheck="false"
       autocomplete="off"
     />
     <button type="button" class="boton" onclick={add}>
-      <Plus size={14} strokeWidth={1.75} /> Añadir
+      <Plus size={14} strokeWidth={1.75} /> {$t('excluidas.anadir')}
     </button>
     <button type="button" class="boton" class:aviso={confirmingRestore} onclick={restore} disabled={isDefault}>
       <RotateCcw size={14} strokeWidth={1.75} />
-      {confirmingRestore ? 'Pulsa otra vez: se quitan tus cambios' : 'Restaurar las predeterminadas'}
+      {confirmingRestore ? $t('excluidas.confirmar') : $t('excluidas.restaurar')}
     </button>
   </div>
   {#if localError}

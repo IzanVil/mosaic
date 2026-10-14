@@ -47,7 +47,7 @@ beforeEach(() => {
 
 describe('describePlan', () => {
   it('dice que no cambia nada si no hay nada que importar', () => {
-    expect(describePlan(plan())).toEqual([
+    expect(describePlan(plan(), 'es')).toEqual([
       { tone: 'note', text: 'No cambia nada: ya tienes todo lo que trae esta copia.' },
     ]);
   });
@@ -61,6 +61,7 @@ describe('describePlan', () => {
         notes_conflicts: ['api'],
         scan_paths_missing: ['/a', '/b'],
       }),
+      'es',
     );
     expect(lines.map((l) => l.text)).toEqual([
       'Ajustes: cambia profundidad, editor.',
@@ -73,30 +74,64 @@ describe('describePlan', () => {
   });
 
   it('avisa de que la copia no trae trabajo', () => {
-    const lines = describePlan(plan({ has_work: false, scan_paths_added: 1 }));
+    const lines = describePlan(plan({ has_work: false, scan_paths_added: 1 }), 'es');
     expect(lines.at(-1)?.text).toBe('La copia no trae etiquetas ni notas.');
+  });
+
+  it('en inglés dice lo mismo, con sus plurales', () => {
+    const lines = describePlan(
+      plan({
+        settings_changed: ['max_depth', 'preferred_ide'],
+        tags_added: 1,
+        notes_conflicts: ['api', 'web'],
+        scan_paths_missing: ['/a'],
+        tags_existing: 2,
+      }),
+      'en',
+    );
+    expect(lines.map((l) => l.text)).toEqual([
+      'Settings: changes depth, editor.',
+      'Creates 1 tag.',
+      'api, web: already have different notes. Yours are kept.',
+      "1 folder doesn't exist on this computer and is skipped: /a.",
+      '2 tags already existed and keep their color.',
+    ]);
+  });
+
+  it('un ajuste que no conoce se enseña por su nombre', () => {
+    expect(describePlan(plan({ settings_changed: ['nuevo_ajuste'] }), 'es')[0]?.text).toBe(
+      'Ajustes: cambia nuevo_ajuste.',
+    );
   });
 });
 
 describe('textos de exportar', () => {
   it('propone un nombre con la fecha', () => {
-    expect(backupFileName(new Date(2026, 9, 7))).toBe('mosaic-copia-2026-10-07.json');
+    expect(backupFileName(new Date(2026, 9, 7), 'es')).toBe('mosaic-copia-2026-10-07.json');
+    expect(backupFileName(new Date(2026, 9, 7), 'en')).toBe('mosaic-backup-2026-10-07.json');
   });
 
   it('no menciona etiquetas si no se incluyeron', () => {
-    expect(describeExport({ scan_paths: 1, tags: 0, projects: 0 }, false)).toBe(
+    expect(describeExport({ scan_paths: 1, tags: 0, projects: 0 }, false, 'es')).toBe(
       'Copia guardada: ajustes y 1 ruta.',
+    );
+    expect(describeExport({ scan_paths: 1, tags: 0, projects: 0 }, false, 'en')).toBe(
+      'Backup saved: settings and 1 folder.',
     );
   });
 });
 
 describe('store de la copia', () => {
-  it('exportar deja el resumen a la vista', async () => {
+  it('exportar deja el resumen a la vista, sin escribirlo todavía en un idioma', async () => {
     await exportTo('/tmp/c.json', true);
-    expect(get(backupState)).toEqual({
-      step: 'exported',
-      message: 'Copia guardada: ajustes, 2 rutas, 3 etiquetas y 1 proyecto con etiquetas, notas o fijados.',
-    });
+    const summary = { scan_paths: 2, tags: 3, projects: 1 };
+    expect(get(backupState)).toEqual({ step: 'exported', summary, includeWork: true });
+    expect(describeExport(summary, true, 'es')).toBe(
+      'Copia guardada: ajustes, 2 rutas, 3 etiquetas y 1 proyecto con etiquetas, notas o fijados.',
+    );
+    expect(describeExport(summary, true, 'en')).toBe(
+      'Backup saved: settings, 2 folders, 3 tags and 1 project with tags, notes or pins.',
+    );
   });
 
   it('previsualizar no importa', async () => {

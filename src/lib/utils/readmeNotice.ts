@@ -1,10 +1,9 @@
 /** Texto del aviso de lo que un README tiene y Mosaic no muestra. */
 
-import type { ReadmePreview } from "../types";
+import { get } from "svelte/store";
 
-function count(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
-}
+import { lang, translate, type Lang } from "../i18n";
+import type { ReadmePreview } from "../types";
 
 /**
  * Qué se ha quedado fuera, dicho con números, o `null` si no falta nada. Si el
@@ -17,25 +16,19 @@ export function omittedText(
     ReadmePreview,
     "images_omitted" | "badges_omitted" | "media_omitted"
   >,
+  language: Lang = get(lang),
 ): string | null {
   const parts: string[] = [];
   if (readme.images_omitted > 0)
-    parts.push(count(readme.images_omitted, "imagen", "imágenes"));
+    parts.push(translate(language, "readme.imagenes", { n: readme.images_omitted }));
   if (readme.badges_omitted > 0)
-    parts.push(count(readme.badges_omitted, "insignia", "insignias"));
-  if (readme.media_omitted > 0) {
-    parts.push(
-      count(
-        readme.media_omitted,
-        "vídeo o elemento incrustado",
-        "vídeos o elementos incrustados",
-      ),
-    );
-  }
+    parts.push(translate(language, "readme.insignias", { n: readme.badges_omitted }));
+  if (readme.media_omitted > 0)
+    parts.push(translate(language, "readme.medios", { n: readme.media_omitted }));
   if (parts.length === 0) return null;
   const list =
     parts.length === 1
       ? parts[0]
-      : `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}`;
-  return `Este README tiene ${list} que Mosaic no muestra.`;
+      : `${parts.slice(0, -1).join(", ")} ${translate(language, "comun.y")} ${parts.at(-1)}`;
+  return translate(language, "readme.omitido", { lista: list ?? "" });
 }

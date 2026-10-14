@@ -160,7 +160,7 @@
         {/each}
 
         {#if suggestions.length === 0 && !canCreate}
-          <li class="vacio">Todavía no hay etiquetas. Escribe un nombre para crear la primera.</li>
+          <li class="vacio">{$t('selector.vacio')}</li>
         {/if}
       </ul>
 

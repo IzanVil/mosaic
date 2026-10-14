@@ -19,7 +19,7 @@ describe('diccionarios', () => {
   it('ningún texto está vacío', () => {
     for (const dict of [es, en]) {
       for (const [clave, valor] of Object.entries(dict)) {
-        const texto = typeof valor === 'function' ? (valor as (p: unknown) => string)({ n: 2, nombre: 'x', cuando: 'x', visibles: 1, total: 2, actual: 'a', siguiente: 'b', lenguaje: 'x', estado: 'x', duracion: '1 s' }) : valor;
+        const texto = typeof valor === 'function' ? (valor as (p: unknown) => string)({ n: 2, nombre: 'x', cuando: 'x', visibles: 1, total: 2, actual: 'a', siguiente: 'b', lenguaje: 'x', estado: 'x', duracion: '1 s', ruta: 'x', error: 'x', min: 1, max: 2, rutas: 'x', etiquetas: 'x', proyectos: 'x', nombres: 'x', version: 'x', sitio: 'x', lista: 'x', texto: 'x' }) : valor;
         expect(texto.trim(), clave).not.toBe('');
       }
     }

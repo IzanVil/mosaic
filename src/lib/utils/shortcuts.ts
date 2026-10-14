@@ -6,6 +6,8 @@
  * decide qué hacer con cada acción.
  */
 
+import type { Key } from '../i18n';
+
 /** Lo que puede pedir un atajo. */
 export type ShortcutAction = 'palette' | 'refresh-git' | 'settings' | 'focus-search' | 'help';
 
@@ -24,7 +26,8 @@ export interface KeyPress {
 export interface ShortcutInfo {
   /** Teclas, ya con la tecla de mando de cada sistema. */
   keys: string;
-  description: string;
+  /** Clave del texto que lo explica. */
+  description: Extract<Key, `atajos.${string}`>;
 }
 
 /** En macOS el modificador es Cmd; en el resto, Ctrl. */
@@ -75,11 +78,11 @@ export function matchShortcut(press: KeyPress, mac: boolean): ShortcutAction | n
 export function shortcutList(mac: boolean): ShortcutInfo[] {
   const mod = mac ? '⌘' : 'Ctrl+';
   return [
-    { keys: `${mod}K`, description: 'Abrir la paleta de comandos' },
-    { keys: `${mod}R`, description: 'Releer el estado de Git' },
-    { keys: `${mod},`, description: 'Ir a Ajustes' },
-    { keys: '/', description: 'Buscar en el tablero' },
-    { keys: '?', description: 'Ver esta lista de atajos' },
-    { keys: 'Esc', description: 'Cerrar lo que esté abierto, o volver del detalle' },
+    { keys: `${mod}K`, description: 'atajos.paleta' },
+    { keys: `${mod}R`, description: 'atajos.git' },
+    { keys: `${mod},`, description: 'atajos.ajustes' },
+    { keys: '/', description: 'atajos.buscar' },
+    { keys: '?', description: 'atajos.ayuda' },
+    { keys: 'Esc', description: 'atajos.esc' },
   ];
 }

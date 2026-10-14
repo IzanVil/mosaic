@@ -2,6 +2,7 @@
   import { Check, LoaderCircle, TriangleAlert } from '@lucide/svelte';
   import type { Snippet } from 'svelte';
 
+  import { t } from '../i18n';
   import { fieldStatus, type AdvancedField } from '../stores/advancedSettings';
 
   interface Props {
@@ -28,9 +29,9 @@
     {@render children()}
     <span class="estado" aria-live="polite">
       {#if status?.state === 'saving'}
-        <LoaderCircle size={14} strokeWidth={1.75} class="girando" /> Guardando…
+        <LoaderCircle size={14} strokeWidth={1.75} class="girando" /> {$t('comun.guardando')}
       {:else if status?.state === 'saved'}
-        <Check size={14} strokeWidth={1.75} /> Guardado
+        <Check size={14} strokeWidth={1.75} /> {$t('comun.guardado')}
       {/if}
     </span>
   </div>

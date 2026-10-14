@@ -17,6 +17,7 @@ import { get, writable } from 'svelte/store';
 
 import { getProjectBranches, getProjectHistory } from '../api/git';
 import { getProjectReadme, setProjectNotes } from '../api/projects';
+import { tNow } from '../i18n';
 import type { Branches, CommitInfo, ReadmePreview } from '../types';
 import { debounce } from '../utils/debounce';
 import { projectsError, setProjectNotesLocally } from './projects';
@@ -151,7 +152,9 @@ export async function closeDetail(): Promise<void> {
   if (get(notesStatus) === 'error') {
     // La vista ya no está para enseñarlo: si no se dice aquí, las notas se
     // perderían en silencio. Sale en el aviso de errores del tablero.
-    projectsError.set(`No se pudieron guardar las notas: ${get(notesError) ?? 'error desconocido'}`);
+    projectsError.set(
+      tNow('notas.errorAlSalir', { error: get(notesError) ?? tNow('notas.errorDesconocido') }),
+    );
   }
   currentId = null;
 }

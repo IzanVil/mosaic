@@ -20,6 +20,7 @@
   import { branches, closeDetail, history, openDetail, readme } from '../stores/projectDetail';
   import { loadingProjects, projects } from '../stores/projects';
   import { unassignTagFromProject } from '../stores/tags';
+  import { lang, t } from '../i18n';
   import { formatRelativeTime } from '../utils/format';
 
   interface Props {
@@ -41,9 +42,9 @@
   );
 
   const ACTIONS = [
-    { kind: 'ide', icon: Code, label: 'Editor' },
-    { kind: 'terminal', icon: SquareTerminal, label: 'Terminal' },
-    { kind: 'file_manager', icon: FolderOpen, label: 'Carpeta' },
+    { kind: 'ide', icon: Code, label: 'comun.editor' },
+    { kind: 'terminal', icon: SquareTerminal, label: 'comun.terminal' },
+    { kind: 'file_manager', icon: FolderOpen, label: 'detalle.carpeta' },
   ] as const;
 
   /**
@@ -87,21 +88,21 @@
 
 {#if !project && ($loadingProjects || $projects.length === 0)}
   <!-- Al arrancar la lista aún no ha llegado: decir «no está» sería falso. -->
-  <section class="perdido"><p>Cargando el proyecto…</p></section>
+  <section class="perdido"><p>{$t('detalle.cargando')}</p></section>
 {:else if !project}
   <section class="perdido">
-    <p>Este proyecto ya no está en la lista.</p>
+    <p>{$t('detalle.yaNoEsta')}</p>
     <button type="button" class="volver" onclick={back}>
-      <ArrowLeft size={16} strokeWidth={1.75} /> Volver a proyectos
+      <ArrowLeft size={16} strokeWidth={1.75} /> {$t('detalle.volver')}
     </button>
   </section>
 {:else}
   <section class="detalle" aria-labelledby="titulo-proyecto">
     <header class="cabecera">
       <div class="envoltura">
-        <button type="button" class="volver" onclick={back} title="Volver a proyectos (Esc)">
+        <button type="button" class="volver" onclick={back} title={$t('detalle.volverTitulo')}>
           <ArrowLeft size={16} strokeWidth={1.75} />
-          Proyectos
+          {$t('app.proyectos')}
           <kbd>Esc</kbd>
         </button>
 
@@ -115,32 +116,32 @@
             <p class="estado">
               {#if project.primary_language}<span>{project.primary_language}</span>{/if}
               {#if branchLabel}
-                <span class="rama" title={status?.branch === null ? 'HEAD separado' : undefined}>
+                <span class="rama" title={status?.branch === null ? $t('tarjeta.headSeparado') : undefined}>
                   {branchLabel}
                 </span>
-                {#if status?.is_dirty}<span class="sucio">Cambios sin commitear</span>{/if}
-                {#if status?.ahead}<span class="delta" title="Commits por delante">↑{status.ahead}</span>{/if}
-                {#if status?.behind}<span class="delta" title="Commits por detrás">↓{status.behind}</span>{/if}
+                {#if status?.is_dirty}<span class="sucio">{$t('detalle.sucio')}</span>{/if}
+                {#if status?.ahead}<span class="delta" title={$t('tarjeta.porDelante')}>↑{status.ahead}</span>{/if}
+                {#if status?.behind}<span class="delta" title={$t('tarjeta.porDetras')}>↓{status.behind}</span>{/if}
               {/if}
               <span>
                 {project.last_opened_at === null
-                  ? 'Sin abrir desde Mosaic'
-                  : `Abierto ${formatRelativeTime(project.last_opened_at)}`}
+                  ? $t('detalle.sinAbrir')
+                  : $t('tarjeta.abierto', { cuando: formatRelativeTime(project.last_opened_at, $lang) })}
               </span>
             </p>
           </div>
 
-          <div class="acciones" role="group" aria-label="Abrir el proyecto">
+          <div class="acciones" role="group" aria-label={$t('detalle.abrir')}>
             {#each ACTIONS as action (action.kind)}
               <button
                 type="button"
                 class="accion"
                 onclick={() => openProject(action.kind, project.id)}
                 disabled={project.missing}
-                title={project.missing ? 'La carpeta ya no está en disco' : undefined}
+                title={project.missing ? $t('detalle.carpetaAusente') : undefined}
               >
                 <action.icon size={16} strokeWidth={1.75} />
-                {action.label}
+                {$t(action.label)}
               </button>
             {/each}
           </div>
@@ -156,7 +157,7 @@
         {#if project.missing}
           <p class="ausente" role="status">
             <TriangleAlert size={16} strokeWidth={1.75} />
-            El último escaneo no encontró esta carpeta. Sus etiquetas y notas se conservan por si vuelve.
+            {$t('detalle.ausente')}
           </p>
         {/if}
       </div>
@@ -174,18 +175,18 @@
 
       <aside class="lateral">
         <section aria-labelledby="titulo-notas">
-          <h2 id="titulo-notas">Notas</h2>
+          <h2 id="titulo-notas">{$t('detalle.notas')}</h2>
           <NotesEditor />
         </section>
 
         <!-- Las ramas son pocas y cortas; van antes que la lista larga de commits. -->
         <section aria-labelledby="titulo-ramas">
-          <h2 id="titulo-ramas">Ramas</h2>
+          <h2 id="titulo-ramas">{$t('detalle.ramas')}</h2>
           <BranchList section={$branches} isRepo={project.is_git_repo} />
         </section>
 
         <section aria-labelledby="titulo-historial">
-          <h2 id="titulo-historial">Últimos commits</h2>
+          <h2 id="titulo-historial">{$t('detalle.commits')}</h2>
           <CommitList section={$history} isRepo={project.is_git_repo} />
         </section>
       </aside>

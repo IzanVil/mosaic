@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '../i18n';
   import {
     editNotes,
     flushNotes,
@@ -11,10 +12,10 @@
   const MAX_CHARS = 20_000;
 
   const STATUS_TEXT = {
-    saved: 'Guardado',
-    pending: 'Sin guardar',
-    saving: 'Guardando…',
-    error: 'No se pudo guardar',
+    saved: 'comun.guardado',
+    pending: 'notas.sinGuardar',
+    saving: 'comun.guardando',
+    error: 'notas.fallo',
   } as const;
 </script>
 
@@ -25,14 +26,14 @@
     onblur={() => void flushNotes()}
     maxlength={MAX_CHARS}
     rows="6"
-    placeholder="Apuntes para ti: lo que falta, dónde lo dejaste, a quién pertenece…"
-    aria-label="Notas del proyecto"
+    placeholder={$t('notas.placeholder')}
+    aria-label={$t('notas.etiqueta')}
     aria-describedby="estado-notas"
   ></textarea>
 
   <!-- Sin botón de guardar: el estado dice siempre qué ha pasado con lo escrito. -->
   <p id="estado-notas" class="estado" class:error={$notesStatus === 'error'} aria-live="polite">
-    {STATUS_TEXT[$notesStatus]}{#if $notesStatus === 'error' && $notesError}: {$notesError}{/if}
+    {$t(STATUS_TEXT[$notesStatus])}{#if $notesStatus === 'error' && $notesError}: {$notesError}{/if}
   </p>
 </div>
 

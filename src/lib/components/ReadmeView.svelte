@@ -3,6 +3,7 @@
   import { onDestroy } from 'svelte';
 
   import { openExternal } from '../api/system';
+  import { lang, t, tNow } from '../i18n';
   import { openProject } from '../stores/apps';
   import type { Section } from '../stores/projectDetail';
   import type { ReadmePreview } from '../types';
@@ -27,8 +28,8 @@
   function openElsewhere() {
     if (web) {
       openExternal(web.url).then(
-        () => say('Abierto en el navegador.'),
-        (error: unknown) => say(`No se pudo abrir: ${String(error)}`),
+        () => say(tNow('readme.abierto')),
+        (error: unknown) => say(tNow('readme.noAbrir', { error: String(error) })),
       );
     } else {
       void openProject('ide', projectId);
@@ -61,26 +62,26 @@
     const href = link.getAttribute('href') ?? '';
     if (/^https?:\/\//i.test(href)) {
       openExternal(href).then(
-        () => say('Abierto en el navegador.'),
-        (error: unknown) => say(`No se pudo abrir el enlace: ${String(error)}`),
+        () => say(tNow('readme.abierto')),
+        (error: unknown) => say(tNow('readme.noAbrirEnlace', { error: String(error) })),
       );
     } else {
-      say('Este enlace apunta dentro del repositorio. Mosaic solo abre enlaces web.');
+      say(tNow('readme.enlaceInterno'));
     }
   }
 </script>
 
 {#if section.status === 'loading'}
-  <p class="nota">Leyendo el README…</p>
+  <p class="nota">{$t('readme.leyendo')}</p>
 {:else if section.status === 'error'}
-  <p class="nota error">No se pudo leer el README: {section.message}</p>
+  <p class="nota error">{$t('readme.error', { error: section.message })}</p>
 {:else if section.data === null}
   <div class="vacio">
     <FileText size={24} strokeWidth={1.5} />
     <p>
       {missing
-        ? 'La carpeta ya no está en disco, así que no hay README que leer.'
-        : 'Este proyecto no tiene README en su carpeta raíz.'}
+        ? $t('readme.carpetaAusente')
+        : $t('readme.sinReadme')}
     </p>
   </div>
 {:else}
@@ -88,20 +89,22 @@
     <code>{section.data.file_name}</code>
     {#if notice}<span class="aviso" role="status">{notice}</span>{/if}
   </div>
-  {@const omitted = omittedText(section.data)}
+  {@const omitted = omittedText(section.data, $lang)}
   {#if omitted}
     <div class="omitido" role="note">
       <ImageOff size={16} strokeWidth={1.75} />
       <span>{omitted}</span>
       <button type="button" onclick={openElsewhere}>
-        {web ? `Abrir en ${web.host ?? 'el navegador'}` : 'Abrir en el editor'}
+        {web
+          ? $t('readme.abrirEn', { sitio: web.host ?? $t('readme.navegador') })
+          : $t('tarjeta.abrirEditor')}
       </button>
     </div>
   {/if}
   {#if section.data.truncated}
     <p class="recortado">
       <TriangleAlert size={14} strokeWidth={1.75} />
-      El fichero pasa de 512 KB y solo se muestra el principio.
+      {$t('readme.recortado')}
     </p>
   {/if}
   <!-- El clic solo intercepta los enlaces de dentro, que ya son focusables y se activan con Enter. -->

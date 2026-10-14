@@ -2,6 +2,7 @@
   import { ArrowRight, FolderGit2, Search } from '@lucide/svelte';
   import { tick } from 'svelte';
 
+  import { t } from '../i18n';
   import { openProject } from '../stores/apps';
   import { openProjectDetail } from '../stores/navigation';
   import { projects, rankProjects } from '../stores/projects';
@@ -81,7 +82,7 @@
     class="paleta"
     role="dialog"
     aria-modal="true"
-    aria-label="Paleta de comandos"
+    aria-label={$t('comandos.titulo')}
     use:dismissable={{ onDismiss: onClose }}
   >
     <div class="buscar">
@@ -92,27 +93,27 @@
         oninput={onInput}
         onkeydown={onKeydown}
         type="text"
-        placeholder="Busca un proyecto o una acción…"
+        placeholder={$t('comandos.placeholder')}
         spellcheck="false"
         autocomplete="off"
         role="combobox"
         aria-expanded="true"
         aria-controls="paleta-resultados"
         aria-activedescendant={items.length > 0 ? `paleta-${selected}` : undefined}
-        aria-label="Buscar en la paleta"
+        aria-label={$t('comandos.buscar')}
       />
     </div>
 
     {#if items.length === 0}
-      <p class="vacio">Nada coincide con «{query}».</p>
+      <p class="vacio">{$t('comandos.nada', { texto: query })}</p>
     {:else}
-      <ul bind:this={list} id="paleta-resultados" role="listbox" aria-label="Resultados">
+      <ul bind:this={list} id="paleta-resultados" role="listbox" aria-label={$t('comandos.resultados')}>
         {#each items as item, i (item.kind === 'action' ? `a-${item.action.id}` : `p-${item.project.id}`)}
           {#if i === 0 && item.kind === 'action'}
-            <li class="grupo" role="presentation">Acciones</li>
+            <li class="grupo" role="presentation">{$t('app.acciones')}</li>
           {/if}
           {#if i === firstProject}
-            <li class="grupo" role="presentation">{query.trim() === '' ? 'Abiertos hace poco' : 'Proyectos'}</li>
+            <li class="grupo" role="presentation">{query.trim() === '' ? $t('comandos.recientes') : $t('app.proyectos')}</li>
           {/if}
           <!-- El teclado lo lleva el campo de búsqueda (combobox con
                aria-activedescendant); las opciones solo atienden al ratón. -->
@@ -142,10 +143,10 @@
     {/if}
 
     <p class="pistas">
-      <span><kbd>↑</kbd><kbd>↓</kbd> moverse</span>
-      <span><kbd>↵</kbd> abrir</span>
-      <span><kbd>{modKey}↵</kbd> proyecto en el editor</span>
-      <span><kbd>Esc</kbd> cerrar</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd> {$t('comandos.moverse')}</span>
+      <span><kbd>↵</kbd> {$t('comandos.abrir')}</span>
+      <span><kbd>{modKey}↵</kbd> {$t('comandos.enEditor')}</span>
+      <span><kbd>Esc</kbd> {$t('comandos.cerrar')}</span>
     </p>
   </div>
 </div>

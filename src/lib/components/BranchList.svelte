@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Section } from '../stores/projectDetail';
   import type { Branches } from '../types';
+  import { t } from '../i18n';
 
   interface Props {
     /** Ramas tal y como las carga `stores/projectDetail.ts`. */
@@ -13,23 +14,23 @@
 </script>
 
 {#if section.status === 'loading'}
-  <p class="nota">Leyendo las ramas…</p>
+  <p class="nota">{$t('ramas.leyendo')}</p>
 {:else if section.status === 'error'}
-  <p class="nota error">No se pudieron leer las ramas: {section.message}</p>
+  <p class="nota error">{$t('ramas.error', { error: section.message })}</p>
 {:else if !isRepo}
-  <p class="nota">No es un repositorio Git.</p>
+  <p class="nota">{$t('comun.noRepo')}</p>
 {:else}
   <div class="grupos">
     <div>
-      <h3>Locales</h3>
+      <h3>{$t('ramas.locales')}</h3>
       {#if section.data.local.length === 0}
-        <p class="nota">Ninguna todavía.</p>
+        <p class="nota">{$t('ramas.sinLocales')}</p>
       {:else}
         <ul>
           {#each section.data.local as branch (branch.name)}
             <li class:actual={branch.is_head}>
               <code>{branch.name}</code>
-              {#if branch.is_head}<span class="marca">actual</span>{/if}
+              {#if branch.is_head}<span class="marca">{$t('ramas.actual')}</span>{/if}
             </li>
           {/each}
         </ul>
@@ -37,9 +38,9 @@
     </div>
 
     <div>
-      <h3>Remotas</h3>
+      <h3>{$t('ramas.remotas')}</h3>
       {#if section.data.remote.length === 0}
-        <p class="nota">Ninguna conocida.</p>
+        <p class="nota">{$t('ramas.sinRemotas')}</p>
       {:else}
         <ul>
           {#each section.data.remote as branch (branch.name)}
@@ -48,7 +49,7 @@
         </ul>
       {/if}
       <!-- Mosaic no hace fetch: si no se dice, una rama que falta parece un fallo. -->
-      <p class="nota">Las que conoce tu copia desde el último fetch. Mosaic no consulta la red.</p>
+      <p class="nota">{$t('ramas.nota')}</p>
     </div>
   </div>
 {/if}

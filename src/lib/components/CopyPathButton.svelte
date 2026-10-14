@@ -3,6 +3,7 @@
   import { onDestroy } from 'svelte';
 
   import { copyText } from '../api/clipboard';
+  import { t } from '../i18n';
 
   interface Props {
     /** Ruta que se copia al portapapeles. */
@@ -37,7 +38,7 @@
     <Copy size={14} strokeWidth={1.75} />
   {/if}
   <span aria-live="polite">
-    {state === 'copied' ? 'Copiado' : state === 'failed' ? 'No se pudo copiar' : 'Copiar ruta'}
+    {state === 'copied' ? $t('copiar.hecho') : state === 'failed' ? $t('copiar.fallo') : $t('copiar.ruta')}
   </span>
 </button>
 
