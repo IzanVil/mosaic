@@ -28,8 +28,8 @@
     "active": true,
     "targets": "all",
     "category": "DeveloperTool",
-    "shortDescription": "Organizador visual de proyectos de código",
-    "longDescription": "Mosaic muestra todos tus proyectos de código como tarjetas, con estado de Git en vivo, etiquetas y accesos directos. Local-first, sin telemetría.",
+    "shortDescription": "Visual organizer for your code projects",
+    "longDescription": "Mosaic shows all your code projects as cards, with live Git status, tags and shortcuts. Local-first, no telemetry.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -37,6 +37,10 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "linux": {
+      "deb": { "desktopTemplate": "linux/mosaic.desktop" },
+      "rpm": { "desktopTemplate": "linux/mosaic.desktop" }
+    },
     "windows": {
       "wix": {
         "language": {
