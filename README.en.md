@@ -20,7 +20,7 @@ Local, private, and not a single network request.</p>
 </p>
 
 <p>
-<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Download-Mosaic%200.2.1-2c8c8c?style=for-the-badge" alt="Download Mosaic 0.2.1" height="36"></a>
+<a href="https://github.com/IzanVil/mosaic/releases/latest"><img src="https://img.shields.io/badge/Download-Mosaic%200.3.0-2c8c8c?style=for-the-badge" alt="Download Mosaic 0.3.0" height="36"></a>
 </p>
 
 <p>
@@ -36,17 +36,14 @@ Local, private, and not a single network request.</p>
 <br>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/img/portada-oscura.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/img/portada-clara.png">
-  <img src="docs/img/portada-oscura.png" alt="The Mosaic board: three pinned projects at the top and the rest in a grid, each card with its path, colored tags, language and Git branch, and the views and tags panel on the left">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/en/portada-oscura.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/img/en/portada-clara.png">
+  <img src="docs/img/en/portada-oscura.png" alt="The Mosaic board: three pinned projects at the top and the rest in a grid, each card with its path, colored tags, language and Git branch, and the views and tags panel on the left">
 </picture>
 
 </div>
 
 <br>
-
-> **Heads-up:** Mosaic's interface is in Spanish for now, as you'll see in the
-> screenshots. An English interface isn't available yet.
 
 ## 💡 Why
 
@@ -121,9 +118,13 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
     </td>
   </tr>
   <tr>
-    <td colspan="3" valign="top">
+    <td colspan="2" valign="top">
       <h3>📂 And a page for each project</h3>
       Click a card's name to see its README, branches, latest commits and your notes, which save themselves as you type. Escape takes you back to the board.
+    </td>
+    <td valign="top">
+      <h3>🌐 In English and Spanish</h3>
+      It starts in your system's language, and you can switch it in Settings.
     </td>
   </tr>
 </table>
@@ -131,14 +132,14 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="docs/img/demo.gif" alt="An animated tour of Mosaic: searching for “api” on the board, filtering by the client tag, opening the palette with Ctrl+K, opening a project's details with its README, notes and branches, going back with Escape, then switching to the light theme and compact mode" width="960">
+  <img src="docs/img/en/demo.gif" alt="An animated tour of Mosaic: searching for “api” on the board, filtering by the client tag, opening the palette with Ctrl+K, opening a project's details with its README, notes and branches, going back with Escape, then switching to the light theme and compact mode" width="960">
   <br><sub><b>Mosaic in 25 seconds:</b> search, tag filter, command palette, project details, light theme and compact mode.</sub>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="docs/img/filtros.png" alt="A search for “api” with five active filters shown as chips (two tags, two languages and “hide missing”), a “Filters 5” counter and a note that two projects match">
+  <img src="docs/img/en/filtros.png" alt="A search for “api” with five active filters shown as chips (two tags, two languages and “hide missing”), a “Filters 5” counter and a note that two projects match">
   <br><sub><b>Search and filter.</b> Each filter is a chip with its own X, and the counter shows how many are on.</sub>
 </p>
 
@@ -147,11 +148,11 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 <table>
   <tr>
     <td width="58%" align="center">
-      <img src="docs/img/gestor-etiquetas.png" alt="The tag manager: a field to create a new tag with its color, and the list of tags with how many projects each one has">
+      <img src="docs/img/en/gestor-etiquetas.png" alt="The tag manager: a field to create a new tag with its color, and the list of tags with how many projects each one has">
       <br><sub><b>Manage your tags</b> in a single panel.</sub>
     </td>
     <td width="42%" align="center">
-      <img src="docs/img/selector-etiquetas.png" alt="The tag picker opened from a card, with a search box and the assigned tags ticked">
+      <img src="docs/img/en/selector-etiquetas.png" alt="The tag picker opened from a card, with a search box and the assigned tags ticked">
       <br><sub><b>Tag from the card</b>, without leaving the board.</sub>
     </td>
   </tr>
@@ -162,11 +163,11 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 <table>
   <tr>
     <td width="45%" align="center">
-      <img src="docs/img/paleta.png" alt="The command palette opened with Ctrl+K: actions with their shortcuts and, below, recently opened projects">
+      <img src="docs/img/en/paleta.png" alt="The command palette opened with Ctrl+K: actions with their shortcuts and, below, recently opened projects">
       <br><sub><b>The palette</b>: actions and projects one <kbd>Ctrl</kbd>+<kbd>K</kbd> away.</sub>
     </td>
     <td width="55%" align="center">
-      <img src="docs/img/copia.png" alt="The Backup section in Settings with an import summary: what gets added, which notes are kept and which folders don't exist on this computer">
+      <img src="docs/img/en/copia.png" alt="The Backup section in Settings with an import summary: what gets added, which notes are kept and which folders don't exist on this computer">
       <br><sub><b>Importing a backup</b>: the summary first, then you decide.</sub>
     </td>
   </tr>
@@ -175,14 +176,14 @@ forgotten about, and opening the one you want means `cd`, `ls` and guessing.
 <br>
 
 <p align="center">
-  <img src="docs/img/compacto.png" alt="The board in compact mode and light theme: four columns of cards with name, tags, language and branch">
+  <img src="docs/img/en/compacto.png" alt="The board in compact mode and light theme: four columns of cards with name, tags, language and branch">
   <br><sub><b>Compact mode</b>: four columns and more than twice the projects in view.</sub>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="docs/img/temas.png" alt="The board split diagonally: the left half in dark theme and the right half in light theme">
+  <img src="docs/img/en/temas.png" alt="The board split diagonally: the left half in dark theme and the right half in light theme">
   <br><sub><b>Two themes</b> with the same warm palette, and a button in the header to switch between them.</sub>
 </p>
 
@@ -283,11 +284,12 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 | ✅ | **Design** | Its own design system, light and dark themes |
 | ✅ | **Project page** | README, history, branches and notes |
 | ✅ | **Polish** | Advanced settings, shortcuts, backup and compact mode |
-| 🟡 | **Distribution** | 0.2.1 released for all three platforms, tested on each by CI; signing still to do |
+| ✅ | **Languages** | English and Spanish, Windows installers included |
+| 🟡 | **Distribution** | 0.3.0 released for all three platforms, tested on each by CI; signing still to do |
 
 ## 📦 Download
 
-**Mosaic 0.2.1** is out for all three platforms. Pick your system:
+**Mosaic 0.3.0** is out for all three platforms, in English and Spanish. Pick your system:
 
 <table>
   <tr>
@@ -297,23 +299,24 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
   </tr>
   <tr>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Download the universal .dmg"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic_0.3.0_universal.dmg"><img src="https://img.shields.io/badge/.dmg-universal-2c8c8c?style=flat-square" alt="Download the universal .dmg"></a>
       <br><sub>Intel and Apple Silicon · 8.5 MB</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-installer-2c8c8c?style=flat-square" alt="Download the .exe installer"></a>
-      <br><sub>Recommended · 3.4 MB</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic_0.3.0_x64-setup.exe"><img src="https://img.shields.io/badge/.exe-installer-2c8c8c?style=flat-square" alt="Download the .exe installer"></a>
+      <br><sub>Recommended · asks for the language · 3.4 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-package-555?style=flat-square" alt="Download the .msi package"></a>
-      <br><sub>For managed deployments · 4.6 MB</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic_0.3.0_x64_en-US.msi"><img src="https://img.shields.io/badge/.msi-English-555?style=flat-square" alt="Download the .msi package in English"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic_0.3.0_x64_es-ES.msi"><img src="https://img.shields.io/badge/.msi-espa%C3%B1ol-555?style=flat-square" alt="Download the .msi package in Spanish"></a>
+      <br><sub>For managed deployments · 4.7 MB each</sub>
     </td>
     <td align="center" valign="top">
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-any%20distro-2c8c8c?style=flat-square" alt="Download the .AppImage"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic_0.3.0_amd64.AppImage"><img src="https://img.shields.io/badge/.AppImage-any%20distro-2c8c8c?style=flat-square" alt="Download the .AppImage"></a>
       <br><sub>No install needed · 79 MB</sub>
       <br><br>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic_0.2.1_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Download the .deb"></a>
-      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.2.1/Mosaic-0.2.1-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Download the .rpm"></a>
-      <br><sub>4.7 MB each</sub>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic_0.3.0_amd64.deb"><img src="https://img.shields.io/badge/.deb-Debian%20·%20Ubuntu-555?style=flat-square" alt="Download the .deb"></a>
+      <a href="https://github.com/IzanVil/mosaic/releases/download/v0.3.0/Mosaic-0.3.0-1.x86_64.rpm"><img src="https://img.shields.io/badge/.rpm-Fedora%20·%20openSUSE-555?style=flat-square" alt="Download the .rpm"></a>
+      <br><sub>4.8 MB each</sub>
     </td>
   </tr>
 </table>
@@ -321,7 +324,7 @@ are in the [roadmap](docs/ROADMAP.md) (in Spanish).
 Every version, with its notes, is on the
 [releases](https://github.com/IzanVil/mosaic/releases) page. To check that a
 download arrived intact, compare it with
-[`SHA256SUMS.txt`](https://github.com/IzanVil/mosaic/releases/download/v0.2.1/SHA256SUMS.txt):
+[`SHA256SUMS.txt`](https://github.com/IzanVil/mosaic/releases/download/v0.3.0/SHA256SUMS.txt):
 
 ```bash
 sha256sum -c SHA256SUMS.txt --ignore-missing
@@ -344,13 +347,13 @@ anyway”.
 
 ```bash
 # Fedora, openSUSE and derivatives
-sudo dnf install ./Mosaic-0.2.1-1.x86_64.rpm
+sudo dnf install ./Mosaic-0.3.0-1.x86_64.rpm
 
 # Debian, Ubuntu and derivatives
-sudo apt install ./Mosaic_0.2.1_amd64.deb
+sudo apt install ./Mosaic_0.3.0_amd64.deb
 
 # Any distribution, nothing to install
-chmod +x Mosaic_0.2.1_amd64.AppImage && ./Mosaic_0.2.1_amd64.AppImage
+chmod +x Mosaic_0.3.0_amd64.AppImage && ./Mosaic_0.3.0_amd64.AppImage
 ```
 
 </details>
