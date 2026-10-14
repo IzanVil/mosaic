@@ -245,66 +245,87 @@ pub struct AdvancedSettingsView {
 /// control y los repetidos. Una lista vacía es válida: es elegir no excluir
 /// nada, aunque el escaneo vaya a recorrer `node_modules`.
 pub fn validate_advanced(raw: AdvancedSettings) -> Result<AdvancedSettings> {
-    let fuera_de_rango = |nombre: &str, min: String, max: String| {
-        AppError::Validation(format!("{nombre} tiene que estar entre {min} y {max}"))
-    };
-
     if !(LIMITS.max_depth_min..=LIMITS.max_depth_max).contains(&raw.max_depth) {
-        return Err(fuera_de_rango(
-            "la profundidad",
-            LIMITS.max_depth_min.to_string(),
-            LIMITS.max_depth_max.to_string(),
-        ));
+        return Err(AppError::validation(
+            "depth_out_of_range",
+            format!(
+                "la profundidad tiene que estar entre {} y {}",
+                LIMITS.max_depth_min, LIMITS.max_depth_max
+            ),
+        )
+        .with("min", LIMITS.max_depth_min)
+        .with("max", LIMITS.max_depth_max));
     }
     if !(LIMITS.max_entries_min..=LIMITS.max_entries_max).contains(&raw.max_entries_per_scan) {
-        return Err(fuera_de_rango(
-            "el tope de entradas",
-            LIMITS.max_entries_min.to_string(),
-            LIMITS.max_entries_max.to_string(),
-        ));
+        return Err(AppError::validation(
+            "entries_out_of_range",
+            format!(
+                "el tope de entradas tiene que estar entre {} y {}",
+                LIMITS.max_entries_min, LIMITS.max_entries_max
+            ),
+        )
+        .with("min", LIMITS.max_entries_min)
+        .with("max", LIMITS.max_entries_max));
     }
     if raw.git_refresh_interval_minutes > LIMITS.git_refresh_max_minutes {
-        return Err(fuera_de_rango(
-            "el intervalo de Git",
-            "0".into(),
-            format!("{} minutos", LIMITS.git_refresh_max_minutes),
-        ));
+        return Err(AppError::validation(
+            "git_interval_out_of_range",
+            format!(
+                "el intervalo de Git tiene que estar entre 0 y {} minutos",
+                LIMITS.git_refresh_max_minutes
+            ),
+        )
+        .with("max", LIMITS.git_refresh_max_minutes));
     }
     if raw.excluded_dirs.len() > LIMITS.excluded_dirs_max {
-        return Err(AppError::Validation(format!(
-            "no puede haber más de {} carpetas excluidas",
-            LIMITS.excluded_dirs_max
-        )));
+        return Err(AppError::validation(
+            "excluded_too_many",
+            format!(
+                "no puede haber más de {} carpetas excluidas",
+                LIMITS.excluded_dirs_max
+            ),
+        )
+        .with("max", LIMITS.excluded_dirs_max));
     }
 
     let mut excluded_dirs: Vec<String> = Vec::with_capacity(raw.excluded_dirs.len());
     for nombre in raw.excluded_dirs {
         let nombre = nombre.trim().to_string();
         if nombre.is_empty() {
-            return Err(AppError::Validation(
-                "el nombre de una carpeta excluida no puede estar vacío".into(),
+            return Err(AppError::validation(
+                "excluded_empty",
+                "el nombre de una carpeta excluida no puede estar vacío",
             ));
         }
         if nombre.contains('/') || nombre.contains('\\') {
-            return Err(AppError::Validation(format!(
-                "«{nombre}» es una ruta: se excluyen nombres de carpeta, sin barras"
-            )));
+            return Err(AppError::validation(
+                "excluded_is_path",
+                format!("«{nombre}» es una ruta: se excluyen nombres de carpeta, sin barras"),
+            )
+            .with("name", nombre));
         }
         if nombre.chars().any(char::is_control) {
-            return Err(AppError::Validation(
-                "el nombre de una carpeta excluida no admite caracteres de control".into(),
+            return Err(AppError::validation(
+                "excluded_control",
+                "el nombre de una carpeta excluida no admite caracteres de control",
             ));
         }
         if nombre.chars().count() > LIMITS.excluded_dir_max_chars {
-            return Err(AppError::Validation(format!(
-                "el nombre de una carpeta excluida no puede pasar de {} caracteres",
-                LIMITS.excluded_dir_max_chars
-            )));
+            return Err(AppError::validation(
+                "excluded_too_long",
+                format!(
+                    "el nombre de una carpeta excluida no puede pasar de {} caracteres",
+                    LIMITS.excluded_dir_max_chars
+                ),
+            )
+            .with("max", LIMITS.excluded_dir_max_chars));
         }
         if excluded_dirs.contains(&nombre) {
-            return Err(AppError::Validation(format!(
-                "«{nombre}» ya está en la lista"
-            )));
+            return Err(AppError::validation(
+                "excluded_duplicate",
+                format!("«{nombre}» ya está en la lista"),
+            )
+            .with("name", nombre));
         }
         excluded_dirs.push(nombre);
     }

@@ -12,11 +12,11 @@ use crate::core::git::{
 use crate::db::repositories::git_status::{self as repo, GitStatusEntry};
 use crate::db::repositories::projects as projects_repo;
 use crate::db::Db;
-use crate::errors::AppError;
+use crate::errors::{AppError, CommandError};
 
 /// Devuelve toda la caché de estado Git, para que el frontend la indexe por proyecto.
 #[tauri::command]
-pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntry>, String> {
+pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntry>, CommandError> {
     let entries = db.with_conn(repo::list_all)?;
     tracing::debug!(count = entries.len(), "list_git_status");
     Ok(entries)
@@ -29,13 +29,16 @@ pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntr
 pub async fn refresh_git_status(
     db: State<'_, Arc<Db>>,
     project_id: i64,
-) -> Result<Option<GitStatusEntry>, String> {
+) -> Result<Option<GitStatusEntry>, CommandError> {
     let db = Arc::clone(&db);
 
     tauri::async_runtime::spawn_blocking(move || refresh_one(&db, project_id))
         .await
-        .map_err(|err| AppError::Internal(format!("la tarea de refresco falló: {err}")))?
-        .map_err(String::from)
+        .map_err(|err| {
+            AppError::internal("task_failed", format!("la tarea de refresco falló: {err}"))
+                .with("detail", err.to_string())
+        })?
+        .map_err(CommandError::from)
 }
 
 /// Relee el estado Git de todos los proyectos que son repositorios.
@@ -43,13 +46,18 @@ pub async fn refresh_git_status(
 /// La lectura de disco es bloqueante, así que se ejecuta fuera del hilo de la
 /// interfaz.
 #[tauri::command]
-pub async fn refresh_all_git_status(db: State<'_, Arc<Db>>) -> Result<GitRefreshSummary, String> {
+pub async fn refresh_all_git_status(
+    db: State<'_, Arc<Db>>,
+) -> Result<GitRefreshSummary, CommandError> {
     let db = Arc::clone(&db);
 
     tauri::async_runtime::spawn_blocking(move || refresh_all(&db))
         .await
-        .map_err(|err| AppError::Internal(format!("la tarea de refresco falló: {err}")))?
-        .map_err(String::from)
+        .map_err(|err| {
+            AppError::internal("task_failed", format!("la tarea de refresco falló: {err}"))
+                .with("detail", err.to_string())
+        })?
+        .map_err(CommandError::from)
 }
 
 /// Ruta del proyecto si tiene sentido leer su repositorio: está en disco y es
@@ -65,15 +73,21 @@ fn readable_repo(db: &Db, project_id: i64) -> Result<Option<PathBuf>, AppError> 
 pub async fn get_project_history(
     db: State<'_, Arc<Db>>,
     project_id: i64,
-) -> Result<Vec<CommitInfo>, String> {
+) -> Result<Vec<CommitInfo>, CommandError> {
     let Some(path) = readable_repo(&db, project_id)? else {
         return Ok(Vec::new());
     };
 
     tauri::async_runtime::spawn_blocking(move || read_history(&path, HISTORY_LIMIT))
         .await
-        .map_err(|err| AppError::Internal(format!("la lectura del historial falló: {err}")))?
-        .map_err(String::from)
+        .map_err(|err| {
+            AppError::internal(
+                "task_failed",
+                format!("la lectura del historial falló: {err}"),
+            )
+            .with("detail", err.to_string())
+        })?
+        .map_err(CommandError::from)
 }
 
 /// Devuelve las ramas locales y las remotas conocidas del proyecto.
@@ -81,13 +95,19 @@ pub async fn get_project_history(
 pub async fn get_project_branches(
     db: State<'_, Arc<Db>>,
     project_id: i64,
-) -> Result<Branches, String> {
+) -> Result<Branches, CommandError> {
     let Some(path) = readable_repo(&db, project_id)? else {
         return Ok(Branches::default());
     };
 
     tauri::async_runtime::spawn_blocking(move || read_branches(&path))
         .await
-        .map_err(|err| AppError::Internal(format!("la lectura de las ramas falló: {err}")))?
-        .map_err(String::from)
+        .map_err(|err| {
+            AppError::internal(
+                "task_failed",
+                format!("la lectura de las ramas falló: {err}"),
+            )
+            .with("detail", err.to_string())
+        })?
+        .map_err(CommandError::from)
 }

@@ -28,8 +28,8 @@ compartido fuera de la máquina del usuario.
 Las reglas de dependencia:
 
 - `commands/` no contiene lógica de negocio. Valida la entrada, mueve el trabajo
-  bloqueante fuera del hilo de la interfaz y convierte `AppError` en `String`,
-  que es lo que entiende el puente de Tauri.
+  bloqueante fuera del hilo de la interfaz y convierte `AppError` en
+  `CommandError`, que es lo que viaja por el puente de Tauri.
 - `core/` no conoce Tauri. Es donde vive el escáner y el modelo de dominio, y es
   lo que cubren los tests unitarios.
 - `db/` concentra todo el SQL. Ningún otro módulo escribe consultas.
@@ -41,9 +41,18 @@ Las reglas de dependencia:
 ### `errors.rs`
 
 `AppError` con `thiserror`: `Db`, `Migration`, `Io`, `Git`, `InvalidPath`,
-`NotFound`, `Validation` (una regla de negocio que no se cumple, con un mensaje
-para el usuario) e `Internal`. Implementa `From<AppError> for String` para la frontera con el
-frontend. No se usa `unwrap()` fuera de los tests.
+`NotFound`, `Validation` (una regla de negocio que no se cumple) e `Internal`.
+Los cuatro últimos llevan un código estable (`tag_name_taken`,
+`path_missing`…), sus datos (`name`, `path`…) y el mensaje en español; se
+construyen con `AppError::validation(código, mensaje).with(dato, valor)`. Los
+de librería salen con su código (`db`, `io`…) y el texto de la librería como
+`detail`. Una copia dañada lleva su motivo, que es otro error, como `cause`.
+
+Los comandos devuelven `Result<T, CommandError>`: `{ code, params, message }`.
+El frontend (`lib/utils/errors.ts`) enseña `message` en español y, en otro
+idioma, el texto del código en `lib/i18n/errors.ts`. Un test de vitest lee el
+código Rust y falla si un código no tiene texto en inglés o si un texto usa un
+dato que el backend no manda. No se usa `unwrap()` fuera de los tests.
 
 ### `db/`
 

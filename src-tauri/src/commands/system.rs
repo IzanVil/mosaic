@@ -10,11 +10,11 @@ use crate::config::settings;
 use crate::core::launcher::{detect, open_external as open_url, open_path, AppKind, DetectedApp};
 use crate::db::repositories::projects as projects_repo;
 use crate::db::Db;
-use crate::errors::AppError;
+use crate::errors::{AppError, CommandError};
 
 /// Devuelve los IDEs y terminales reconocidos que hay en el sistema.
 #[tauri::command]
-pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, String> {
+pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, CommandError> {
     let mut apps = detect(AppKind::Ide);
     apps.extend(detect(AppKind::Terminal));
 
@@ -27,7 +27,11 @@ pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, String> {
 /// Registra el momento de apertura en `last_opened_at`, pero solo si el
 /// lanzamiento ha tenido éxito.
 #[tauri::command]
-pub async fn open_in(db: State<'_, Arc<Db>>, kind: AppKind, project_id: i64) -> Result<(), String> {
+pub async fn open_in(
+    db: State<'_, Arc<Db>>,
+    kind: AppKind,
+    project_id: i64,
+) -> Result<(), CommandError> {
     let db = Arc::clone(&db);
 
     tauri::async_runtime::spawn_blocking(move || {
@@ -50,8 +54,11 @@ pub async fn open_in(db: State<'_, Arc<Db>>, kind: AppKind, project_id: i64) -> 
         })
     })
     .await
-    .map_err(|err| AppError::Internal(format!("la tarea de apertura falló: {err}")))?
-    .map_err(String::from)
+    .map_err(|err| {
+        AppError::internal("task_failed", format!("la tarea de apertura falló: {err}"))
+            .with("detail", err.to_string())
+    })?
+    .map_err(CommandError::from)
 }
 
 /// Aplicaciones preferidas actualmente guardadas.
@@ -65,7 +72,7 @@ pub struct PreferredApps {
 
 /// Devuelve las aplicaciones preferidas, para poder marcarlas en los ajustes.
 #[tauri::command]
-pub async fn get_preferred_apps(db: State<'_, Arc<Db>>) -> Result<PreferredApps, String> {
+pub async fn get_preferred_apps(db: State<'_, Arc<Db>>) -> Result<PreferredApps, CommandError> {
     let config = db.with_conn(settings::load)?;
     Ok(PreferredApps {
         ide: config.preferred_ide,
@@ -80,13 +87,14 @@ pub async fn set_preferred_app(
     db: State<'_, Arc<Db>>,
     kind: AppKind,
     app_id: String,
-) -> Result<(), String> {
+) -> Result<(), CommandError> {
     let key = match kind {
         AppKind::Ide => settings::KEY_PREFERRED_IDE,
         AppKind::Terminal => settings::KEY_PREFERRED_TERMINAL,
         AppKind::FileManager => {
-            return Err(AppError::InvalidPath(
-                "el explorador de archivos lo elige el sistema, no Mosaic".into(),
+            return Err(AppError::validation(
+                "file_manager_fixed",
+                "el explorador de archivos lo elige el sistema, no Mosaic",
             )
             .into());
         }
@@ -102,7 +110,7 @@ pub async fn set_preferred_app(
 /// Lo usan los enlaces del README. Solo pasan `http` y `https`: la lista
 /// blanca y su porqué viven en [`crate::core::launcher::validate_external_url`].
 #[tauri::command]
-pub async fn open_external(url: String) -> Result<(), String> {
+pub async fn open_external(url: String) -> Result<(), CommandError> {
     open_url(&url)?;
     tracing::debug!(%url, "open_external");
     Ok(())

@@ -2,6 +2,7 @@ import { derived, get, writable } from 'svelte/store';
 
 import * as api from '../api/tags';
 import type { Tag, TagWithCount } from '../types';
+import { errorText } from '../utils/errors';
 import { compareNames } from '../utils/text';
 import { removeTagFilter } from './filters';
 import { applyTagChangeEverywhere, attachTag, detachTag } from './projects';
@@ -18,7 +19,7 @@ export async function loadTags(): Promise<void> {
   try {
     tags.set(await api.listTags());
   } catch (error) {
-    tagsError.set(String(error));
+    tagsError.set(errorText(error));
   } finally {
     loadingTags.set(false);
   }
@@ -33,7 +34,7 @@ export async function createTag(name: string, color: string): Promise<Tag | null
     );
     return created;
   } catch (error) {
-    tagsError.set(String(error));
+    tagsError.set(errorText(error));
     return null;
   }
 }
@@ -50,7 +51,7 @@ export async function updateTag(id: number, name: string, color: string): Promis
     applyTagChangeEverywhere(id, updated);
     return updated;
   } catch (error) {
-    tagsError.set(String(error));
+    tagsError.set(errorText(error));
     return null;
   }
 }
@@ -64,7 +65,7 @@ export async function deleteTag(id: number): Promise<boolean> {
     removeTagFilter(id);
     return true;
   } catch (error) {
-    tagsError.set(String(error));
+    tagsError.set(errorText(error));
     return false;
   }
 }
@@ -80,7 +81,7 @@ export async function assignTagToProject(projectId: number, tagId: number): Prom
     bumpCount(tagId, 1);
     return true;
   } catch (error) {
-    tagsError.set(String(error));
+    tagsError.set(errorText(error));
     return false;
   }
 }
@@ -93,7 +94,7 @@ export async function unassignTagFromProject(projectId: number, tagId: number): 
     bumpCount(tagId, -1);
     return true;
   } catch (error) {
-    tagsError.set(String(error));
+    tagsError.set(errorText(error));
     return false;
   }
 }

@@ -12,7 +12,7 @@ use crate::config::settings::{
     self, validate_advanced, AdvancedSettings, AdvancedSettingsView, KEY_VIEW_STATE, LIMITS,
 };
 use crate::db::Db;
-use crate::errors::AppError;
+use crate::errors::{AppError, CommandError};
 use crate::GitRefreshSignal;
 
 /// Tope de tamaño del JSON de la vista.
@@ -29,7 +29,7 @@ const MAX_VIEW_STATE_BYTES: usize = 64 * 1024;
 /// los filtros por defecto en lugar de fallar. Es la misma política que aplica
 /// [`settings::load`] con el resto de claves.
 #[tauri::command]
-pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, String> {
+pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, CommandError> {
     let raw = db.with_conn(|conn| settings::get_raw(conn, KEY_VIEW_STATE))?;
 
     let Some(raw) = raw else {
@@ -47,16 +47,22 @@ pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, St
 
 /// Guarda la vista actual. El frontend llama con debounce, no en cada tecla.
 #[tauri::command]
-pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), String> {
+pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), CommandError> {
     if json.len() > MAX_VIEW_STATE_BYTES {
-        return Err(AppError::Validation(format!(
-            "la vista guardada no puede pasar de {MAX_VIEW_STATE_BYTES} bytes"
-        ))
+        return Err(AppError::validation(
+            "view_state_too_big",
+            format!("la vista guardada no puede pasar de {MAX_VIEW_STATE_BYTES} bytes"),
+        )
+        .with("max", MAX_VIEW_STATE_BYTES)
         .into());
     }
 
     serde_json::from_str::<serde_json::Value>(&json).map_err(|err| {
-        AppError::Validation(format!("la vista guardada no es JSON válido: {err}"))
+        AppError::validation(
+            "view_state_invalid",
+            format!("la vista guardada no es JSON válido: {err}"),
+        )
+        .with("detail", err.to_string())
     })?;
 
     db.with_conn(|conn| settings::set_raw(conn, KEY_VIEW_STATE, &json))?;
@@ -65,7 +71,9 @@ pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), 
 
 /// Devuelve los ajustes avanzados con sus valores de fábrica y sus límites.
 #[tauri::command]
-pub async fn get_advanced_settings(db: State<'_, Arc<Db>>) -> Result<AdvancedSettingsView, String> {
+pub async fn get_advanced_settings(
+    db: State<'_, Arc<Db>>,
+) -> Result<AdvancedSettingsView, CommandError> {
     let current = AdvancedSettings::from(&db.with_conn(settings::load)?);
     Ok(AdvancedSettingsView {
         current,
@@ -84,7 +92,7 @@ pub async fn set_advanced_settings(
     db: State<'_, Arc<Db>>,
     signal: State<'_, Arc<GitRefreshSignal>>,
     settings: AdvancedSettings,
-) -> Result<AdvancedSettings, String> {
+) -> Result<AdvancedSettings, CommandError> {
     let validos = validate_advanced(settings)?;
     let antes = db.with_conn(settings::load)?.git_refresh_interval_minutes;
     db.with_conn(|conn| settings::save_advanced(conn, &validos))?;

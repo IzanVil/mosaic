@@ -4,6 +4,7 @@ import { writable } from 'svelte/store';
 
 import * as api from '../api/scanner';
 import type { ScanPath } from '../types';
+import { errorText } from '../utils/errors';
 
 export const scanPaths = writable<ScanPath[]>([]);
 export const loadingScanPaths = writable(false);
@@ -21,7 +22,7 @@ export async function loadScanPaths(): Promise<void> {
   try {
     await refresh();
   } catch (error) {
-    scanPathsError.set(String(error));
+    scanPathsError.set(errorText(error));
   } finally {
     loadingScanPaths.set(false);
   }
@@ -35,7 +36,7 @@ export async function addScanPath(path: string): Promise<boolean> {
     await refresh();
     return true;
   } catch (error) {
-    scanPathsError.set(String(error));
+    scanPathsError.set(errorText(error));
     return false;
   }
 }
@@ -47,7 +48,7 @@ export async function removeScanPath(id: number): Promise<void> {
     await api.removeScanPath(id);
     await refresh();
   } catch (error) {
-    scanPathsError.set(String(error));
+    scanPathsError.set(errorText(error));
   }
 }
 
@@ -58,6 +59,6 @@ export async function setScanPathEnabled(id: number, enabled: boolean): Promise<
     await api.setScanPathEnabled(id, enabled);
     await refresh();
   } catch (error) {
-    scanPathsError.set(String(error));
+    scanPathsError.set(errorText(error));
   }
 }

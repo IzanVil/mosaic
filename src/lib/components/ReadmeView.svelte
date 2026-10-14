@@ -8,6 +8,7 @@
   import type { Section } from '../stores/projectDetail';
   import type { ReadmePreview } from '../types';
   import { omittedText } from '../utils/readmeNotice';
+  import { errorText } from '../utils/errors';
   import { remoteWebUrl } from '../utils/remote';
 
   interface Props {
@@ -29,7 +30,7 @@
     if (web) {
       openExternal(web.url).then(
         () => say(tNow('readme.abierto')),
-        (error: unknown) => say(tNow('readme.noAbrir', { error: String(error) })),
+        (error: unknown) => say(tNow('readme.noAbrir', { error: errorText(error) })),
       );
     } else {
       void openProject('ide', projectId);
@@ -63,7 +64,7 @@
     if (/^https?:\/\//i.test(href)) {
       openExternal(href).then(
         () => say(tNow('readme.abierto')),
-        (error: unknown) => say(tNow('readme.noAbrirEnlace', { error: String(error) })),
+        (error: unknown) => say(tNow('readme.noAbrirEnlace', { error: errorText(error) })),
       );
     } else {
       say(tNow('readme.enlaceInterno'));

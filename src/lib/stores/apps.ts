@@ -4,6 +4,7 @@ import { derived, writable } from 'svelte/store';
 
 import * as api from '../api/system';
 import type { AppKind, DetectedApp } from '../types';
+import { errorText } from '../utils/errors';
 import { markProjectOpened } from './projects';
 
 export const detectedApps = writable<DetectedApp[]>([]);
@@ -26,7 +27,7 @@ export async function loadApps(): Promise<void> {
     preferredIde.set(preferred.ide);
     preferredTerminal.set(preferred.terminal);
   } catch (error) {
-    appsError.set(String(error));
+    appsError.set(errorText(error));
   }
 }
 
@@ -38,7 +39,7 @@ export async function openProject(kind: AppKind, projectId: number): Promise<boo
     markProjectOpened(projectId, Math.floor(Date.now() / 1000));
     return true;
   } catch (error) {
-    appsError.set(String(error));
+    appsError.set(errorText(error));
     return false;
   }
 }
@@ -51,6 +52,6 @@ export async function setPreferredApp(kind: AppKind, appId: string): Promise<voi
     if (kind === 'ide') preferredIde.set(appId);
     if (kind === 'terminal') preferredTerminal.set(appId);
   } catch (error) {
-    appsError.set(String(error));
+    appsError.set(errorText(error));
   }
 }

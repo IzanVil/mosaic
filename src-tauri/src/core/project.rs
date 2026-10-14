@@ -73,9 +73,11 @@ pub fn normalize_notes(raw: &str) -> Result<Option<String>> {
         return Ok(None);
     }
     if raw.chars().count() > MAX_NOTES_CHARS {
-        return Err(AppError::Validation(format!(
-            "las notas no pueden pasar de {MAX_NOTES_CHARS} caracteres"
-        )));
+        return Err(AppError::validation(
+            "notes_too_long",
+            format!("las notas no pueden pasar de {MAX_NOTES_CHARS} caracteres"),
+        )
+        .with("max", MAX_NOTES_CHARS));
     }
     Ok(Some(raw.to_string()))
 }

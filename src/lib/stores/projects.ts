@@ -16,6 +16,7 @@ import { derived, writable } from 'svelte/store';
 import { listProjectsWithTags, setProjectPinned } from '../api/projects';
 import { scanAllPaths } from '../api/scanner';
 import type { FilterState, GitStatusEntry, ProjectWithTags, ScanSummary, Tag } from '../types';
+import { errorText } from '../utils/errors';
 import { compareNames, normalizeText } from '../utils/text';
 import { filters } from './filters';
 
@@ -206,7 +207,7 @@ export async function loadProjects(): Promise<void> {
   try {
     projects.set(await listProjectsWithTags());
   } catch (error) {
-    projectsError.set(String(error));
+    projectsError.set(errorText(error));
   } finally {
     loadingProjects.set(false);
   }
@@ -228,7 +229,7 @@ export async function runScan(): Promise<ScanSummary | null> {
     projects.set(await listProjectsWithTags());
     return summary;
   } catch (error) {
-    projectsError.set(String(error));
+    projectsError.set(errorText(error));
     return null;
   } finally {
     scanning.set(false);
@@ -247,7 +248,7 @@ export async function togglePinned(id: number, pinned: boolean): Promise<void> {
   try {
     await setProjectPinned(id, pinned);
   } catch (error) {
-    projectsError.set(String(error));
+    projectsError.set(errorText(error));
     await loadProjects();
   }
 }

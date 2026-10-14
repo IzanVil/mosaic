@@ -20,7 +20,12 @@ fn map_missing_reference(err: rusqlite::Error, project_id: i64, tag_id: i64) -> 
         rusqlite::Error::SqliteFailure(failure, _)
             if failure.code == rusqlite::ErrorCode::ConstraintViolation =>
         {
-            AppError::NotFound(format!("proyecto {project_id} o etiqueta {tag_id}"))
+            AppError::not_found(
+                "project_or_tag_not_found",
+                format!("proyecto {project_id} o etiqueta {tag_id}"),
+            )
+            .with("project_id", project_id)
+            .with("tag_id", tag_id)
         }
         _ => AppError::from(err),
     }

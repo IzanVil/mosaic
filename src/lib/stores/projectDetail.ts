@@ -20,6 +20,7 @@ import { getProjectReadme, setProjectNotes } from '../api/projects';
 import { tNow } from '../i18n';
 import type { Branches, CommitInfo, ReadmePreview } from '../types';
 import { debounce } from '../utils/debounce';
+import { errorText } from '../utils/errors';
 import { projectsError, setProjectNotesLocally } from './projects';
 
 /** Espera tras la última tecla antes de guardar las notas. */
@@ -74,7 +75,7 @@ function load<T>(
       if (currentId === projectId) target.set({ status: 'ready', data });
     },
     (error: unknown) => {
-      if (currentId === projectId) target.set({ status: 'error', message: String(error) });
+      if (currentId === projectId) target.set({ status: 'error', message: errorText(error) });
     },
   );
 }
@@ -138,7 +139,7 @@ export async function flushNotes(): Promise<void> {
   } catch (error) {
     if (currentId === projectId) {
       notesStatus.set('error');
-      notesError.set(String(error));
+      notesError.set(errorText(error));
     }
   }
 }

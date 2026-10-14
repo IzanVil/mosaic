@@ -4,6 +4,7 @@ import { writable } from 'svelte/store';
 
 import { applyImport, exportBackup, previewImport } from '../api/backup';
 import type { ExportSummary, ImportPlan } from '../types';
+import { errorText } from '../utils/errors';
 import { loadAdvancedSettings } from './advancedSettings';
 import { loadApps } from './apps';
 import { loadProjects } from './projects';
@@ -29,7 +30,7 @@ export async function exportTo(path: string, includeWork: boolean): Promise<void
     const summary = await exportBackup(path, includeWork);
     backupState.set({ step: 'exported', summary, includeWork });
   } catch (error) {
-    backupState.set({ step: 'error', message: String(error) });
+    backupState.set({ step: 'error', message: errorText(error) });
   }
 }
 
@@ -39,7 +40,7 @@ export async function previewFrom(path: string): Promise<void> {
   try {
     backupState.set({ step: 'preview', path, plan: await previewImport(path) });
   } catch (error) {
-    backupState.set({ step: 'error', message: String(error) });
+    backupState.set({ step: 'error', message: errorText(error) });
   }
 }
 
@@ -57,7 +58,7 @@ export async function confirmImport(path: string): Promise<void> {
     ]);
     backupState.set({ step: 'imported', plan });
   } catch (error) {
-    backupState.set({ step: 'error', message: String(error) });
+    backupState.set({ step: 'error', message: errorText(error) });
   }
 }
 

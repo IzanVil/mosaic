@@ -9,6 +9,7 @@
 import { writable } from 'svelte/store';
 
 import * as api from '../api/git';
+import { errorText } from '../utils/errors';
 import { now_ts } from '../utils/format';
 import { mergeGitStatus, mergeOneGitStatus } from './projects';
 
@@ -61,7 +62,7 @@ export async function loadGitStatus(manual = false): Promise<void> {
       manual,
     });
   } catch (error) {
-    gitError.set(String(error));
+    gitError.set(errorText(error));
   }
 }
 
@@ -81,7 +82,7 @@ export async function refreshAllGitStatus(): Promise<void> {
       manual: true,
     });
   } catch (error) {
-    gitError.set(String(error));
+    gitError.set(errorText(error));
   } finally {
     const elapsed = Date.now() - started;
     if (elapsed < MIN_SPINNER_MS) await delay(MIN_SPINNER_MS - elapsed);
@@ -95,6 +96,6 @@ export async function refreshOneGitStatus(projectId: number): Promise<void> {
   try {
     mergeOneGitStatus(projectId, await api.refreshGitStatus(projectId));
   } catch (error) {
-    gitError.set(String(error));
+    gitError.set(errorText(error));
   }
 }

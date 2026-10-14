@@ -202,43 +202,65 @@ fn build_work(conn: &Connection) -> Result<BackupWork> {
 
 /// Serializa la copia como JSON.
 pub fn to_json(backup: &Backup) -> Result<String> {
-    serde_json::to_string_pretty(backup)
-        .map_err(|err| AppError::Internal(format!("no se pudo serializar la copia: {err}")))
+    serde_json::to_string_pretty(backup).map_err(|err| {
+        AppError::internal(
+            "backup_serialize",
+            format!("no se pudo serializar la copia: {err}"),
+        )
+        .with("detail", err.to_string())
+    })
+}
+
+/// El error de un fichero que no es una copia de Mosaic.
+pub fn not_a_backup() -> AppError {
+    AppError::validation("backup_not_mosaic", "el fichero no es una copia de Mosaic")
 }
 
 /// Lee y valida una copia; si algo no cuadra, la rechaza entera.
 pub fn parse_backup(text: &str) -> Result<Backup> {
-    let ajeno = || AppError::Validation("el fichero no es una copia de Mosaic".into());
-
-    let value: serde_json::Value = serde_json::from_str(text).map_err(|_| ajeno())?;
+    let value: serde_json::Value = serde_json::from_str(text).map_err(|_| not_a_backup())?;
     if value.get("format").and_then(|v| v.as_str()) != Some(FORMAT_TAG) {
-        return Err(ajeno());
+        return Err(not_a_backup());
     }
     let version = value
         .get("version")
         .and_then(|v| v.as_u64())
-        .ok_or_else(|| AppError::Validation("la copia no dice su versión".into()))?;
+        .ok_or_else(|| AppError::validation("backup_no_version", "la copia no dice su versión"))?;
     if version > u64::from(FORMAT_VERSION) {
-        return Err(AppError::Validation(format!(
-            "la copia es de una versión más nueva de Mosaic (formato {version}); \
-             actualiza Mosaic para importarla"
-        )));
+        return Err(AppError::validation(
+            "backup_newer",
+            format!(
+                "la copia es de una versión más nueva de Mosaic (formato {version}); \
+                 actualiza Mosaic para importarla"
+            ),
+        )
+        .with("version", version));
     }
 
-    let backup: Backup = serde_json::from_value(value)
-        .map_err(|err| AppError::Validation(format!("la copia está dañada: {err}")))?;
+    let backup: Backup = serde_json::from_value(value).map_err(|err| {
+        damaged(
+            AppError::validation("backup_malformed", err.to_string())
+                .with("detail", err.to_string()),
+        )
+    })?;
     validate(&backup)?;
     Ok(backup)
 }
 
-fn validate(backup: &Backup) -> Result<()> {
-    let dañada = |motivo: String| AppError::Validation(format!("la copia está dañada: {motivo}"));
+/// Una copia que no se puede importar, con el motivo como causa.
+fn damaged(cause: AppError) -> AppError {
+    AppError::validation("backup_damaged", format!("la copia está dañada: {cause}")).because(cause)
+}
 
-    validate_advanced(backup.settings.advanced.clone()).map_err(|e| dañada(e.to_string()))?;
+fn validate(backup: &Backup) -> Result<()> {
+    validate_advanced(backup.settings.advanced.clone()).map_err(damaged)?;
 
     for p in &backup.scan_paths {
         if p.path.trim().is_empty() {
-            return Err(dañada("hay una ruta de escaneo vacía".into()));
+            return Err(damaged(AppError::validation(
+                "backup_empty_path",
+                "hay una ruta de escaneo vacía",
+            )));
         }
     }
 
@@ -248,22 +270,35 @@ fn validate(backup: &Backup) -> Result<()> {
 
     let mut nombres = BTreeSet::new();
     for t in &work.tags {
-        tag::validate_name(&t.name).map_err(|e| dañada(e.to_string()))?;
-        tag::normalize_color(&t.color).map_err(|e| dañada(e.to_string()))?;
+        tag::validate_name(&t.name).map_err(damaged)?;
+        tag::normalize_color(&t.color).map_err(damaged)?;
         if !nombres.insert(tag::name_key(&t.name)) {
-            return Err(dañada(format!("la etiqueta «{}» está repetida", t.name)));
+            return Err(damaged(
+                AppError::validation(
+                    "backup_tag_repeated",
+                    format!("la etiqueta «{}» está repetida", t.name),
+                )
+                .with("name", t.name.as_str()),
+            ));
         }
     }
     for p in &work.projects {
         if let Some(notes) = &p.notes {
-            normalize_notes(notes).map_err(|e| dañada(e.to_string()))?;
+            normalize_notes(notes).map_err(damaged)?;
         }
         for nombre in &p.tags {
             if !nombres.contains(&tag::name_key(nombre)) {
-                return Err(dañada(format!(
-                    "el proyecto {} lleva la etiqueta «{nombre}», que no está en la copia",
-                    p.path
-                )));
+                return Err(damaged(
+                    AppError::validation(
+                        "backup_tag_missing",
+                        format!(
+                            "el proyecto {} lleva la etiqueta «{nombre}», que no está en la copia",
+                            p.path
+                        ),
+                    )
+                    .with("project", p.path.as_str())
+                    .with("name", nombre.as_str()),
+                ));
             }
         }
     }

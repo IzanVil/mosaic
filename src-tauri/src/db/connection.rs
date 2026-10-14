@@ -65,7 +65,7 @@ impl Db {
         let guard = self
             .conn
             .lock()
-            .map_err(|_| AppError::Internal("mutex de la base de datos envenenado".into()))?;
+            .map_err(|_| AppError::internal("db_locked", "mutex de la base de datos envenenado"))?;
         f(&guard)
     }
 
@@ -74,7 +74,7 @@ impl Db {
         let mut guard = self
             .conn
             .lock()
-            .map_err(|_| AppError::Internal("mutex de la base de datos envenenado".into()))?;
+            .map_err(|_| AppError::internal("db_locked", "mutex de la base de datos envenenado"))?;
         f(&mut guard)
     }
 }
@@ -86,7 +86,10 @@ impl Db {
 /// Windows: `%APPDATA%\izan\mosaic\data\mosaic.db`.
 pub fn default_db_path() -> Result<PathBuf> {
     let dirs = ProjectDirs::from("dev", "izan", "mosaic").ok_or_else(|| {
-        AppError::Internal("no se pudo determinar el directorio de datos del sistema".into())
+        AppError::internal(
+            "data_dir_unknown",
+            "no se pudo determinar el directorio de datos del sistema",
+        )
     })?;
     Ok(dirs.data_dir().join("mosaic.db"))
 }

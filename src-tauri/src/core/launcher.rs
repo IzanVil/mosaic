@@ -289,7 +289,11 @@ fn build_command(candidate: &Candidate, path: &Path) -> Command {
 /// aplicación ya no existe, se usa la primera detectada.
 pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<()> {
     if !path.is_dir() {
-        return Err(AppError::invalid_path(path, "ya no existe en el disco"));
+        return Err(AppError::invalid_path(
+            path,
+            "path_missing",
+            "ya no existe en el disco",
+        ));
     }
 
     if kind == AppKind::FileManager {
@@ -298,17 +302,25 @@ pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<
         return Ok(());
     }
 
-    let candidate = resolve(kind, preferred).ok_or_else(|| {
-        AppError::NotFound(match kind {
-            AppKind::Ide => "ningún IDE o editor reconocido en el PATH".into(),
-            AppKind::Terminal => "ningún emulador de terminal reconocido en el PATH".into(),
-            AppKind::FileManager => unreachable!("el explorador se resuelve antes"),
-        })
+    let candidate = resolve(kind, preferred).ok_or_else(|| match kind {
+        AppKind::Ide => {
+            AppError::not_found("no_editor", "ningún IDE o editor reconocido en el PATH")
+        }
+        AppKind::Terminal => AppError::not_found(
+            "no_terminal",
+            "ningún emulador de terminal reconocido en el PATH",
+        ),
+        AppKind::FileManager => unreachable!("el explorador se resuelve antes"),
     })?;
 
-    build_command(candidate, path)
-        .spawn()
-        .map_err(|err| AppError::Internal(format!("no se pudo lanzar {}: {err}", candidate.bin)))?;
+    build_command(candidate, path).spawn().map_err(|err| {
+        AppError::internal(
+            "launch_failed",
+            format!("no se pudo lanzar {}: {err}", candidate.bin),
+        )
+        .with("app", candidate.bin)
+        .with("detail", err.to_string())
+    })?;
 
     tracing::info!(app = candidate.bin, path = %path.display(), "proyecto abierto");
     Ok(())
@@ -331,17 +343,23 @@ pub const EXTERNAL_SCHEMES: &[&str] = &["http", "https"];
 /// sigue siendo una web. Además del esquema, exige un host; una URL web sin
 /// host no lleva a ninguna parte.
 pub fn validate_external_url(raw: &str) -> Result<Url> {
-    let url = Url::parse(raw.trim())
-        .map_err(|err| AppError::Validation(format!("enlace no válido: {err}")))?;
+    let url = Url::parse(raw.trim()).map_err(|err| {
+        AppError::validation("url_invalid", format!("enlace no válido: {err}"))
+            .with("detail", err.to_string())
+    })?;
 
     if !EXTERNAL_SCHEMES.contains(&url.scheme()) {
-        return Err(AppError::Validation(format!(
-            "solo se abren enlaces http y https, no «{}:»",
-            url.scheme()
-        )));
+        return Err(AppError::validation(
+            "url_scheme",
+            format!("solo se abren enlaces http y https, no «{}:»", url.scheme()),
+        )
+        .with("scheme", url.scheme()));
     }
     if url.host_str().is_none_or(str::is_empty) {
-        return Err(AppError::Validation("el enlace no tiene servidor".into()));
+        return Err(AppError::validation(
+            "url_no_host",
+            "el enlace no tiene servidor",
+        ));
     }
     Ok(url)
 }

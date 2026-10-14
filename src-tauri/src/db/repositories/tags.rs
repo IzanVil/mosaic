@@ -33,7 +33,11 @@ fn map_name_conflict(err: rusqlite::Error, name: &str) -> AppError {
         rusqlite::Error::SqliteFailure(failure, _)
             if failure.code == rusqlite::ErrorCode::ConstraintViolation =>
         {
-            AppError::Validation(format!("ya existe una etiqueta llamada «{name}»"))
+            AppError::validation(
+                "tag_name_taken",
+                format!("ya existe una etiqueta llamada «{name}»"),
+            )
+            .with("name", name)
         }
         _ => AppError::from(err),
     }
@@ -44,7 +48,9 @@ pub fn get_by_id(conn: &Connection, id: i64) -> Result<Tag> {
     let sql = format!("SELECT {COLUMNS} FROM tags WHERE id = ?1");
     conn.query_row(&sql, params![id], row_to_tag)
         .optional()?
-        .ok_or_else(|| AppError::NotFound(format!("etiqueta {id}")))
+        .ok_or_else(|| {
+            AppError::not_found("tag_not_found", format!("etiqueta {id}")).with("id", id)
+        })
 }
 
 /// Busca una etiqueta por nombre, ignorando mayúsculas y espacios de los extremos.
@@ -64,10 +70,11 @@ pub fn create(conn: &Connection, name: &str, color: &str, now: i64) -> Result<Ta
     let color = tag::normalize_color(color)?;
 
     if let Some(existing) = get_by_name_ci(conn, &name)? {
-        return Err(AppError::Validation(format!(
-            "ya existe una etiqueta llamada «{}»",
-            existing.name
-        )));
+        return Err(AppError::validation(
+            "tag_name_taken",
+            format!("ya existe una etiqueta llamada «{}»", existing.name),
+        )
+        .with("name", existing.name));
     }
 
     conn.execute(
@@ -116,10 +123,11 @@ pub fn update(conn: &Connection, id: i64, name: &str, color: &str) -> Result<Tag
     // «cliente» a «Cliente» tiene que funcionar.
     if let Some(existing) = get_by_name_ci(conn, &name)? {
         if existing.id != id {
-            return Err(AppError::Validation(format!(
-                "ya existe una etiqueta llamada «{}»",
-                existing.name
-            )));
+            return Err(AppError::validation(
+                "tag_name_taken",
+                format!("ya existe una etiqueta llamada «{}»", existing.name),
+            )
+            .with("name", existing.name));
         }
     }
 
@@ -130,7 +138,7 @@ pub fn update(conn: &Connection, id: i64, name: &str, color: &str) -> Result<Tag
         )
         .map_err(|err| map_name_conflict(err, &name))?;
     if affected == 0 {
-        return Err(AppError::NotFound(format!("etiqueta {id}")));
+        return Err(AppError::not_found("tag_not_found", format!("etiqueta {id}")).with("id", id));
     }
 
     get_by_id(conn, id)
@@ -144,7 +152,7 @@ pub fn update(conn: &Connection, id: i64, name: &str, color: &str) -> Result<Tag
 pub fn delete(conn: &Connection, id: i64) -> Result<()> {
     let affected = conn.execute("DELETE FROM tags WHERE id = ?1", params![id])?;
     if affected == 0 {
-        return Err(AppError::NotFound(format!("etiqueta {id}")));
+        return Err(AppError::not_found("tag_not_found", format!("etiqueta {id}")).with("id", id));
     }
     tracing::debug!(id, "etiqueta borrada");
     Ok(())

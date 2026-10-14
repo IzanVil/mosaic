@@ -46,21 +46,26 @@ pub fn validate_name(raw: &str) -> Result<String> {
     let name = raw.trim();
 
     if name.is_empty() {
-        return Err(AppError::Validation(
-            "el nombre de la etiqueta no puede estar vacío".into(),
+        return Err(AppError::validation(
+            "tag_name_empty",
+            "el nombre de la etiqueta no puede estar vacío",
         ));
     }
 
     let len = name.chars().count();
     if len > MAX_NAME_LEN {
-        return Err(AppError::Validation(format!(
-            "el nombre de la etiqueta no puede pasar de {MAX_NAME_LEN} caracteres (tiene {len})"
-        )));
+        return Err(AppError::validation(
+            "tag_name_too_long",
+            format!("el nombre de la etiqueta no puede pasar de {MAX_NAME_LEN} caracteres (tiene {len})"),
+        )
+        .with("max", MAX_NAME_LEN)
+        .with("len", len));
     }
 
     if name.chars().any(|c| c.is_control()) {
-        return Err(AppError::Validation(
-            "el nombre de la etiqueta no puede contener caracteres de control".into(),
+        return Err(AppError::validation(
+            "tag_name_control",
+            "el nombre de la etiqueta no puede contener caracteres de control",
         ));
     }
 
@@ -76,9 +81,11 @@ pub fn normalize_color(raw: &str) -> Result<String> {
     let color = raw.trim();
 
     let invalid = || {
-        AppError::Validation(format!(
-            "el color debe tener el formato #RRGGBB, no «{color}»"
-        ))
+        AppError::validation(
+            "tag_color_invalid",
+            format!("el color debe tener el formato #RRGGBB, no «{color}»"),
+        )
+        .with("color", color)
     };
 
     let hex = color.strip_prefix('#').ok_or_else(invalid)?;

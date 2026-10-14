@@ -39,8 +39,13 @@ pub fn add(conn: &Connection, path: &str, now: i64) -> Result<ScanPath> {
         params![path, now],
     )?;
 
-    find_by_path(conn, path)?
-        .ok_or_else(|| AppError::Internal(format!("no se pudo registrar la ruta {path}")))
+    find_by_path(conn, path)?.ok_or_else(|| {
+        AppError::internal(
+            "scan_path_register",
+            format!("no se pudo registrar la ruta {path}"),
+        )
+        .with("path", path)
+    })
 }
 
 /// Busca una ruta de escaneo por su valor.
@@ -80,7 +85,10 @@ pub fn set_enabled(conn: &Connection, id: i64, enabled: bool) -> Result<()> {
         params![id, enabled],
     )?;
     if affected == 0 {
-        return Err(AppError::NotFound(format!("ruta de escaneo {id}")));
+        return Err(
+            AppError::not_found("scan_path_not_found", format!("ruta de escaneo {id}"))
+                .with("id", id),
+        );
     }
     Ok(())
 }
@@ -92,7 +100,10 @@ pub fn set_last_scan_at(conn: &Connection, id: i64, ts: i64) -> Result<()> {
         params![id, ts],
     )?;
     if affected == 0 {
-        return Err(AppError::NotFound(format!("ruta de escaneo {id}")));
+        return Err(
+            AppError::not_found("scan_path_not_found", format!("ruta de escaneo {id}"))
+                .with("id", id),
+        );
     }
     Ok(())
 }

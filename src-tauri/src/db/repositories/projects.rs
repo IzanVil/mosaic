@@ -78,7 +78,9 @@ pub fn get_by_id(conn: &Connection, id: i64) -> Result<Project> {
     let sql = format!("SELECT {COLUMNS} FROM projects WHERE id = ?1");
     conn.query_row(&sql, params![id], row_to_project)
         .optional()?
-        .ok_or_else(|| AppError::NotFound(format!("proyecto {id}")))
+        .ok_or_else(|| {
+            AppError::not_found("project_not_found", format!("proyecto {id}")).with("id", id)
+        })
 }
 
 /// Devuelve todos los proyectos: primero los fijados, luego por nombre.
@@ -181,10 +183,9 @@ pub fn upsert_by_path(
     discovered: &DiscoveredProject,
     now: i64,
 ) -> Result<UpsertOutcome> {
-    let path = discovered
-        .path
-        .to_str()
-        .ok_or_else(|| AppError::invalid_path(&discovered.path, "no es UTF-8 válido"))?;
+    let path = discovered.path.to_str().ok_or_else(|| {
+        AppError::invalid_path(&discovered.path, "path_not_utf8", "no es UTF-8 válido")
+    })?;
 
     let Some(existing) = find_by_path(conn, path)? else {
         conn.execute(
@@ -249,7 +250,9 @@ pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
         params![id, pinned],
     )?;
     if affected == 0 {
-        return Err(AppError::NotFound(format!("proyecto {id}")));
+        return Err(
+            AppError::not_found("project_not_found", format!("proyecto {id}")).with("id", id),
+        );
     }
     Ok(())
 }
@@ -271,7 +274,9 @@ pub fn set_notes(conn: &Connection, id: i64, notes: Option<&str>, now: i64) -> R
             |row| row.get(0),
         )
         .optional()?
-        .ok_or_else(|| AppError::NotFound(format!("proyecto {id}")))?;
+        .ok_or_else(|| {
+            AppError::not_found("project_not_found", format!("proyecto {id}")).with("id", id)
+        })?;
 
     if current.as_deref() == notes {
         return Ok(false);
@@ -293,7 +298,9 @@ pub fn touch_last_opened(conn: &Connection, id: i64, now: i64) -> Result<()> {
         params![id, now],
     )?;
     if affected == 0 {
-        return Err(AppError::NotFound(format!("proyecto {id}")));
+        return Err(
+            AppError::not_found("project_not_found", format!("proyecto {id}")).with("id", id),
+        );
     }
     Ok(())
 }

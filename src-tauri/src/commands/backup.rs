@@ -7,24 +7,25 @@ use tauri::State;
 
 use crate::core::backup::{self, Backup, ExportSummary, ImportPlan, MAX_BACKUP_BYTES};
 use crate::db::Db;
-use crate::errors::AppError;
+use crate::errors::{AppError, CommandError};
 use crate::GitRefreshSignal;
+
+fn unreadable(ruta: &Path, err: &std::io::Error) -> AppError {
+    AppError::invalid_path(ruta, "path_unreadable", &err.to_string())
+        .with("detail", err.to_string())
+}
 
 fn read_backup(path: &str) -> Result<Backup, AppError> {
     let ruta = Path::new(path);
     let size = std::fs::metadata(ruta)
-        .map_err(|err| AppError::invalid_path(ruta, &err.to_string()))?
+        .map_err(|err| unreadable(ruta, &err))?
         .len();
     if size > MAX_BACKUP_BYTES {
-        return Err(AppError::Validation(
-            "el fichero no es una copia de Mosaic".into(),
-        ));
+        return Err(backup::not_a_backup());
     }
     let text = std::fs::read_to_string(ruta).map_err(|err| match err.kind() {
-        std::io::ErrorKind::InvalidData => {
-            AppError::Validation("el fichero no es una copia de Mosaic".into())
-        }
-        _ => AppError::invalid_path(ruta, &err.to_string()),
+        std::io::ErrorKind::InvalidData => backup::not_a_backup(),
+        _ => unreadable(ruta, &err),
     })?;
     backup::parse_backup(&text)
 }
@@ -35,7 +36,7 @@ pub async fn export_backup(
     db: State<'_, Arc<Db>>,
     path: String,
     include_work: bool,
-) -> Result<ExportSummary, String> {
+) -> Result<ExportSummary, CommandError> {
     let copia = db.with_conn(|conn| {
         backup::build_backup(
             conn,
@@ -57,7 +58,10 @@ pub async fn export_backup(
 
 /// Lee una copia y cuenta lo que haría importarla, sin escribir nada.
 #[tauri::command]
-pub async fn preview_import(db: State<'_, Arc<Db>>, path: String) -> Result<ImportPlan, String> {
+pub async fn preview_import(
+    db: State<'_, Arc<Db>>,
+    path: String,
+) -> Result<ImportPlan, CommandError> {
     let copia = read_backup(&path)?;
     Ok(db.with_conn(|conn| backup::plan_import(conn, &copia))?)
 }
@@ -68,7 +72,7 @@ pub async fn apply_import(
     db: State<'_, Arc<Db>>,
     signal: State<'_, Arc<GitRefreshSignal>>,
     path: String,
-) -> Result<ImportPlan, String> {
+) -> Result<ImportPlan, CommandError> {
     let copia = read_backup(&path)?;
     let plan =
         db.with_conn_mut(|conn| backup::apply_import(conn, &copia, crate::core::now_ts()))?;

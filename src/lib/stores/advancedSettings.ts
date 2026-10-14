@@ -11,6 +11,7 @@ import { get, writable } from 'svelte/store';
 
 import { getAdvancedSettings, setAdvancedSettings } from '../api/settings';
 import type { AdvancedSettings, AdvancedSettingsView } from '../types';
+import { errorText } from '../utils/errors';
 
 /** Lo que tarda en irse el «Guardado» de un campo. */
 export const SAVED_VISIBLE_MS = 2000;
@@ -55,7 +56,7 @@ export async function loadAdvancedSettings(): Promise<void> {
     advancedSettings.set(await getAdvancedSettings());
     advancedSettingsError.set(null);
   } catch (error) {
-    advancedSettingsError.set(String(error));
+    advancedSettingsError.set(errorText(error));
   }
 }
 
@@ -84,7 +85,7 @@ export async function saveAdvancedField<K extends AdvancedField>(
     return true;
   } catch (error) {
     advancedSettings.update((current) => (current ? { ...current, current: previous } : current));
-    setStatus(field, { state: 'error', message: String(error) });
+    setStatus(field, { state: 'error', message: errorText(error) });
     return false;
   }
 }

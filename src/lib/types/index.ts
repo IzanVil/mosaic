@@ -284,3 +284,13 @@ export interface ImportPlan {
   /** Nombres de proyecto cuyas notas difieren; se quedan las de aquí. */
   notes_conflicts: string[];
 }
+
+/** Espejo de `errors::CommandError`: lo que llega cuando un comando falla. */
+export interface CommandError {
+  /** Código estable; los textos en otros idiomas se buscan por él. */
+  code: string;
+  /** Datos del texto. En los errores de librería, `detail`; en una copia dañada, `cause`. */
+  params: Record<string, unknown>;
+  /** El mensaje en español, tal y como lo escribe el backend. */
+  message: string;
+}
