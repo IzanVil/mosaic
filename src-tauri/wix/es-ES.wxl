@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="es-es" Codepage="1252" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="LaunchApp">Abrir Mosaic</String>
+  <String Id="DowngradeErrorMessage">Ya hay instalada una versión más nueva de Mosaic.</String>
+  <String Id="PathEnvVarFeature">Añade la carpeta de instalación de Mosaic a la variable PATH del sistema, para poder ejecutarlo desde cualquier sitio.</String>
+  <String Id="InstallAppFeature">Instala Mosaic.</String>
+</WixLocalization>
