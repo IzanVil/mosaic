@@ -310,3 +310,26 @@ Pendiente:
 - [x] Mosaic 0.2.1 publicado el 2026-10-13: el tablero solo monta las
       tarjetas que se ven, el escáner es lineal y los dos arreglos del día 11
       (orden por última apertura e insignias del README)
+
+## Fase 8 — Inglés · HECHA, pendiente de publicar
+
+- [x] Diccionarios `src/lib/i18n/es.ts` y `en.ts`: el inglés está tipado con
+      las claves del español, así que una clave que falte no compila
+- [x] Toda la interfaz traducida: tablero, Ajustes, detalle, paleta, atajos,
+      gestor de etiquetas y copia de seguridad
+- [x] Idioma del sistema por defecto (inglés si no es ni español ni inglés) y
+      selector «Idioma · Language» al principio de Ajustes, guardado con la
+      vista
+- [x] Errores del backend con código y datos (`CommandError`): en español se
+      enseña el mensaje de siempre y en inglés se traduce por el código. Un
+      test lee el código Rust y falla si un código no tiene texto en inglés
+- [x] Instaladores de Windows en los dos idiomas: dos `.msi` (`es-ES` y
+      `en-US`) y un `.exe` que pregunta el idioma al empezar
+- [x] Descripción del paquete en inglés y el menú de aplicaciones de Linux en
+      los dos idiomas (`Comment[es]`)
+- [x] Capturas y GIF del README en inglés, con datos de demostración en
+      inglés, en `docs/img/en` (`MOSAIC_IDIOMA=en` en los scripts de
+      `scripts/demo`)
+- [ ] Publicar: el README en inglés con sus capturas y sin el aviso de que la
+      interfaz solo está en español, y los botones de los dos `.msi` en los
+      README y en la web
