@@ -193,7 +193,9 @@ export const en: { [K in keyof typeof es]: (typeof es)[K] } = {
   'ajustes.gitCadaMinutos': ({ n }: N) => `Every ${n} minutes`,
   'ajustes.gitCadaHora': 'Every hour',
   'ajustes.rutasTitulo': 'Scan folders',
-  'ajustes.rutasTexto': 'Folders where Mosaic looks for projects, up to four levels deep.',
+  'ajustes.rutasTexto': ({ n }: N) =>
+    `Folders where Mosaic looks for projects, up to ${n} ${n === 1 ? 'level' : 'levels'} deep.`,
+  'ajustes.rutasTextoCorto': 'Folders where Mosaic looks for projects.',
   'ajustes.anadirCarpeta': 'Add folder',
   'ajustes.cargandoRutas': 'Loading folders…',
   'ajustes.sinRutasTitulo': 'No folders set up',

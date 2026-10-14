@@ -216,7 +216,9 @@ export const es = {
   'ajustes.gitCadaMinutos': ({ n }: N) => `Cada ${n} minutos`,
   'ajustes.gitCadaHora': 'Cada hora',
   'ajustes.rutasTitulo': 'Rutas de escaneo',
-  'ajustes.rutasTexto': 'Carpetas donde Mosaic busca proyectos, hasta cuatro niveles de profundidad.',
+  'ajustes.rutasTexto': ({ n }: N) =>
+    `Carpetas donde Mosaic busca proyectos, hasta ${n} ${n === 1 ? 'nivel' : 'niveles'} de profundidad.`,
+  'ajustes.rutasTextoCorto': 'Carpetas donde Mosaic busca proyectos.',
   'ajustes.anadirCarpeta': 'Añadir carpeta',
   'ajustes.cargandoRutas': 'Cargando rutas…',
   'ajustes.sinRutasTitulo': 'Ninguna ruta configurada',

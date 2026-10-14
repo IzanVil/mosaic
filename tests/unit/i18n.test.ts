@@ -34,6 +34,16 @@ describe('traducir', () => {
     expect(translate('en', 'app.numProyectos', { n: 3 })).toBe('3 projects');
   });
 
+  it('la profundidad de las rutas sale con su número y su plural', () => {
+    expect(translate('es', 'ajustes.rutasTexto', { n: 6 })).toBe(
+      'Carpetas donde Mosaic busca proyectos, hasta 6 niveles de profundidad.',
+    );
+    expect(translate('es', 'ajustes.rutasTexto', { n: 1 })).toContain('hasta 1 nivel de');
+    expect(translate('en', 'ajustes.rutasTexto', { n: 1 })).toBe(
+      'Folders where Mosaic looks for projects, up to 1 level deep.',
+    );
+  });
+
   it('el store sigue a la preferencia', () => {
     langPreference.set('en');
     expect(get(t)('app.ajustes')).toBe('Settings');

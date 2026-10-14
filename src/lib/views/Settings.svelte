@@ -111,7 +111,9 @@
       <div>
         <h2>{$t('ajustes.rutasTitulo')}</h2>
         <p class="explica">
-          {$t('ajustes.rutasTexto')}
+          {$advancedSettings
+            ? $t('ajustes.rutasTexto', { n: $advancedSettings.current.max_depth })
+            : $t('ajustes.rutasTextoCorto')}
         </p>
       </div>
 
