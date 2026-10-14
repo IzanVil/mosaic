@@ -47,6 +47,21 @@ RECORTE_SELECTOR = (
 RECORTE_GESTOR = (
     "JSON.stringify((()=>{const m=rect('.modal');return {x:m.x-20,y:m.y-20,w:m.w+40,h:m.h+40}})())"
 )
+AJUSTES = "clic('nav.pestanas button:nth-of-type(2)')"
+# La copia: el diálogo simulado devuelve una ruta y Ajustes enseña lo que haría importarla.
+IMPORTAR = "clic('section[aria-labelledby=titulo-copia] .acciones button:nth-of-type(2)')"
+VER_COPIA = "doc().querySelector('section[aria-labelledby=titulo-copia]').scrollIntoView({block:'center'})"
+RECORTE_COPIA = (
+    "JSON.stringify((()=>{const s=rect('section[aria-labelledby=titulo-copia]'),t=rect('#titulo-copia');"
+    "return {x:s.x-24,y:t.y-16,w:s.w+48,h:s.y+s.h-t.y+40}})())"
+)
+PALETA = (
+    "const w=doc().defaultView;"
+    "w.dispatchEvent(new w.KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));"
+)
+RECORTE_PALETA = (
+    "JSON.stringify((()=>{const p=rect('[role=dialog].paleta');return {x:p.x-16,y:p.y-16,w:p.w+32,h:p.h+32}})())"
+)
 
 
 # Idioma de las capturas: fijo, para que no dependa del sistema de quien las saca.
@@ -68,6 +83,9 @@ def trabajos():
         yield f"selector-{nombre}", 1280, 800, False, vista(tema), [ABRIR_SELECTOR], RECORTE_SELECTOR
         yield f"marco-{nombre}", 1254, 784, True, vista(tema), [], None
     yield "filtros-readme", 1320, 840, False, vista("dark", filters=FILTROS), [], None
+    yield "paleta", 1280, 890, False, vista("dark"), [PALETA], RECORTE_PALETA
+    yield "copia", 1280, 800, False, vista("dark"), [AJUSTES, IMPORTAR, VER_COPIA], RECORTE_COPIA
+    yield "compacto", 1370, 890, False, vista("light", density="compacto"), [], None
 
 
 cola = list(trabajos())
@@ -154,6 +172,11 @@ def diagonal(oscuro, claro):
 
 
 abrir("filtros-readme").save(os.path.join(carpeta_readme, "filtros.png"), optimize=True)
+abrir("marco-oscuro").save(os.path.join(carpeta_readme, "portada-oscura.png"), optimize=True)
+abrir("marco-claro").save(os.path.join(carpeta_readme, "portada-clara.png"), optimize=True)
+abrir("paleta").save(os.path.join(carpeta_readme, "paleta.png"), optimize=True)
+abrir("copia").save(os.path.join(carpeta_readme, "copia.png"), optimize=True)
+abrir("compacto").save(os.path.join(carpeta_readme, "compacto.png"), optimize=True)
 abrir("gestor-oscuro").save(os.path.join(carpeta_readme, "gestor-etiquetas.png"), optimize=True)
 abrir("selector-oscuro").save(os.path.join(carpeta_readme, "selector-etiquetas.png"), optimize=True)
 diagonal(abrir("marco-oscuro"), abrir("marco-claro")).save(os.path.join(carpeta_readme, "temas.png"), optimize=True)

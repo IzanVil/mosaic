@@ -9,6 +9,10 @@ import gi, sys, json, os
 gi.require_version('Gtk', '3.0'); gi.require_version('WebKit2', '4.1')
 from gi.repository import Gtk, WebKit2, GLib
 url, out = sys.argv[1], sys.argv[2]
+# Lo único del recorrido que cambia con el idioma: los datos de backend_simulado.py.
+EN = os.environ.get('MOSAIC_IDIOMA') == 'en'
+ETIQUETA = 'etiqueta:client' if EN else 'etiqueta:cliente'
+EN_LA_PALETA = 'portal' if EN else 'panel'
 os.makedirs(out, exist_ok=True)
 win = Gtk.OffscreenWindow(); view = WebKit2.WebView(); win.add(view); win.set_default_size(1280, 800); win.show_all()
 
@@ -28,13 +32,13 @@ escribir("#busqueda", "api")
 paso("", 350, 1.6)                                   # dos resultados
 escribir("#busqueda", "")
 paso("escribir('#busqueda','');buscar('#busqueda').blur()", 350, 0.5)
-mover("etiqueta:cliente")
-paso("clic('etiqueta:cliente')", 350, 1.8)           # filtrado por etiqueta
-paso("clic('etiqueta:cliente')", 350, 0.6)
+mover(ETIQUETA)
+paso(f"clic('{ETIQUETA}')", 350, 1.8)                # filtrado por etiqueta
+paso(f"clic('{ETIQUETA}')", 350, 0.6)
 paso("aparcar()", 110, 0.11); paso("", 220, 0.2)
 paso("teclas('Ctrl','K');tecla('k',true)", 400, 1.0) # la paleta
 paso("teclas()", 150, 0.3)
-escribir("input[placeholder^=\"Busca un\"]", "panel", 0.15)
+escribir(".paleta input", EN_LA_PALETA, 0.15)
 paso("", 300, 1.1)
 paso("teclas('Enter');tecla('Enter')", 900, 0.9)     # el detalle
 paso("teclas()", 300, 3.4)
