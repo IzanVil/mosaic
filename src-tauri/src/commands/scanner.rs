@@ -10,6 +10,8 @@ use crate::db::repositories::scan_paths as repo;
 use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 
+use super::blocking;
+
 /// Normaliza una ruta recibida del frontend: debe existir y ser un directorio.
 fn canonical_dir(raw: &str) -> Result<PathBuf, AppError> {
     let path = PathBuf::from(raw);
@@ -81,11 +83,5 @@ pub async fn set_scan_path_enabled(
 pub async fn scan_all_paths(db: State<'_, Arc<Db>>) -> Result<ScanSummary, CommandError> {
     let db = Arc::clone(&db);
 
-    tauri::async_runtime::spawn_blocking(move || run_full_scan(&db))
-        .await
-        .map_err(|err| {
-            AppError::internal("task_failed", format!("la tarea de escaneo falló: {err}"))
-                .with("detail", err.to_string())
-        })?
-        .map_err(CommandError::from)
+    blocking("la tarea de escaneo", move || run_full_scan(&db)).await
 }

@@ -14,6 +14,8 @@ use crate::db::repositories::projects as projects_repo;
 use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 
+use super::blocking;
+
 /// Devuelve toda la caché de estado Git, para que el frontend la indexe por proyecto.
 #[tauri::command]
 pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntry>, CommandError> {
@@ -32,13 +34,7 @@ pub async fn refresh_git_status(
 ) -> Result<Option<GitStatusEntry>, CommandError> {
     let db = Arc::clone(&db);
 
-    tauri::async_runtime::spawn_blocking(move || refresh_one(&db, project_id))
-        .await
-        .map_err(|err| {
-            AppError::internal("task_failed", format!("la tarea de refresco falló: {err}"))
-                .with("detail", err.to_string())
-        })?
-        .map_err(CommandError::from)
+    blocking("la tarea de refresco", move || refresh_one(&db, project_id)).await
 }
 
 /// Relee el estado Git de todos los proyectos que son repositorios.
@@ -51,13 +47,7 @@ pub async fn refresh_all_git_status(
 ) -> Result<GitRefreshSummary, CommandError> {
     let db = Arc::clone(&db);
 
-    tauri::async_runtime::spawn_blocking(move || refresh_all(&db))
-        .await
-        .map_err(|err| {
-            AppError::internal("task_failed", format!("la tarea de refresco falló: {err}"))
-                .with("detail", err.to_string())
-        })?
-        .map_err(CommandError::from)
+    blocking("la tarea de refresco", move || refresh_all(&db)).await
 }
 
 /// Ruta del proyecto si tiene sentido leer su repositorio: está en disco y es
@@ -78,16 +68,10 @@ pub async fn get_project_history(
         return Ok(Vec::new());
     };
 
-    tauri::async_runtime::spawn_blocking(move || read_history(&path, HISTORY_LIMIT))
-        .await
-        .map_err(|err| {
-            AppError::internal(
-                "task_failed",
-                format!("la lectura del historial falló: {err}"),
-            )
-            .with("detail", err.to_string())
-        })?
-        .map_err(CommandError::from)
+    blocking("la lectura del historial", move || {
+        read_history(&path, HISTORY_LIMIT)
+    })
+    .await
 }
 
 /// Devuelve las ramas locales y las remotas conocidas del proyecto.
@@ -100,14 +84,5 @@ pub async fn get_project_branches(
         return Ok(Branches::default());
     };
 
-    tauri::async_runtime::spawn_blocking(move || read_branches(&path))
-        .await
-        .map_err(|err| {
-            AppError::internal(
-                "task_failed",
-                format!("la lectura de las ramas falló: {err}"),
-            )
-            .with("detail", err.to_string())
-        })?
-        .map_err(CommandError::from)
+    blocking("la lectura de las ramas", move || read_branches(&path)).await
 }

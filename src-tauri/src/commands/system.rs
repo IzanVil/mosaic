@@ -12,6 +12,8 @@ use crate::db::repositories::projects as projects_repo;
 use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 
+use super::blocking;
+
 /// Devuelve los IDEs y terminales reconocidos que hay en el sistema.
 #[tauri::command]
 pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, CommandError> {
@@ -34,7 +36,7 @@ pub async fn open_in(
 ) -> Result<(), CommandError> {
     let db = Arc::clone(&db);
 
-    tauri::async_runtime::spawn_blocking(move || {
+    blocking("la tarea de apertura", move || {
         let (project, config) = db.with_conn(|conn| {
             Ok((
                 projects_repo::get_by_id(conn, project_id)?,
@@ -54,11 +56,6 @@ pub async fn open_in(
         })
     })
     .await
-    .map_err(|err| {
-        AppError::internal("task_failed", format!("la tarea de apertura falló: {err}"))
-            .with("detail", err.to_string())
-    })?
-    .map_err(CommandError::from)
 }
 
 /// Aplicaciones preferidas actualmente guardadas.

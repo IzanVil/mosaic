@@ -10,7 +10,9 @@ use crate::core::readme::{self, ReadmePreview};
 use crate::core::{now_ts, Project};
 use crate::db::repositories::projects::{self as repo, ProjectWithTags};
 use crate::db::Db;
-use crate::errors::{AppError, CommandError};
+use crate::errors::CommandError;
+
+use super::blocking;
 
 /// Devuelve todos los proyectos: primero los fijados, luego por nombre.
 #[tauri::command]
@@ -78,11 +80,8 @@ pub async fn get_project_readme(
 ) -> Result<Option<ReadmePreview>, CommandError> {
     let project = db.with_conn(|conn| repo::get_by_id(conn, project_id))?;
 
-    tauri::async_runtime::spawn_blocking(move || readme::read(&PathBuf::from(&project.path)))
-        .await
-        .map_err(|err| {
-            AppError::internal("task_failed", format!("la lectura del README falló: {err}"))
-                .with("detail", err.to_string())
-        })?
-        .map_err(CommandError::from)
+    blocking("la lectura del README", move || {
+        readme::read(&PathBuf::from(&project.path))
+    })
+    .await
 }
