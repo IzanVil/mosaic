@@ -12,7 +12,7 @@ use std::time::Instant;
 
 use mosaic_lib::config::settings;
 use mosaic_lib::core::{git, scanner};
-use mosaic_lib::db::repositories::{projects, scan_paths};
+use mosaic_lib::db::repositories::{projects, scan_paths, settings as settings_repo};
 use mosaic_lib::db::Db;
 
 fn medir(base: &Path, raices: &[&str], tope: Option<usize>) {
@@ -23,9 +23,9 @@ fn medir(base: &Path, raices: &[&str], tope: Option<usize>) {
             scan_paths::add(c, base.join(r).to_str().unwrap(), 1)?;
         }
         if let Some(tope) = tope {
-            let mut s = settings::load(c)?;
+            let mut s = settings_repo::load(c)?;
             s.max_entries_per_scan = tope;
-            settings::save(c, &s)?;
+            settings_repo::save(c, &s)?;
         }
         Ok(())
     })

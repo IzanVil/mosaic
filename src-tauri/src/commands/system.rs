@@ -9,6 +9,7 @@ use tauri::State;
 use crate::config::settings;
 use crate::core::launcher::{detect, open_external as open_url, open_path, AppKind, DetectedApp};
 use crate::db::repositories::projects as projects_repo;
+use crate::db::repositories::settings as settings_repo;
 use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 
@@ -40,7 +41,7 @@ pub async fn open_in(
         let (project, config) = db.with_conn(|conn| {
             Ok((
                 projects_repo::get_by_id(conn, project_id)?,
-                settings::load(conn)?,
+                settings_repo::load(conn)?,
             ))
         })?;
 
@@ -70,7 +71,7 @@ pub struct PreferredApps {
 /// Devuelve las aplicaciones preferidas, para poder marcarlas en los ajustes.
 #[tauri::command]
 pub async fn get_preferred_apps(db: State<'_, Arc<Db>>) -> Result<PreferredApps, CommandError> {
-    let config = db.with_conn(settings::load)?;
+    let config = db.with_conn(settings_repo::load)?;
     Ok(PreferredApps {
         ide: config.preferred_ide,
         terminal: config.preferred_terminal,
@@ -97,7 +98,7 @@ pub async fn set_preferred_app(
         }
     };
 
-    db.with_conn(|conn| settings::set_raw(conn, key, &app_id))?;
+    db.with_conn(|conn| settings_repo::set_raw(conn, key, &app_id))?;
     tracing::info!(?kind, app = %app_id, "aplicación preferida guardada");
     Ok(())
 }

@@ -16,11 +16,13 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
 use crate::config::settings::{
-    self, validate_advanced, AdvancedSettings, KEY_PREFERRED_IDE, KEY_PREFERRED_TERMINAL,
+    validate_advanced, AdvancedSettings, KEY_PREFERRED_IDE, KEY_PREFERRED_TERMINAL,
 };
 use crate::core::project::normalize_notes;
 use crate::core::tag;
-use crate::db::repositories::{project_tags, projects, scan_paths, tags};
+use crate::db::repositories::{
+    project_tags, projects, scan_paths, settings as settings_repo, tags,
+};
 use crate::errors::{AppError, Result};
 
 /// Marca que identifica un fichero como copia de Mosaic.
@@ -132,7 +134,7 @@ pub fn build_backup(
     now: i64,
     app_version: &str,
 ) -> Result<Backup> {
-    let loaded = settings::load(conn)?;
+    let loaded = settings_repo::load(conn)?;
     let backup_settings = BackupSettings {
         advanced: AdvancedSettings::from(&loaded),
         preferred_ide: loaded.preferred_ide,
@@ -358,7 +360,7 @@ fn reconcile_settings(
     write: bool,
     plan: &mut ImportPlan,
 ) -> Result<()> {
-    let current = settings::load(conn)?;
+    let current = settings_repo::load(conn)?;
     let here = AdvancedSettings::from(&current);
     let there = &incoming.advanced;
 
@@ -404,13 +406,13 @@ fn reconcile_settings(
 
     if write {
         if merged != here {
-            settings::save_advanced(conn, &merged)?;
+            settings_repo::save_advanced(conn, &merged)?;
         }
         if ide {
-            settings::set_raw(conn, KEY_PREFERRED_IDE, &incoming.preferred_ide)?;
+            settings_repo::set_raw(conn, KEY_PREFERRED_IDE, &incoming.preferred_ide)?;
         }
         if terminal {
-            settings::set_raw(conn, KEY_PREFERRED_TERMINAL, &incoming.preferred_terminal)?;
+            settings_repo::set_raw(conn, KEY_PREFERRED_TERMINAL, &incoming.preferred_terminal)?;
         }
     }
     Ok(())
@@ -525,7 +527,7 @@ mod tests {
         project_tags::assign(conn, a, cliente.id).unwrap();
         projects::set_pinned(conn, a, true).unwrap();
         projects::set_notes(conn, a, Some("revisar facturas"), 2).unwrap();
-        settings::set_raw(conn, KEY_PREFERRED_IDE, "code").unwrap();
+        settings_repo::set_raw(conn, KEY_PREFERRED_IDE, "code").unwrap();
     }
 
     fn exportar(db: &Db, include_work: bool) -> Backup {
@@ -615,7 +617,7 @@ mod tests {
                 assert_eq!(etiquetas[0].name, "Cliente");
                 assert_eq!(etiquetas[0].color, "#3B82F6");
                 assert_eq!(scan_paths::list(c)?[0].path, raiz_str);
-                assert_eq!(settings::load(c)?.preferred_ide, "code");
+                assert_eq!(settings_repo::load(c)?.preferred_ide, "code");
                 Ok(())
             })
             .unwrap();
@@ -643,7 +645,7 @@ mod tests {
             settings: BackupSettings {
                 advanced: AdvancedSettings {
                     excluded_dirs: vec!["otra".into()],
-                    ..AdvancedSettings::from(&settings::Settings::default())
+                    ..AdvancedSettings::from(&crate::config::settings::Settings::default())
                 },
                 preferred_ide: String::new(),
                 preferred_terminal: String::new(),
@@ -685,7 +687,7 @@ mod tests {
                 "no cambia el color"
             );
             assert_eq!(scan_paths::list(c)?.len(), 1, "no quita rutas");
-            let excluidas = settings::load(c)?.excluded_dirs;
+            let excluidas = settings_repo::load(c)?.excluded_dirs;
             assert!(excluidas.contains(&"node_modules".to_string()));
             assert!(excluidas.contains(&"otra".to_string()));
             Ok(())
@@ -718,7 +720,7 @@ mod tests {
             .with_conn(|c| {
                 assert!(tags::list_all(c)?.is_empty());
                 assert!(scan_paths::list(c)?.is_empty());
-                assert_eq!(settings::load(c)?.preferred_ide, "");
+                assert_eq!(settings_repo::load(c)?.preferred_ide, "");
                 Ok(())
             })
             .unwrap();
@@ -810,7 +812,7 @@ mod tests {
             .with_conn(|c| {
                 assert!(tags::list_all(c)?.is_empty());
                 assert!(scan_paths::list(c)?.is_empty());
-                assert_eq!(settings::load(c)?.preferred_ide, "");
+                assert_eq!(settings_repo::load(c)?.preferred_ide, "");
                 assert!(!projects::find_by_path(c, "/p/api")?.unwrap().pinned);
                 Ok(())
             })

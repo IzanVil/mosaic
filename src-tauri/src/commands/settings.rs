@@ -11,6 +11,7 @@ use tauri::State;
 use crate::config::settings::{
     self, validate_advanced, AdvancedSettings, AdvancedSettingsView, KEY_VIEW_STATE, LIMITS,
 };
+use crate::db::repositories::settings as settings_repo;
 use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 use crate::GitRefreshSignal;
@@ -27,10 +28,10 @@ const MAX_VIEW_STATE_BYTES: usize = 64 * 1024;
 /// Devuelve `null` si nunca se guardó o si lo guardado ya no es JSON válido:
 /// la vista es una comodidad, así que ante un valor corrupto se arranca con
 /// los filtros por defecto en lugar de fallar. Es la misma política que aplica
-/// [`settings::load`] con el resto de claves.
+/// [`settings_repo::load`] con el resto de claves.
 #[tauri::command]
 pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, CommandError> {
-    let raw = db.with_conn(|conn| settings::get_raw(conn, KEY_VIEW_STATE))?;
+    let raw = db.with_conn(|conn| settings_repo::get_raw(conn, KEY_VIEW_STATE))?;
 
     let Some(raw) = raw else {
         return Ok(None);
@@ -65,7 +66,7 @@ pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), 
         .with("detail", err.to_string())
     })?;
 
-    db.with_conn(|conn| settings::set_raw(conn, KEY_VIEW_STATE, &json))?;
+    db.with_conn(|conn| settings_repo::set_raw(conn, KEY_VIEW_STATE, &json))?;
     Ok(())
 }
 
@@ -74,7 +75,7 @@ pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), 
 pub async fn get_advanced_settings(
     db: State<'_, Arc<Db>>,
 ) -> Result<AdvancedSettingsView, CommandError> {
-    let current = AdvancedSettings::from(&db.with_conn(settings::load)?);
+    let current = AdvancedSettings::from(&db.with_conn(settings_repo::load)?);
     Ok(AdvancedSettingsView {
         current,
         defaults: AdvancedSettings::from(&settings::Settings::default()),
@@ -94,8 +95,10 @@ pub async fn set_advanced_settings(
     settings: AdvancedSettings,
 ) -> Result<AdvancedSettings, CommandError> {
     let validos = validate_advanced(settings)?;
-    let antes = db.with_conn(settings::load)?.git_refresh_interval_minutes;
-    db.with_conn(|conn| settings::save_advanced(conn, &validos))?;
+    let antes = db
+        .with_conn(settings_repo::load)?
+        .git_refresh_interval_minutes;
+    db.with_conn(|conn| settings_repo::save_advanced(conn, &validos))?;
 
     if validos.git_refresh_interval_minutes != antes {
         signal.0.notify_one();

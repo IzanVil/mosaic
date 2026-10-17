@@ -127,7 +127,7 @@ fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>, signal: Arc<GitRefreshSig
         tokio::time::sleep(FIRST_REFRESH_DELAY).await;
 
         loop {
-            let minutes = match db.with_conn(config::settings::load) {
+            let minutes = match db.with_conn(db::repositories::settings::load) {
                 Ok(settings) => settings.git_refresh_interval_minutes,
                 Err(err) => {
                     tracing::warn!(%err, "no se pudieron leer los ajustes de refresco");

@@ -386,7 +386,7 @@ pub struct ScanSummary {
 /// vez que abre la aplicación. La decisión vive aquí, y no en el arranque de
 /// Tauri, para que se pueda comprobar con un test.
 pub fn run_startup_scan(db: &crate::db::Db) -> crate::errors::Result<Option<ScanSummary>> {
-    let settings = db.with_conn(crate::config::settings::load)?;
+    let settings = db.with_conn(crate::db::repositories::settings::load)?;
     if !settings.scan_on_startup {
         tracing::debug!("escaneo al arrancar desactivado");
         return Ok(None);
@@ -404,7 +404,7 @@ pub fn run_full_scan(db: &crate::db::Db) -> crate::errors::Result<ScanSummary> {
 
     let (settings, roots) = db.with_conn(|conn| {
         Ok((
-            crate::config::settings::load(conn)?,
+            crate::db::repositories::settings::load(conn)?,
             scan_paths_repo::list_enabled(conn)?,
         ))
     })?;

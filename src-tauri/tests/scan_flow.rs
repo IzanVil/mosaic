@@ -136,7 +136,7 @@ fn startup_scan_runs_when_the_setting_is_on() {
     let db = db_with_root(&root);
 
     db.with_conn(|conn| {
-        mosaic_lib::config::settings::set_raw(
+        mosaic_lib::db::repositories::settings::set_raw(
             conn,
             mosaic_lib::config::settings::KEY_SCAN_ON_STARTUP,
             "true",
@@ -159,7 +159,7 @@ fn startup_scan_does_nothing_when_the_setting_is_off() {
     let db = db_with_root(&root);
 
     db.with_conn(|conn| {
-        mosaic_lib::config::settings::set_raw(
+        mosaic_lib::db::repositories::settings::set_raw(
             conn,
             mosaic_lib::config::settings::KEY_SCAN_ON_STARTUP,
             "false",
