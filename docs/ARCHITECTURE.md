@@ -65,8 +65,8 @@ dato que el backend no manda. No se usa `unwrap()` fuera de los tests.
   `rusqlite_migration` al abrir la base de datos. Para añadir una, se crea
   `migrations/NNN_nombre.sql` y se añade al final del vector; el orden existente
   nunca se reordena.
-- **`repositories/`** — `projects`, `scan_paths`, `git_status`, `tags` y
-  `project_tags`. Devuelven structs de dominio, no filas.
+- **`repositories/`** — `projects`, `scan_paths`, `git_status`, `tags`,
+  `project_tags` y `settings`. Devuelven structs de dominio, no filas.
 
 ### `core/scanner.rs`
 
@@ -192,7 +192,10 @@ GitHub, GitLab… o en el editor.
 ### `config/settings.rs`
 
 Los ajustes son una tabla clave-valor con valores por defecto: una base recién
-creada es válida sin precargar nada, y un valor ilegible cae a su defecto.
+creada es válida sin precargar nada, y un valor ilegible cae a su defecto. Este
+módulo dice qué claves hay, sus valores por defecto, sus límites y cómo se
+validan; leerlos y guardarlos es cosa de `db/repositories/settings.rs`, como el
+resto del SQL.
 
 Los cinco ajustes de escaneo y Git que se editan desde la interfaz forman
 `AdvancedSettings`, con sus límites en `LIMITS` (profundidad de 1 a 8, tope de
