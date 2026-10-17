@@ -311,7 +311,7 @@ Pendiente:
       tarjetas que se ven, el escáner es lineal y los dos arreglos del día 11
       (orden por última apertura e insignias del README)
 
-## Fase 8 — Inglés · HECHA, pendiente de publicar
+## Fase 8 — Inglés · HECHA
 
 - [x] Diccionarios `src/lib/i18n/es.ts` y `en.ts`: el inglés está tipado con
       las claves del español, así que una clave que falte no compila
@@ -330,6 +330,6 @@ Pendiente:
 - [x] Capturas y GIF del README en inglés, con datos de demostración en
       inglés, en `docs/img/en` (`MOSAIC_IDIOMA=en` en los scripts de
       `scripts/demo`)
-- [ ] Publicar: el README en inglés con sus capturas y sin el aviso de que la
-      interfaz solo está en español, y los botones de los dos `.msi` en los
-      README y en la web
+- [x] Mosaic 0.3.0 publicado el 2026-10-18 con los siete instaladores (dos
+      `.msi`); el README en inglés usa sus capturas y ya no avisa de que la
+      interfaz solo está en español, y los README y la web enlazan los dos `.msi`
