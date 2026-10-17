@@ -1,14 +1,14 @@
 //! Comandos de integración con el sistema: abrir proyectos en aplicaciones
 //! externas y descubrir cuáles hay instaladas.
 
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use tauri::State;
 
 use crate::config::settings;
-use crate::core::launcher::{detect, open_external as open_url, open_path, AppKind, DetectedApp};
-use crate::db::repositories::projects as projects_repo;
+use crate::core::launcher::{
+    detect, open_external as open_url, open_project, AppKind, DetectedApp,
+};
 use crate::db::repositories::settings as settings_repo;
 use crate::db::Db;
 use crate::errors::{AppError, CommandError};
@@ -38,23 +38,7 @@ pub async fn open_in(
     let db = Arc::clone(&db);
 
     blocking("la tarea de apertura", move || {
-        let (project, config) = db.with_conn(|conn| {
-            Ok((
-                projects_repo::get_by_id(conn, project_id)?,
-                settings_repo::load(conn)?,
-            ))
-        })?;
-
-        let preferred = match kind {
-            AppKind::Ide => config.preferred_ide,
-            AppKind::Terminal => config.preferred_terminal,
-            AppKind::FileManager => String::new(),
-        };
-
-        open_path(kind, &PathBuf::from(&project.path), Some(&preferred))?;
-        db.with_conn(|conn| {
-            projects_repo::touch_last_opened(conn, project_id, crate::core::now_ts())
-        })
+        open_project(&db, kind, project_id)
     })
     .await
 }

@@ -12,6 +12,8 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+use crate::db::repositories::{projects as projects_repo, settings as settings_repo};
+use crate::db::Db;
 use crate::errors::{AppError, Result};
 
 /// Qué tipo de aplicación abre un proyecto.
@@ -296,13 +298,12 @@ pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<
         ));
     }
 
-    if kind == AppKind::FileManager {
-        open::that_detached(path)?;
-        tracing::info!(path = %path.display(), "abierto en el explorador de archivos");
-        return Ok(());
-    }
-
-    let candidate = resolve(kind, preferred).ok_or_else(|| match kind {
+    let none_installed = match kind {
+        AppKind::FileManager => {
+            open::that_detached(path)?;
+            tracing::info!(path = %path.display(), "abierto en el explorador de archivos");
+            return Ok(());
+        }
         AppKind::Ide => {
             AppError::not_found("no_editor", "ningún IDE o editor reconocido en el PATH")
         }
@@ -310,8 +311,8 @@ pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<
             "no_terminal",
             "ningún emulador de terminal reconocido en el PATH",
         ),
-        AppKind::FileManager => unreachable!("el explorador se resuelve antes"),
-    })?;
+    };
+    let candidate = resolve(kind, preferred).ok_or(none_installed)?;
 
     build_command(candidate, path).spawn().map_err(|err| {
         AppError::internal(
@@ -324,6 +325,35 @@ pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<
 
     tracing::info!(app = candidate.bin, path = %path.display(), "proyecto abierto");
     Ok(())
+}
+
+/// Abre un proyecto con la aplicación preferida de su tipo y apunta cuándo se
+/// abrió. Solo si el lanzamiento sale bien: un intento fallido no cuenta como
+/// apertura.
+pub fn open_project(db: &Db, kind: AppKind, project_id: i64) -> Result<()> {
+    open_project_with(db, kind, project_id, open_path)
+}
+
+fn open_project_with(
+    db: &Db,
+    kind: AppKind,
+    project_id: i64,
+    open: impl FnOnce(AppKind, &Path, Option<&str>) -> Result<()>,
+) -> Result<()> {
+    let (project, settings) = db.with_conn(|conn| {
+        Ok((
+            projects_repo::get_by_id(conn, project_id)?,
+            settings_repo::load(conn)?,
+        ))
+    })?;
+    let preferred = match kind {
+        AppKind::Ide => settings.preferred_ide,
+        AppKind::Terminal => settings.preferred_terminal,
+        AppKind::FileManager => String::new(),
+    };
+
+    open(kind, Path::new(&project.path), Some(&preferred))?;
+    db.with_conn(|conn| projects_repo::touch_last_opened(conn, project_id, crate::core::now_ts()))
 }
 
 /// Esquemas que `open_external` acepta. Cualquier otro se rechaza.
@@ -446,6 +476,87 @@ mod tests {
     }
 
     use super::*;
+    use crate::core::project::DiscoveredProject;
+
+    /// Un proyecto en la base con editor y terminal preferidos, y su id.
+    fn con_proyecto() -> (Db, i64) {
+        let db = Db::open_in_memory().unwrap();
+        let id = db
+            .with_conn(|conn| {
+                settings_repo::set_raw(conn, crate::config::settings::KEY_PREFERRED_IDE, "zed")?;
+                settings_repo::set_raw(
+                    conn,
+                    crate::config::settings::KEY_PREFERRED_TERMINAL,
+                    "kitty",
+                )?;
+                let path = PathBuf::from("/code/mosaic");
+                let proyecto = DiscoveredProject {
+                    name: DiscoveredProject::name_from_path(&path),
+                    path,
+                    is_git_repo: true,
+                    primary_language: None,
+                    markers: vec![".git".into()],
+                };
+                Ok(projects_repo::upsert_by_path(conn, &proyecto, 1_000)?.id)
+            })
+            .unwrap();
+        (db, id)
+    }
+
+    fn abierto(db: &Db, id: i64) -> Option<i64> {
+        db.with_conn(|conn| projects_repo::get_by_id(conn, id))
+            .unwrap()
+            .last_opened_at
+    }
+
+    #[test]
+    fn opening_a_project_uses_the_preferred_application_of_its_kind() {
+        let (db, id) = con_proyecto();
+        for (kind, esperada) in [
+            (AppKind::Ide, "zed"),
+            (AppKind::Terminal, "kitty"),
+            (AppKind::FileManager, ""),
+        ] {
+            let mut pedida = None;
+            open_project_with(&db, kind, id, |k, path, preferred| {
+                assert_eq!(k, kind);
+                assert_eq!(path, Path::new("/code/mosaic"));
+                pedida = preferred.map(str::to_string);
+                Ok(())
+            })
+            .unwrap();
+            assert_eq!(pedida.as_deref(), Some(esperada), "{kind:?}");
+        }
+    }
+
+    #[test]
+    fn a_successful_launch_records_when_the_project_was_opened() {
+        let (db, id) = con_proyecto();
+        assert_eq!(abierto(&db, id), None);
+        open_project_with(&db, AppKind::Ide, id, |_, _, _| Ok(())).unwrap();
+        assert!(abierto(&db, id).is_some());
+    }
+
+    #[test]
+    fn a_failed_launch_does_not_count_as_opening_the_project() {
+        let (db, id) = con_proyecto();
+        let err = open_project_with(&db, AppKind::Ide, id, |_, _, _| {
+            Err(AppError::not_found("no_editor", "ningún IDE"))
+        })
+        .unwrap_err();
+        assert_eq!(err.code(), "no_editor");
+        assert_eq!(abierto(&db, id), None);
+    }
+
+    #[test]
+    fn opening_an_unknown_project_launches_nothing() {
+        let (db, _) = con_proyecto();
+        let err = open_project_with(&db, AppKind::Ide, 999, |_, _, _| {
+            panic!("no tendría que lanzar nada")
+        })
+        .unwrap_err();
+        assert_eq!(err.code(), "project_not_found");
+    }
 
     #[test]
     fn detects_only_the_applications_that_are_available() {
