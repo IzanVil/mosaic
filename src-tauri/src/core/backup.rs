@@ -18,12 +18,12 @@ use serde::{Deserialize, Serialize};
 use crate::config::settings::{
     validate_advanced, AdvancedSettings, KEY_PREFERRED_IDE, KEY_PREFERRED_TERMINAL,
 };
-use crate::core::project::normalize_notes;
-use crate::core::tag;
 use crate::db::repositories::{
     project_tags, projects, scan_paths, settings as settings_repo, tags,
 };
 use crate::errors::{AppError, Result};
+use crate::model::project::normalize_notes;
+use crate::model::tag;
 
 /// Marca que identifica un fichero como copia de Mosaic.
 pub const FORMAT_TAG: &str = "mosaic-backup";
@@ -491,8 +491,8 @@ fn reconcile_work(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::project::DiscoveredProject;
     use crate::db::Db;
+    use crate::model::project::DiscoveredProject;
 
     fn db() -> Db {
         Db::open_in_memory().unwrap()

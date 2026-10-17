@@ -8,8 +8,8 @@ use std::collections::HashMap;
 
 use rusqlite::{params, Connection};
 
-use crate::core::tag::Tag;
 use crate::errors::{AppError, Result};
+use crate::model::tag::Tag;
 
 /// Traduce una violación de clave ajena en un «no encontrado» legible.
 ///

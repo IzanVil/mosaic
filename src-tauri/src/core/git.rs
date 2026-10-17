@@ -12,29 +12,7 @@ use git2::{BranchType, Repository, StatusOptions};
 use serde::{Deserialize, Serialize};
 
 use crate::errors::Result;
-
-/// Estado de un repositorio Git en un instante dado.
-///
-/// Espejo de las columnas de `git_status_cache`, sin los campos de la caché.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct GitStatus {
-    /// Rama actual. `None` si el HEAD está separado.
-    pub branch: Option<String>,
-    /// Commits que la rama local tiene y su upstream no. `None` si no hay upstream.
-    pub ahead: Option<u32>,
-    /// Commits que el upstream tiene y la rama local no. `None` si no hay upstream.
-    pub behind: Option<u32>,
-    /// Hay cambios sin commitear: ficheros modificados o sin seguir, respetando
-    /// `.gitignore`. Es el mismo criterio que `git status`.
-    pub is_dirty: bool,
-    pub last_commit_sha: Option<String>,
-    /// Primera línea del mensaje del último commit.
-    pub last_commit_msg: Option<String>,
-    /// Fecha del último commit, en segundos desde el epoch Unix.
-    pub last_commit_at: Option<i64>,
-    /// URL del remoto `origin`, o del primer remoto que haya.
-    pub remote_url: Option<String>,
-}
+use crate::model::git::GitStatus;
 
 /// Un commit del historial, con lo justo para pintar una fila.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

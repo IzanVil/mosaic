@@ -43,10 +43,11 @@ XDG_DATA_HOME=/tmp/mosaic-pruebas pnpm tauri dev
 ## Dónde va cada cosa
 
 ```
-views/ → stores/ → api/ → invoke()  ⇄  commands/ → core/ → db/
+views/ → stores/ → api/ → invoke()  ⇄  commands/ → core/ → db/ → model/
 ```
 
 - `src-tauri/src/core/`: la lógica, sin Tauri. Aquí van los tests unitarios.
+- `src-tauri/src/model/`: los datos y su validación. Lo usan `core/` y `db/`.
 - `src-tauri/src/db/repositories/`: todo el SQL, y solo aquí.
 - `src-tauri/src/commands/`: valida la entrada y delega. Sin lógica.
 - `src/lib/api/`: el único sitio del frontend que llama a `invoke()`.

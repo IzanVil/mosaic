@@ -22,6 +22,8 @@ compartido fuera de la máquina del usuario.
 ├──────────────────────────────────────────────┤
 │  db/         SQLite: conexión, migraciones,  │
 │              repositorios (todo el SQL)      │
+├──────────────────────────────────────────────┤
+│  model/      datos y su validación           │
 └──────────────────────────────────────────────┘
 ```
 
@@ -30,8 +32,11 @@ Las reglas de dependencia:
 - `commands/` no contiene lógica de negocio. Valida la entrada, mueve el trabajo
   bloqueante fuera del hilo de la interfaz y convierte `AppError` en
   `CommandError`, que es lo que viaja por el puente de Tauri.
-- `core/` no conoce Tauri. Es donde vive el escáner y el modelo de dominio, y es
-  lo que cubren los tests unitarios.
+- `core/` no conoce Tauri. Es lo que orquesta (el escáner, Git, el lanzador y
+  la copia de seguridad) y lo que cubren los tests unitarios.
+- `model/` tiene los datos (proyectos, etiquetas, estado de Git) y sus reglas de
+  validación. Solo depende de los errores: lo usan `core/` y `db/`, y así las
+  dependencias van en un solo sentido, sin que `db/` tenga que conocer `core/`.
 - `db/` concentra todo el SQL. Ningún otro módulo escribe consultas.
 - En el frontend, **ningún componente llama a `invoke()`**. Solo lo hace
   `lib/api/`; los componentes hablan con los stores y los stores con la API.
@@ -285,7 +290,7 @@ viven bajo una ruta deshabilitada o eliminada conservan su estado.
 `tags` y `project_tags` existen desde la migración `001`. La `002` añade un
 índice único sobre `lower(name)`: el `UNIQUE` de la `001` usa la colación BINARY
 de SQLite, así que «Cliente» y «cliente» habrían sido dos etiquetas distintas. La
-validación en `core/tag.rs` repite la comprobación antes de insertar, solo para
+validación en `model/tag.rs` repite la comprobación antes de insertar, solo para
 poder devolver un mensaje legible en vez del error crudo de la base de datos.
 
 El nombre se guarda tal y como lo escribió el usuario, recortado, de 1 a 32

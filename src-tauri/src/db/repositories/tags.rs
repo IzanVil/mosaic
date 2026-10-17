@@ -1,6 +1,6 @@
 //! Repositorio de etiquetas.
 //!
-//! Las reglas de validación viven en [`crate::core::tag`]; aquí solo se
+//! Las reglas de validación viven en [`crate::model::tag`]; aquí solo se
 //! aplican antes de tocar SQL. La unicidad del nombre está garantizada por el
 //! índice `idx_tags_name_ci` de la migración 002: la comprobación previa de
 //! [`create`] y [`update`] existe para poder devolver un mensaje legible en vez
@@ -8,8 +8,8 @@
 
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
-use crate::core::tag::{self, Tag, TagWithCount};
 use crate::errors::{AppError, Result};
+use crate::model::tag::{self, Tag, TagWithCount};
 
 /// Columnas de `tags` en el orden que espera [`row_to_tag`].
 const COLUMNS: &str = "id, name, color, created_at";
@@ -161,9 +161,9 @@ pub fn delete(conn: &Connection, id: i64) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::tag::MAX_NAME_LEN;
     use crate::db::repositories::project_tags;
     use crate::db::Db;
+    use crate::model::tag::MAX_NAME_LEN;
 
     /// Inserta un proyecto mínimo y devuelve su id.
     fn project(db: &Db, path: &str) -> i64 {

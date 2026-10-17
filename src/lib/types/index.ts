@@ -9,7 +9,7 @@
 
 import type { LangPreference } from '../i18n';
 
-/** Espejo de `core::project::Project`. */
+/** Espejo de `model::project::Project`. */
 export interface Project {
   id: number;
   name: string;
@@ -28,7 +28,7 @@ export interface Project {
   updated_at: number;
 }
 
-/** Espejo de `core::tag::Tag`. */
+/** Espejo de `model::tag::Tag`. */
 export interface Tag {
   id: number;
   /** Nombre tal y como lo escribió el usuario. Único ignorando mayúsculas. */
@@ -39,7 +39,7 @@ export interface Tag {
 }
 
 /**
- * Espejo de `core::tag::TagWithCount`.
+ * Espejo de `model::tag::TagWithCount`.
  *
  * El backend serializa el `Tag` aplanado, así que `project_count` llega al
  * mismo nivel que sus campos.

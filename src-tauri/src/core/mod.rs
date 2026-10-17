@@ -3,13 +3,8 @@
 pub mod backup;
 pub mod git;
 pub mod launcher;
-pub mod project;
 pub mod readme;
 pub mod scanner;
-pub mod tag;
-
-pub use project::{DiscoveredProject, Project};
-pub use tag::{Tag, TagWithCount};
 
 /// Quita el prefijo verbatim que Windows pone en las rutas canónicas.
 ///

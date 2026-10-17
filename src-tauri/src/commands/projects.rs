@@ -6,11 +6,11 @@ use std::sync::Arc;
 use tauri::State;
 
 use crate::core::now_ts;
-use crate::core::project::normalize_notes;
 use crate::core::readme::{self, ReadmePreview};
 use crate::db::repositories::projects::{self as repo, ProjectWithTags};
 use crate::db::Db;
 use crate::errors::CommandError;
+use crate::model::project::normalize_notes;
 
 use super::blocking;
 

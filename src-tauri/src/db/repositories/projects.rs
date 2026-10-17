@@ -27,12 +27,12 @@ use std::path::Path;
 use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
-use crate::core::git::GitStatus;
-use crate::core::project::{DiscoveredProject, Project};
-use crate::core::tag::Tag;
 use crate::db::repositories::git_status::GitStatusEntry;
 use crate::db::repositories::project_tags;
 use crate::errors::{AppError, Result};
+use crate::model::git::GitStatus;
+use crate::model::project::{DiscoveredProject, Project};
+use crate::model::tag::Tag;
 
 /// Resultado de un upsert, para que el escáner pueda construir su resumen.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -265,7 +265,7 @@ pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
 /// comprobación cada pausa movería la fecha aunque nadie hubiera tocado nada.
 ///
 /// Devuelve si ha llegado a escribir. Las notas se esperan ya normalizadas con
-/// [`crate::core::project::normalize_notes`].
+/// [`crate::model::project::normalize_notes`].
 pub fn set_notes(conn: &Connection, id: i64, notes: Option<&str>, now: i64) -> Result<bool> {
     let current: Option<String> = conn
         .query_row(
@@ -752,8 +752,8 @@ mod tests {
 
     #[test]
     fn list_all_with_tags_attaches_tags_and_cached_git_status() {
-        use crate::core::git::GitStatus;
         use crate::db::repositories::{git_status, project_tags, tags};
+        use crate::model::git::GitStatus;
 
         let db = Db::open_in_memory().unwrap();
         let uno = db

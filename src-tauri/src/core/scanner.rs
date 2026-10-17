@@ -26,7 +26,7 @@ use serde::{Deserialize, Serialize};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::config::settings::Settings;
-use crate::core::project::DiscoveredProject;
+use crate::model::project::DiscoveredProject;
 
 /// Ficheros y carpetas cuya presencia delata un proyecto.
 pub const PROJECT_MARKERS: &[&str] = &[

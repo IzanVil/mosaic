@@ -7,8 +7,8 @@
 use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
-use crate::core::git::GitStatus;
 use crate::errors::Result;
+use crate::model::git::GitStatus;
 
 /// Una fila de `git_status_cache`: el estado leído más cuándo se leyó.
 ///
@@ -109,9 +109,9 @@ pub fn delete(conn: &Connection, project_id: i64) -> Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::project::DiscoveredProject;
     use crate::db::repositories::projects as projects_repo;
     use crate::db::Db;
+    use crate::model::project::DiscoveredProject;
 
     fn sample_status() -> GitStatus {
         GitStatus {

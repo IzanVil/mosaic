@@ -1,6 +1,6 @@
 //! Comandos de gestión de etiquetas.
 //!
-//! Capa fina: toda la validación vive en [`crate::core::tag`] y todo el SQL en
+//! Capa fina: toda la validación vive en [`crate::model::tag`] y todo el SQL en
 //! los repositorios. Aquí solo se resuelve el instante actual y se convierte el
 //! error al `String` que espera el puente de Tauri.
 
@@ -9,10 +9,10 @@ use std::sync::Arc;
 use tauri::State;
 
 use crate::core::now_ts;
-use crate::core::tag::{Tag, TagWithCount};
 use crate::db::repositories::{project_tags, tags as repo};
 use crate::db::Db;
 use crate::errors::CommandError;
+use crate::model::tag::{Tag, TagWithCount};
 
 /// Crea una etiqueta. El nombre se recorta y el color se normaliza a `#RRGGBB`.
 #[tauri::command]

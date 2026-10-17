@@ -476,7 +476,7 @@ mod tests {
     }
 
     use super::*;
-    use crate::core::project::DiscoveredProject;
+    use crate::model::project::DiscoveredProject;
 
     /// Un proyecto en la base con editor y terminal preferidos, y su id.
     fn con_proyecto() -> (Db, i64) {
