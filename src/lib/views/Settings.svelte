@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { open } from '@tauri-apps/plugin-dialog';
   import { onMount } from 'svelte';
   import { ChevronDown, FolderPlus, Trash2 } from '@lucide/svelte';
 
+  import { chooseFolder } from '../api/dialog';
   import BackupSection from '../components/BackupSection.svelte';
   import EmptyState from '../components/EmptyState.svelte';
   import ExcludedDirsEditor from '../components/ExcludedDirsEditor.svelte';
@@ -45,10 +45,8 @@
   async function pickFolder() {
     picking = true;
     try {
-      const selected = await open({ directory: true, multiple: false });
-      if (typeof selected === 'string') {
-        await addScanPath(selected);
-      }
+      const selected = await chooseFolder();
+      if (selected !== null) await addScanPath(selected);
     } finally {
       picking = false;
     }

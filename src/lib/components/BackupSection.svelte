@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { open, save } from '@tauri-apps/plugin-dialog';
   import { Download, Upload, X } from '@lucide/svelte';
 
+  import { chooseFileToOpen, chooseSaveLocation } from '../api/dialog';
   import {
     backupState,
     confirmImport,
@@ -18,13 +18,13 @@
   let includeWork = $state(true);
 
   async function pickExport() {
-    const path = await save({ defaultPath: backupFileName(new Date()), filters: filters() });
+    const path = await chooseSaveLocation(backupFileName(new Date()), filters());
     if (path) await exportTo(path, includeWork);
   }
 
   async function pickImport() {
-    const path = await open({ multiple: false, directory: false, filters: filters() });
-    if (typeof path === 'string') await previewFrom(path);
+    const path = await chooseFileToOpen(filters());
+    if (path !== null) await previewFrom(path);
   }
 
   const busy = $derived($backupState.step === 'busy');
