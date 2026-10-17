@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { Palette, Plus, Trash2, X } from '@lucide/svelte';
+  import { Plus, Trash2, X } from '@lucide/svelte';
 
   import { createTag, deleteTag, tags, tagsError, updateTag } from '../stores/tags';
   import { dismissable } from '../utils/dismissable';
   import { t } from '../i18n';
-  import { colorInputValue, DEFAULT_TAG_COLOR, TAG_COLORS } from '../utils/tagColors';
+  import { DEFAULT_TAG_COLOR } from '../utils/tagColors';
+  import TagColorMenu from './TagColorMenu.svelte';
 
   interface Props {
     onClose: () => void;
@@ -85,32 +86,16 @@
         </button>
 
         {#if colorEditing === 0}
-          <div use:dismissable={{ onDismiss: () => (colorEditing = null) }} class="paleta">
-            <div class="muestras">
-              {#each TAG_COLORS as color (color.hex)}
-                <button
-                  type="button"
-                  class="muestra"
-                  onclick={() => {
-                    newColor = color.hex;
-                    colorEditing = null;
-                  }}
-                  title={$t(`color.${color.id}`)}
-                  aria-label={$t('selector.color', { nombre: $t(`color.${color.id}`) })}
-                  style="background-color: {color.hex};"
-                ></button>
-              {/each}
-            </div>
-            <label class="personalizado">
-              <Palette size={14} strokeWidth={1.75} />
-              {$t('gestor.personalizado')}
-              <input
-                type="color"
-                value={colorInputValue(newColor)}
-                oninput={(event) => (newColor = event.currentTarget.value.toUpperCase())}
-              />
-            </label>
-          </div>
+          <TagColorMenu
+            value={newColor}
+            live
+            onPick={(hex) => {
+              newColor = hex;
+              colorEditing = null;
+            }}
+            onCustom={(hex) => (newColor = hex)}
+            onDismiss={() => (colorEditing = null)}
+          />
         {/if}
       </div>
 
@@ -164,30 +149,12 @@
                   </button>
 
                   {#if colorEditing === tag.id}
-                    <div use:dismissable={{ onDismiss: () => (colorEditing = null) }} class="paleta">
-                      <div class="muestras">
-                        {#each TAG_COLORS as color (color.hex)}
-                          <button
-                            type="button"
-                            class="muestra"
-                            onclick={() => recolor(tag.id, tag.name, color.hex)}
-                            title={$t(`color.${color.id}`)}
-                            aria-label={$t('selector.color', { nombre: $t(`color.${color.id}`) })}
-                            style="background-color: {color.hex};"
-                          ></button>
-                        {/each}
-                      </div>
-                      <label class="personalizado">
-                        <Palette size={14} strokeWidth={1.75} />
-                        {$t('gestor.personalizado')}
-                        <input
-                          type="color"
-                          value={colorInputValue(tag.color)}
-                          onchange={(event) =>
-                            recolor(tag.id, tag.name, event.currentTarget.value.toUpperCase())}
-                        />
-                      </label>
-                    </div>
+                    <TagColorMenu
+                      value={tag.color}
+                      onPick={(hex) => recolor(tag.id, tag.name, hex)}
+                      onCustom={(hex) => recolor(tag.id, tag.name, hex)}
+                      onDismiss={() => (colorEditing = null)}
+                    />
                   {/if}
                 </div>
 
@@ -329,61 +296,6 @@
     width: 14px;
     height: 14px;
     border-radius: var(--radius-pill);
-  }
-
-  .paleta {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 50;
-    width: 12rem;
-    margin-top: var(--space-1);
-    padding: var(--space-2);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    background: var(--surface-overlay);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .muestras {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1);
-  }
-
-  .muestra {
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    border: 0;
-    border-radius: var(--radius-pill);
-    cursor: pointer;
-    transition: transform var(--duration-fast) var(--ease-out);
-  }
-  .muestra:hover {
-    transform: scale(1.1);
-  }
-
-  .personalizado {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-    padding-top: var(--space-2);
-    border-top: 1px solid var(--border-subtle);
-    font-size: var(--text-meta);
-    line-height: var(--text-meta-lh);
-    color: var(--text-tertiary);
-  }
-  .personalizado input {
-    width: 40px;
-    height: 24px;
-    margin-left: auto;
-    padding: 0;
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    cursor: pointer;
   }
 
   .campo {
