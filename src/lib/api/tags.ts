@@ -33,8 +33,3 @@ export function assignTag(projectId: number, tagId: number): Promise<void> {
 export function unassignTag(projectId: number, tagId: number): Promise<void> {
   return invoke<void>('unassign_tag', { projectId, tagId });
 }
-
-/** Devuelve las etiquetas de un proyecto, ordenadas por nombre. */
-export function listTagsForProject(projectId: number): Promise<Tag[]> {
-  return invoke<Tag[]>('list_tags_for_project', { projectId });
-}

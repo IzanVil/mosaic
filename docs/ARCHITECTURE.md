@@ -226,19 +226,19 @@ importación va en una sola transacción.
 
 ### Comandos
 
-Treinta y cinco, agrupados como en `commands/`:
+Treinta y uno, agrupados como en `commands/`:
 
 ```
-projects  list_projects, list_projects_with_tags, get_project,
-          set_project_pinned, set_project_notes, get_project_readme
+projects  list_projects_with_tags, set_project_pinned, set_project_notes,
+          get_project_readme
 scanner   add_scan_path, list_scan_paths, remove_scan_path,
           set_scan_path_enabled, scan_all_paths
-git       list_git_status, refresh_git_status, refresh_all_git_status,
-          get_project_history, get_project_branches
+git       list_git_status, refresh_all_git_status, get_project_history,
+          get_project_branches
 system    list_detected_apps, open_in, open_external, get_preferred_apps,
           set_preferred_app
 tags      create_tag, list_tags, update_tag, delete_tag, assign_tag,
-          unassign_tag, list_tags_for_project
+          unassign_tag
 settings  get_view_state, set_view_state, get_advanced_settings,
           set_advanced_settings
 backup    export_backup, preview_import, apply_import

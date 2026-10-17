@@ -73,12 +73,3 @@ pub async fn unassign_tag(
     db.with_conn(|conn| project_tags::unassign(conn, project_id, tag_id))?;
     Ok(())
 }
-
-/// Devuelve las etiquetas de un proyecto, ordenadas por nombre.
-#[tauri::command]
-pub async fn list_tags_for_project(
-    db: State<'_, Arc<Db>>,
-    project_id: i64,
-) -> Result<Vec<Tag>, CommandError> {
-    Ok(db.with_conn(|conn| project_tags::list_tags_for_project(conn, project_id))?)
-}

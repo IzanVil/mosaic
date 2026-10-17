@@ -292,13 +292,6 @@ export function mergeGitStatus(entries: GitStatusEntry[]): number {
   return changed;
 }
 
-/** Mezcla el estado Git de un único proyecto. */
-export function mergeOneGitStatus(projectId: number, entry: GitStatusEntry | null): void {
-  patchProject(projectId, (project) =>
-    sameGitStatus(project.git_status, entry) ? project : { ...project, git_status: entry },
-  );
-}
-
 /** Añade una etiqueta a un proyecto en memoria, manteniendo el orden por nombre. */
 export function attachTag(projectId: number, tag: Tag): void {
   patchProject(projectId, (project) =>

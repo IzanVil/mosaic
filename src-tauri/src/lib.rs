@@ -192,8 +192,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::projects::list_projects,
-            commands::projects::get_project,
             commands::scanner::add_scan_path,
             commands::scanner::list_scan_paths,
             commands::scanner::remove_scan_path,
@@ -208,7 +206,6 @@ pub fn run() {
             commands::system::get_preferred_apps,
             commands::system::set_preferred_app,
             commands::git::list_git_status,
-            commands::git::refresh_git_status,
             commands::git::refresh_all_git_status,
             commands::git::get_project_history,
             commands::git::get_project_branches,
@@ -219,7 +216,6 @@ pub fn run() {
             commands::tags::delete_tag,
             commands::tags::assign_tag,
             commands::tags::unassign_tag,
-            commands::tags::list_tags_for_project,
             commands::settings::get_view_state,
             commands::settings::set_view_state,
             commands::settings::get_advanced_settings,

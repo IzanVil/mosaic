@@ -32,15 +32,6 @@ export function formatRelativeTime(timestamp: number | null, language: Lang = ge
   return translate(language, 'tiempo.anios', { n: Math.floor(seconds / YEAR) });
 }
 
-/**
- * Acorta una ruta por la izquierda para que quepa en `maxLength` caracteres,
- * conservando siempre el final, que es la parte informativa.
- */
-export function shortenPath(path: string, maxLength = 52): string {
-  if (path.length <= maxLength) return path;
-  return `…${path.slice(path.length - maxLength + 1)}`;
-}
-
 /** Formatea una duración en milisegundos de forma legible. */
 export function formatDuration(milliseconds: number): string {
   if (milliseconds < 1000) return `${milliseconds} ms`;

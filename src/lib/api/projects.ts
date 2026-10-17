@@ -2,12 +2,7 @@
 
 import { invoke } from '@tauri-apps/api/core';
 
-import type { Project, ProjectWithTags, ReadmePreview } from '../types';
-
-/** Devuelve todos los proyectos: primero los fijados, luego por nombre. */
-export function listProjects(): Promise<Project[]> {
-  return invoke<Project[]>('list_projects');
-}
+import type { ProjectWithTags, ReadmePreview } from '../types';
 
 /**
  * Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
@@ -17,11 +12,6 @@ export function listProjects(): Promise<Project[]> {
  */
 export function listProjectsWithTags(): Promise<ProjectWithTags[]> {
   return invoke<ProjectWithTags[]>('list_projects_with_tags');
-}
-
-/** Devuelve un proyecto concreto. */
-export function getProject(id: number): Promise<Project> {
-  return invoke<Project>('get_project', { id });
 }
 
 /** Fija o quita la marca de favorito de un proyecto. */

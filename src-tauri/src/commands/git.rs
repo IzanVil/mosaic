@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tauri::State;
 
 use crate::core::git::{
-    read_branches, read_history, refresh_all, refresh_one, Branches, CommitInfo, GitRefreshSummary,
+    read_branches, read_history, refresh_all, Branches, CommitInfo, GitRefreshSummary,
     HISTORY_LIMIT,
 };
 use crate::db::repositories::git_status::{self as repo, GitStatusEntry};
@@ -22,19 +22,6 @@ pub async fn list_git_status(db: State<'_, Arc<Db>>) -> Result<Vec<GitStatusEntr
     let entries = db.with_conn(repo::list_all)?;
     tracing::debug!(count = entries.len(), "list_git_status");
     Ok(entries)
-}
-
-/// Relee el estado Git de un proyecto concreto.
-///
-/// Devuelve `null` si el proyecto no es un repositorio Git.
-#[tauri::command]
-pub async fn refresh_git_status(
-    db: State<'_, Arc<Db>>,
-    project_id: i64,
-) -> Result<Option<GitStatusEntry>, CommandError> {
-    let db = Arc::clone(&db);
-
-    blocking("la tarea de refresco", move || refresh_one(&db, project_id)).await
 }
 
 /// Relee el estado Git de todos los proyectos que son repositorios.

@@ -5,22 +5,14 @@ use std::sync::Arc;
 
 use tauri::State;
 
+use crate::core::now_ts;
 use crate::core::project::normalize_notes;
 use crate::core::readme::{self, ReadmePreview};
-use crate::core::{now_ts, Project};
 use crate::db::repositories::projects::{self as repo, ProjectWithTags};
 use crate::db::Db;
 use crate::errors::CommandError;
 
 use super::blocking;
-
-/// Devuelve todos los proyectos: primero los fijados, luego por nombre.
-#[tauri::command]
-pub async fn list_projects(db: State<'_, Arc<Db>>) -> Result<Vec<Project>, CommandError> {
-    let projects = db.with_conn(repo::list_all)?;
-    tracing::debug!(count = projects.len(), "list_projects");
-    Ok(projects)
-}
 
 /// Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
 ///
@@ -33,12 +25,6 @@ pub async fn list_projects_with_tags(
     let projects = db.with_conn(repo::list_all_with_tags)?;
     tracing::debug!(count = projects.len(), "list_projects_with_tags");
     Ok(projects)
-}
-
-/// Devuelve un proyecto concreto.
-#[tauri::command]
-pub async fn get_project(db: State<'_, Arc<Db>>, id: i64) -> Result<Project, CommandError> {
-    Ok(db.with_conn(|conn| repo::get_by_id(conn, id))?)
 }
 
 /// Fija o quita la marca de favorito de un proyecto.
