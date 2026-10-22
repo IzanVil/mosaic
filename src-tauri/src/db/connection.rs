@@ -1,8 +1,6 @@
 //! Apertura y acceso concurrente a la base de datos SQLite.
 //!
-//! Mosaic es una aplicación de un solo proceso con un único escritor, así que
-//! en lugar de un pool se usa un `Mutex<Connection>`. Se reevaluará (r2d2) si
-//! las fases 4-5 introducen lecturas concurrentes pesadas.
+//! Un solo proceso con un único escritor: basta un `Mutex<Connection>`, sin pool.
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -22,8 +20,7 @@ pub struct Db {
 }
 
 impl Db {
-    /// Abre (o crea) la base de datos en `path`, creando los directorios padre
-    /// si hacen falta, y aplica las migraciones pendientes.
+    /// Abre o crea la base de datos en `path` y aplica las migraciones pendientes.
     pub fn open(path: &Path) -> Result<Self> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -79,11 +76,7 @@ impl Db {
     }
 }
 
-/// Ruta por defecto de la base de datos, dentro del directorio de datos del SO.
-///
-/// Linux: `~/.local/share/mosaic/mosaic.db`,
-/// macOS: `~/Library/Application Support/dev.izan.mosaic/mosaic.db`,
-/// Windows: `%APPDATA%\izan\mosaic\data\mosaic.db`.
+/// Ruta por defecto de la base de datos, en el directorio de datos del sistema (ver el README).
 pub fn default_db_path() -> Result<PathBuf> {
     let dirs = ProjectDirs::from("dev", "izan", "mosaic").ok_or_else(|| {
         AppError::internal(

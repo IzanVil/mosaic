@@ -1,10 +1,8 @@
 //! Repositorio de etiquetas.
 //!
-//! Las reglas de validación viven en [`crate::model::tag`]; aquí solo se
-//! aplican antes de tocar SQL. La unicidad del nombre está garantizada por el
-//! índice `idx_tags_name_ci` de la migración 002: la comprobación previa de
-//! [`create`] y [`update`] existe para poder devolver un mensaje legible en vez
-//! del error crudo de SQLite.
+//! El nombre es único sin distinguir mayúsculas por el índice `idx_tags_name_ci`
+//! de la migración 002. [`create`] y [`update`] lo comprueban antes solo para dar
+//! un mensaje legible en vez del error crudo de SQLite.
 
 use rusqlite::{params, Connection, OptionalExtension, Row};
 
@@ -24,11 +22,8 @@ fn row_to_tag(row: &Row<'_>) -> rusqlite::Result<Tag> {
 }
 
 /// Traduce la violación del índice único de nombres a un error de validación.
-///
-/// Solo puede saltar si dos escrituras se cruzan entre la comprobación previa y
-/// el `INSERT`. Hoy no puede pasar (una única conexión bajo mutex), pero el
-/// mensaje tiene que seguir siendo legible si eso cambia.
 fn map_name_conflict(err: rusqlite::Error, name: &str) -> AppError {
+    // Hoy no salta (una sola conexión bajo mutex), pero si eso cambia, el mensaje sigue legible.
     match &err {
         rusqlite::Error::SqliteFailure(failure, _)
             if failure.code == rusqlite::ErrorCode::ConstraintViolation =>
@@ -54,9 +49,6 @@ pub fn get_by_id(conn: &Connection, id: i64) -> Result<Tag> {
 }
 
 /// Busca una etiqueta por nombre, ignorando mayúsculas y espacios de los extremos.
-///
-/// Es lo que consulta el autocompletado del `TagPicker` para decidir si ofrece
-/// asignar una etiqueta existente o crear una nueva.
 pub fn get_by_name_ci(conn: &Connection, name: &str) -> Result<Option<Tag>> {
     let sql = format!("SELECT {COLUMNS} FROM tags WHERE lower(name) = ?1");
     Ok(conn
@@ -93,10 +85,7 @@ pub fn create(conn: &Connection, name: &str, color: &str, now: i64) -> Result<Ta
     Ok(tag)
 }
 
-/// Devuelve todas las etiquetas con su número de proyectos, ordenadas por nombre.
-///
-/// El conteo sale de un `LEFT JOIN`, así que una etiqueta sin asignar aparece
-/// con `project_count = 0` en lugar de desaparecer del listado.
+/// Todas las etiquetas con su número de proyectos, por nombre; las que no tienen ninguno, con 0.
 pub fn list_all(conn: &Connection) -> Result<Vec<TagWithCount>> {
     let mut stmt = conn.prepare(
         "SELECT t.id, t.name, t.color, t.created_at, count(pt.project_id)
@@ -144,11 +133,7 @@ pub fn update(conn: &Connection, id: i64, name: &str, color: &str) -> Result<Tag
     get_by_id(conn, id)
 }
 
-/// Borra una etiqueta.
-///
-/// El `ON DELETE CASCADE` de `project_tags` retira sus asignaciones; los
-/// proyectos no se tocan. El frontend confirma antes de llegar aquí, porque
-/// esto no se puede deshacer.
+/// Borra una etiqueta; el `ON DELETE CASCADE` retira sus asignaciones sin tocar los proyectos.
 pub fn delete(conn: &Connection, id: i64) -> Result<()> {
     let affected = conn.execute("DELETE FROM tags WHERE id = ?1", params![id])?;
     if affected == 0 {

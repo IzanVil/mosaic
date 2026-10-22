@@ -1,25 +1,20 @@
 //! Repositorio de proyectos.
 //!
-//! # Semántica de marcas de tiempo
+//! Marcas de tiempo:
 //!
-//! - `created_at`: se fija en la inserción y no se modifica jamás.
-//! - `updated_at`: solo avanza si cambian metadatos propios del proyecto, es
-//!   decir columnas de `projects`. La regla es exactamente esta, y no hay más
-//!   caminos que la muevan:
-//!   - [`upsert_by_path`] compara `name`, `primary_language` e `is_git_repo`;
-//!   - [`set_notes`] la mueve cuando las notas cambian de verdad. Guardar el
-//!     mismo texto que ya había no escribe nada, así que tampoco la mueve.
-//! - `last_seen_at`: avanza cada vez que el escáner ve el proyecto en disco.
-//! - `missing`: `0` cuando el escáner lo ve, `1` cuando deja de verlo.
+//! - `created_at` se fija al insertar y no cambia nunca.
+//! - `updated_at` solo avanza si cambian columnas propias, y no hay más caminos:
+//!   [`upsert_by_path`] compara `name`, `primary_language` e `is_git_repo`, y
+//!   [`set_notes`] la mueve si las notas cambian de verdad. Fijar y abrir no la
+//!   tocan: son preferencias de presentación, no metadatos de la carpeta.
+//! - `last_seen_at` avanza cada vez que el escáner ve el proyecto, y `missing` es
+//!   `0` si lo ve y `1` si no. Tampoco mueven `updated_at`: son observaciones.
 //!
-//! `is_git_repo` es la columna de `projects` —si la carpeta tiene o no un
-//! repositorio—, **no** el estado vivo de `git_status_cache`. El refresco
-//! automático de Git escribe únicamente en la caché, así que no puede hacer
-//! avanzar `updated_at`; lo fija el test de integración
-//! `refreshing_git_status_never_touches_the_projects_table`.
+//! `is_git_repo` es la columna de `projects`, no el estado vivo de
+//! `git_status_cache`: el refresco de Git solo escribe en la caché y no puede
+//! mover `updated_at` (`refreshing_git_status_never_touches_the_projects_table`).
 //!
-//! Ver `missing` nunca borra datos: las etiquetas y notas del usuario
-//! sobreviven a que el proyecto desaparezca del disco.
+//! Que un proyecto desaparezca del disco no borra nada: sus etiquetas y notas siguen.
 
 use std::collections::HashSet;
 use std::path::Path;
@@ -92,11 +87,7 @@ pub fn list_all(conn: &Connection) -> Result<Vec<Project>> {
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
-/// Proyecto con todo lo que el tablero necesita para pintar una tarjeta.
-///
-/// Se serializa aplanado: el frontend recibe los campos de [`Project`] al mismo
-/// nivel que `tags` y `git_status`, igual que declara `ProjectWithTags` en
-/// `src/lib/types/index.ts`.
+/// Proyecto con lo que necesita una tarjeta, aplanado como `ProjectWithTags` en el frontend.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProjectWithTags {
     #[serde(flatten)]
@@ -107,22 +98,11 @@ pub struct ProjectWithTags {
     pub git_status: Option<GitStatusEntry>,
 }
 
-/// Columnas de `git_status_cache` que acompañan a las de [`COLUMNS`].
-///
-/// Ninguna choca con las de `projects`, así que el `LEFT JOIN` no necesita
-/// cualificarlas.
+/// Columnas de `git_status_cache` para el `LEFT JOIN`; no chocan con las de [`COLUMNS`].
 const GIT_COLUMNS: &str = "branch, ahead, behind, is_dirty, last_commit_sha,
      last_commit_msg, last_commit_at, remote_url, refreshed_at";
 
-/// Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
-///
-/// Son exactamente **dos** consultas: una para los proyectos con su caché Git
-/// mediante `LEFT JOIN`, y otra para todas las asignaciones de etiquetas. Un
-/// `SELECT` por proyecto convertiría el arranque con 500 proyectos en 501
-/// viajes a SQLite.
-///
-/// Incluye los proyectos ausentes: filtrarlos es una decisión de la vista, que
-/// el frontend toma con el filtro «incluir ausentes».
+/// Todos los proyectos, ausentes incluidos, con sus etiquetas y su estado Git.
 pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
     let sql = format!(
         "SELECT {COLUMNS}, {GIT_COLUMNS}
@@ -133,8 +113,7 @@ pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
     let mut stmt = conn.prepare(&sql)?;
     let rows = stmt.query_map([], |row| {
         let project = row_to_project(row)?;
-        // `refreshed_at` es NOT NULL en la caché, así que solo llega vacío
-        // cuando el LEFT JOIN no encontró fila.
+        // `refreshed_at` es NOT NULL en la caché: vacío solo si el LEFT JOIN no encontró fila.
         let refreshed_at: Option<i64> = row.get(20)?;
         let git_status = match refreshed_at {
             Some(refreshed_at) => Some(GitStatusEntry {
@@ -157,6 +136,7 @@ pub fn list_all_with_tags(conn: &Connection) -> Result<Vec<ProjectWithTags>> {
     })?;
     let base = rows.collect::<rusqlite::Result<Vec<_>>>()?;
 
+    // Dos consultas en total: una por proyecto haría 501 viajes a SQLite con 500 proyectos.
     let mut grouped = project_tags::list_all_grouped(conn)?;
 
     Ok(base
@@ -174,10 +154,7 @@ pub fn count(conn: &Connection) -> Result<i64> {
     Ok(conn.query_row("SELECT count(*) FROM projects", [], |row| row.get(0))?)
 }
 
-/// Inserta o actualiza un proyecto descubierto, usando la ruta como clave.
-///
-/// Respeta la semántica de marcas de tiempo documentada en el módulo: el
-/// escaneo de un proyecto sin cambios no toca `updated_at`.
+/// Inserta o actualiza un proyecto descubierto, con la ruta como clave.
 pub fn upsert_by_path(
     conn: &Connection,
     discovered: &DiscoveredProject,
@@ -240,10 +217,7 @@ pub fn upsert_by_path(
     })
 }
 
-/// Fija o quita la marca de favorito de un proyecto.
-///
-/// No toca `updated_at`: fijar un proyecto es una preferencia de presentación,
-/// no un cambio en los metadatos que describen la carpeta.
+/// Fija o quita la marca de favorito, sin tocar `updated_at`.
 pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
     let affected = conn.execute(
         "UPDATE projects SET pinned = ?2 WHERE id = ?1",
@@ -257,15 +231,7 @@ pub fn set_pinned(conn: &Connection, id: i64, pinned: bool) -> Result<()> {
     Ok(())
 }
 
-/// Guarda las notas del proyecto. `None` las borra (`NULL`).
-///
-/// Las notas son un metadato propio del proyecto, así que **sí** hacen avanzar
-/// `updated_at`, pero solo cuando cambian: si el texto es el mismo que ya había
-/// no se escribe nada. El editor autoguarda mientras se escribe, y sin esta
-/// comprobación cada pausa movería la fecha aunque nadie hubiera tocado nada.
-///
-/// Devuelve si ha llegado a escribir. Las notas se esperan ya normalizadas con
-/// [`crate::model::project::normalize_notes`].
+/// Guarda las notas, ya normalizadas, y dice si ha escrito; `None` las borra.
 pub fn set_notes(conn: &Connection, id: i64, notes: Option<&str>, now: i64) -> Result<bool> {
     let current: Option<String> = conn
         .query_row(
@@ -278,6 +244,7 @@ pub fn set_notes(conn: &Connection, id: i64, notes: Option<&str>, now: i64) -> R
             AppError::not_found("project_not_found", format!("proyecto {id}")).with("id", id)
         })?;
 
+    // El editor autoguarda en cada pausa: sin esto, `updated_at` avanzaría sin cambiar nada.
     if current.as_deref() == notes {
         return Ok(false);
     }
@@ -289,9 +256,7 @@ pub fn set_notes(conn: &Connection, id: i64, notes: Option<&str>, now: i64) -> R
     Ok(true)
 }
 
-/// Registra que el proyecto se acaba de abrir.
-///
-/// Tampoco toca `updated_at`, por el mismo motivo que [`set_pinned`].
+/// Apunta que el proyecto se acaba de abrir, sin tocar `updated_at`.
 pub fn touch_last_opened(conn: &Connection, id: i64, now: i64) -> Result<()> {
     let affected = conn.execute(
         "UPDATE projects SET last_opened_at = ?2 WHERE id = ?1",
@@ -305,19 +270,7 @@ pub fn touch_last_opened(conn: &Connection, id: i64, now: i64) -> Result<()> {
     Ok(())
 }
 
-/// Marca como ausentes los proyectos bajo `roots` que el escaneo no ha visto.
-///
-/// `seen` contiene los identificadores que el escáner acaba de encontrar en
-/// disco. Se comparan identificadores y no marcas de tiempo porque la
-/// resolución de `last_seen_at` es de un segundo y dos escaneos consecutivos
-/// pueden compartir instante.
-///
-/// Solo se consideran proyectos que cuelgan de alguna de las raíces recién
-/// escaneadas: los que viven bajo una ruta deshabilitada o eliminada conservan
-/// su estado. `updated_at` no se toca, porque `missing` no es un metadato
-/// propio del proyecto sino una observación del escáner.
-///
-/// Devuelve cuántos proyectos han pasado a `missing = 1`.
+/// Marca ausentes los proyectos bajo `roots` que no están en `seen`, y dice cuántos.
 pub fn mark_missing_under_roots(
     conn: &Connection,
     roots: &[std::path::PathBuf],
@@ -332,6 +285,8 @@ pub fn mark_missing_under_roots(
         .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
         .collect::<rusqlite::Result<Vec<_>>>()?;
 
+    // Identificadores y no `last_seen_at`: con resolución de un segundo, dos escaneos
+    // seguidos comparten instante. Lo de una ruta deshabilitada o borrada no se toca.
     let stale: Vec<i64> = candidates
         .into_iter()
         .filter(|(id, path)| {

@@ -1,8 +1,7 @@
 //! Repositorio de la caché de estado Git.
 //!
-//! La caché es reconstruible: si se borra, el siguiente refresco la repuebla
-//! leyendo los repositorios. Por eso aquí no hay reglas de conservación como
-//! las de `projects`.
+//! La caché es desechable: si se borra, el siguiente refresco la repuebla. Por
+//! eso no tiene reglas de conservación como las de `projects`.
 
 use rusqlite::{params, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
@@ -10,10 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::errors::Result;
 use crate::model::git::GitStatus;
 
-/// Una fila de `git_status_cache`: el estado leído más cuándo se leyó.
-///
-/// Se serializa aplanado, de modo que el frontend recibe todos los campos al
-/// mismo nivel.
+/// Una fila de `git_status_cache`, aplanada: el frontend recibe los campos a un solo nivel.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitStatusEntry {
     pub project_id: i64,

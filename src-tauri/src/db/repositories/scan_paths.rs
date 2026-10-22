@@ -28,10 +28,7 @@ fn row_to_scan_path(row: &Row<'_>) -> rusqlite::Result<ScanPath> {
     })
 }
 
-/// Registra una ruta de escaneo.
-///
-/// Es idempotente: si la ruta ya existe devuelve la fila existente en lugar de
-/// fallar por la restricción `UNIQUE`.
+/// Registra una ruta de escaneo; si ya existe, devuelve la que había.
 pub fn add(conn: &Connection, path: &str, now: i64) -> Result<ScanPath> {
     conn.execute(
         "INSERT INTO scan_paths (path, enabled, created_at) VALUES (?1, 1, ?2)
@@ -69,10 +66,7 @@ pub fn list_enabled(conn: &Connection) -> Result<Vec<ScanPath>> {
     Ok(list(conn)?.into_iter().filter(|p| p.enabled).collect())
 }
 
-/// Elimina una ruta de escaneo. Devuelve `true` si existía.
-///
-/// Los proyectos ya descubiertos bajo esa ruta se conservan: borrarlos haría
-/// perder etiquetas y notas del usuario.
+/// Elimina una ruta de escaneo y dice si existía; sus proyectos y sus notas se quedan.
 pub fn delete(conn: &Connection, id: i64) -> Result<bool> {
     let affected = conn.execute("DELETE FROM scan_paths WHERE id = ?1", params![id])?;
     Ok(affected > 0)

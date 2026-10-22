@@ -30,8 +30,7 @@ pub fn set_raw(conn: &Connection, key: &str, value: &str) -> Result<()> {
     Ok(())
 }
 
-/// Carga los ajustes, sustituyendo por el valor por defecto cualquier clave
-/// ausente o con contenido no parseable.
+/// Carga los ajustes; una clave ausente o ilegible toma su valor por defecto.
 pub fn load(conn: &Connection) -> Result<Settings> {
     let defaults = Settings::default();
 
