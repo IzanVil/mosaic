@@ -19,9 +19,11 @@
     projectId: number;
     assigned: Tag[];
     compact?: boolean;
+    /** Disparador sin borde, como texto terciario: el de la tarjeta sin etiquetas. */
+    plain?: boolean;
   }
 
-  let { projectId, assigned, compact = false }: Props = $props();
+  let { projectId, assigned, compact = false, plain = false }: Props = $props();
 
   let open = $state(false);
   let query = $state('');
@@ -119,6 +121,7 @@
     bind:this={trigger}
     type="button"
     class="disparador"
+    class:texto={plain}
     onclick={() => (open ? close() : openPicker())}
     aria-expanded={open}
     aria-haspopup="dialog"
@@ -217,6 +220,10 @@
     border-color: var(--border-strong);
     color: var(--text-secondary);
   }
+  .disparador.texto {
+    border: 0;
+    padding-inline: 0;
+  }
 
   .panel {
     position: absolute;
@@ -238,22 +245,7 @@
     margin-bottom: var(--space-1);
   }
 
-  /*
-   * Todo lo de dentro del panel va anidado en `.panel` a propósito: es una
-   * neutralización, no un estilo.
-   *
-   * `ProjectCard` reestiliza el disparador de las tarjetas sin etiquetas con
-   * `.anadir.fantasma :global(button)`, y ese selector no se queda en el
-   * disparador: alcanza a todos los botones de este componente, panel incluido.
-   * Pesa (0,3,1); un selector de una clase, como `.opcion`, pesa (0,2,0) con el
-   * hash de Svelte y perdía, así que las opciones se quedaban sin relleno.
-   * Anidado en `.panel` pesa (0,4,0) y gana.
-   *
-   * Es deuda apuntada en `docs/ROADMAP.md`: lo correcto es que `ProjectCard`
-   * no alcance hijos ajenos (una prop de apariencia en `TagPicker`, por
-   * ejemplo). Cuando se haga, este anidado sobra.
-   */
-  .panel input {
+  input {
     width: 100%;
     box-sizing: border-box;
     padding: 5px var(--space-2);
@@ -265,15 +257,15 @@
     line-height: var(--text-body-lh);
     color: var(--text-primary);
   }
-  .panel input::placeholder {
+  input::placeholder {
     color: var(--text-tertiary);
   }
-  .panel input:focus-visible {
+  input:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
 
-  .panel ul {
+  ul {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -284,7 +276,7 @@
     list-style: none;
   }
 
-  .panel .opcion {
+  .opcion {
     display: flex;
     width: 100%;
     align-items: center;
@@ -301,15 +293,15 @@
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out);
   }
-  .panel .opcion:hover:not(:disabled) {
+  .opcion:hover:not(:disabled) {
     background: var(--surface-sunken);
     color: var(--text-primary);
   }
-  .panel .opcion:disabled {
+  .opcion:disabled {
     opacity: 0.6;
     cursor: progress;
   }
-  .panel .opcion :global(.marca) {
+  .opcion :global(.marca) {
     flex: none;
     color: var(--accent);
   }
@@ -349,7 +341,7 @@
     padding: var(--space-1) var(--space-2);
   }
 
-  .panel .muestra {
+  .muestra {
     width: 16px;
     height: 16px;
     padding: 0;
@@ -357,7 +349,7 @@
     border-radius: var(--radius-pill);
     cursor: pointer;
   }
-  .panel .muestra.elegida {
+  .muestra.elegida {
     border-color: var(--text-primary);
   }
 

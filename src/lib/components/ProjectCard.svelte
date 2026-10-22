@@ -101,11 +101,12 @@
       </span>
     {/if}
 
-    <span class="anadir" class:fantasma={project.tags.length === 0}>
+    <span class="anadir">
       <TagPicker
         projectId={project.id}
         assigned={project.tags}
         compact={project.tags.length > 0}
+        plain={project.tags.length === 0}
       />
     </span>
   </div>
@@ -301,21 +302,6 @@
   .tarjeta:hover .anadir,
   .tarjeta:focus-within .anadir {
     display: inline-flex;
-  }
-
-  /*
-   * Sin etiquetas, el disparador deja de parecer un botón y pasa a ser texto
-   * terciario. Se restyliza desde aquí con `:global` para no tocar TagPicker,
-   * que migrará a los tokens en su turno.
-   */
-  .anadir.fantasma :global(button) {
-    border: 0;
-    padding-inline: 0;
-    color: var(--text-tertiary);
-    font-size: var(--text-meta);
-  }
-  .anadir.fantasma :global(button:hover) {
-    color: var(--text-secondary);
   }
 
   .mas {

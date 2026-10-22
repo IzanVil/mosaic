@@ -211,9 +211,13 @@ Terminado:
 
 Deuda conocida del rediseño:
 
-- [ ] `ProjectCard` reestiliza el disparador de `TagPicker` con
-      `.anadir.fantasma :global(button)`, que alcanza también a los botones del
-      panel ([#12](https://github.com/IzanVil/mosaic/issues/12)).
+- [x] `ProjectCard` reestilizaba el disparador de `TagPicker` con
+      `.anadir.fantasma :global(button)`, que alcanzaba también a los botones
+      del panel ([#12](https://github.com/IzanVil/mosaic/issues/12)). No era
+      solo fragilidad: Svelte 5 compila los selectores anidados con `:where()`,
+      la defensa del panel pesaba menos y, en una tarjeta sin etiquetas, la
+      lista salía con letra pequeña y el color elegido al crear no se marcaba.
+      Ahora `TagPicker` tiene la prop `plain` y la tarjeta no toca sus botones
 - Peculiaridad conocida, no es un fallo: en `pnpm tauri dev`, Vite puede
   registrar `window.__TAURI_INTERNALS__ undefined` al arrancar, antes de que
   el binario abra su ventana. Es una carrera entre Vite y el binario; no pasa
