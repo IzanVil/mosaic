@@ -66,6 +66,7 @@ The same checks CI runs on Linux, macOS and Windows:
 ```bash
 pnpm check            # types and templates, fails on warnings too
 pnpm test             # frontend tests
+pnpm test:e2e         # end-to-end (see tests/README.md)
 pnpm build
 
 cd src-tauri

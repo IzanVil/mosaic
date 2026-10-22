@@ -424,7 +424,10 @@ El código es el mismo en las tres. Las diferencias viven en la configuración:
 - **Frontend**: vitest en `tests/unit/`, sobre los stores y las funciones puras,
   con la API de Tauri simulada. Incluye las reglas de filtrado del tablero y el
   script de arranque del tema.
-- **CI**: los tests de Rust y del frontend corren en Linux, macOS y Windows.
-  Cada release, además, abre la app en los tres sistemas, comprueba que la
-  ventana aparece y guarda una captura.
-- El `tests/` de la raíz queda reservado para los end-to-end del frontend.
+- **De extremo a extremo**: Playwright en `tests/integration/`, sobre la
+  interfaz compilada y un backend simulado (`tests/fixtures/backend.ts`), en
+  WebKit y Chromium. Recorren escanear, etiquetar y filtrar, las notas y la
+  paleta. Se cuentan en [`tests/README.md`](../tests/README.md).
+- **CI**: los tests de Rust y del frontend corren en Linux, macOS y Windows, y
+  los de extremo a extremo en Linux. Cada release, además, abre la app en los
+  tres sistemas, comprueba que la ventana aparece y guarda una captura.

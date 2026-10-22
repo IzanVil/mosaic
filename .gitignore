@@ -33,3 +33,7 @@ Thumbs.db
 # Caches de herramientas
 node_modules/.tmp/
 .cache/
+
+# Resultados de Playwright
+test-results/
+playwright-report/

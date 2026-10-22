@@ -66,6 +66,7 @@ Lo mismo que comprueba el CI, en Linux, macOS y Windows:
 ```bash
 pnpm check            # tipos y plantillas, falla también con avisos
 pnpm test             # tests del frontend
+pnpm test:e2e         # de extremo a extremo (ver tests/README.md)
 pnpm build
 
 cd src-tauri

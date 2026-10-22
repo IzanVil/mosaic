@@ -393,6 +393,7 @@ sudo dnf install webkit2gtk4.1-devel libsoup3-devel gtk3-devel \
 ```bash
 pnpm check            # svelte-check, falla también con avisos
 pnpm test             # tests de vitest
+pnpm test:e2e         # de extremo a extremo, con Playwright
 
 cd src-tauri
 cargo test
