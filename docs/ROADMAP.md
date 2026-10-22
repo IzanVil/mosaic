@@ -304,9 +304,21 @@ Pendiente:
 - [x] `SHA256SUMS.txt` con las sumas de los seis instaladores en cada release
 - [x] Firma *ad hoc* en macOS. No quita el aviso de Gatekeeper, que necesita
       el programa de desarrolladores de Apple (99 $/año), descartado por ahora
+      ([#2](https://github.com/IzanVil/mosaic/issues/2), cerrada sin hacer el
+      2026-10-22; los pasos para retomarla siguen en ella)
 - [ ] Firma gratuita en Windows con SignPath Foundation: la política de firma
       ya está en la web; falta enviar la solicitud
-      ([#1](https://github.com/IzanVil/mosaic/issues/1))
+      ([#1](https://github.com/IzanVil/mosaic/issues/1), cerrada sin hacer el
+      2026-10-22; se reabre cuando se envíe)
+- [ ] Probar la app a mano en macOS y Windows: cada release comprueba que
+      arranca, pero nadie la ha usado todavía en esos sistemas. Qué probar:
+      añadir una carpeta con el diálogo del sistema y escanear; el estado Git de
+      un repositorio sucio y uno limpio; los botones de editor, terminal y
+      carpeta (y qué apps detecta); los atajos con Cmd y con Ctrl; exportar e
+      importar una copia; rutas con espacios y acentos (en Windows, también en
+      otra unidad); y en macOS, arrastrar la ventana desde la cabecera
+      ([#3](https://github.com/IzanVil/mosaic/issues/3), cerrada sin hacer el
+      2026-10-22)
 - [x] `CONTRIBUTING.md` en español e inglés
 - [x] Mosaic 0.2.0 publicado el 2026-10-10, con los seis instaladores, sus
       sumas comprobadas una a una contra los ficheros publicados y notas
