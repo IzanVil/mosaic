@@ -1,7 +1,5 @@
-//! Los datos de Mosaic y sus reglas de validación.
-//!
-//! No depende de ninguna otra parte del crate salvo de los errores, así que
-//! lo pueden usar a la vez `core`, que orquesta, y `db`, que guarda.
+//! Los datos de Mosaic y sus reglas de validación. Solo depende de los errores,
+//! así que lo usan a la vez `core`, que orquesta, y `db`, que guarda.
 
 pub mod git;
 pub mod project;

@@ -2,9 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Estado de un repositorio Git en un instante dado.
-///
-/// Espejo de las columnas de `git_status_cache`, sin los campos de la caché.
+/// Estado de un repositorio en un instante: las columnas de `git_status_cache` sin las de la caché.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitStatus {
     /// Rama actual. `None` si el HEAD está separado.
@@ -13,8 +11,7 @@ pub struct GitStatus {
     pub ahead: Option<u32>,
     /// Commits que el upstream tiene y la rama local no. `None` si no hay upstream.
     pub behind: Option<u32>,
-    /// Hay cambios sin commitear: ficheros modificados o sin seguir, respetando
-    /// `.gitignore`. Es el mismo criterio que `git status`.
+    /// Hay cambios sin commitear, ficheros sin seguir incluidos, con el criterio de `git status`.
     pub is_dirty: bool,
     pub last_commit_sha: Option<String>,
     /// Primera línea del mensaje del último commit.

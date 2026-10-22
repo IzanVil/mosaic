@@ -1,8 +1,7 @@
 //! Comandos de estado persistido de la interfaz.
 //!
-//! Exponen la clave `ui.view_state` y los cinco ajustes avanzados, no la tabla
-//! `settings` entera: un `get_setting`/`set_setting` genérico dejaría al
-//! frontend escribir cualquier ajuste sin pasar por su validación.
+//! Exponen la vista y los cinco ajustes avanzados, no la tabla entera: un
+//! `set_setting` genérico dejaría escribir cualquier ajuste sin validarlo.
 
 use std::sync::Arc;
 
@@ -16,19 +15,10 @@ use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 use crate::GitRefreshSignal;
 
-/// Tope de tamaño del JSON de la vista.
-///
-/// La vista guardada son unos cientos de bytes: query, ids de etiquetas y
-/// orden. El tope evita que un error del frontend convierta la tabla de
-/// ajustes en un vertedero.
+/// Tope del JSON de la vista, que pesa unos cientos de bytes: un fallo no llena la tabla.
 const MAX_VIEW_STATE_BYTES: usize = 64 * 1024;
 
-/// Devuelve la última vista guardada (búsqueda, filtros, orden) como JSON.
-///
-/// Devuelve `null` si nunca se guardó o si lo guardado ya no es JSON válido:
-/// la vista es una comodidad, así que ante un valor corrupto se arranca con
-/// los filtros por defecto en lugar de fallar. Es la misma política que aplica
-/// [`settings_repo::load`] con el resto de claves.
+/// La última vista guardada; `null` si no hay o está corrupta: es una comodidad, no vale un fallo.
 #[tauri::command]
 pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, CommandError> {
     let raw = db.with_conn(|conn| settings_repo::get_raw(conn, KEY_VIEW_STATE))?;
@@ -46,7 +36,7 @@ fn readable_view_state(raw: String) -> Option<String> {
     }
 }
 
-/// Guarda la vista actual. El frontend llama con debounce, no en cada tecla.
+/// Guarda la vista actual.
 #[tauri::command]
 pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), CommandError> {
     validate_view_state(&json)?;
@@ -87,11 +77,7 @@ pub async fn get_advanced_settings(
     })
 }
 
-/// Valida y guarda los ajustes avanzados, y devuelve lo que ha quedado
-/// guardado (con los nombres de carpeta ya recortados).
-///
-/// Si cambia el intervalo de Git, despierta la tarea de refresco para que el
-/// cambio se note ya y no al acabar la espera en curso.
+/// Valida y guarda los ajustes avanzados, y devuelve lo que ha quedado guardado.
 #[tauri::command]
 pub async fn set_advanced_settings(
     db: State<'_, Arc<Db>>,
@@ -104,6 +90,7 @@ pub async fn set_advanced_settings(
         .git_refresh_interval_minutes;
     db.with_conn(|conn| settings_repo::save_advanced(conn, &validos))?;
 
+    // El nuevo intervalo se nota ya, no al acabar la espera en curso.
     if validos.git_refresh_interval_minutes != antes {
         signal.0.notify_one();
     }

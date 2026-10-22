@@ -1,8 +1,6 @@
-//! Ajustes de la aplicación: sus claves, valores por defecto, límites y
-//! validación. Se leen y guardan en `db::repositories::settings`.
-//!
-//! Todas las claves tienen un valor por defecto: una base de datos recién
-//! creada es válida sin necesidad de precargar nada.
+//! Ajustes de la aplicación: claves, valores por defecto, límites y validación.
+//! Se leen y guardan en `db::repositories::settings`. Toda clave tiene valor por
+//! defecto, así que una base recién creada vale sin precargar nada.
 
 use serde::{Deserialize, Serialize};
 
@@ -22,13 +20,7 @@ pub const KEY_GIT_REFRESH_MINUTES: &str = "git.refresh_interval_minutes";
 pub const KEY_PREFERRED_IDE: &str = "apps.preferred_ide";
 /// Ejecutable del terminal preferido. Vacío = usar el primero que se detecte.
 pub const KEY_PREFERRED_TERMINAL: &str = "apps.preferred_terminal";
-/// Última vista del tablero (búsqueda, filtros, orden, sidebar) en JSON.
-///
-/// No forma parte de [`Settings`]: es estado de la interfaz, con una forma que
-/// solo entiende el frontend, y el backend no lo interpreta más allá de
-/// comprobar que es JSON válido. Se lee y escribe con
-/// [`crate::db::repositories::settings::get_raw`] y `set_raw` desde
-/// `commands::settings`.
+/// La última vista del tablero en JSON: estado de la interfaz que el backend no interpreta.
 pub const KEY_VIEW_STATE: &str = "ui.view_state";
 
 /// Profundidad máxima por defecto (la raíz es el nivel 0).
@@ -38,12 +30,7 @@ pub const DEFAULT_MAX_ENTRIES_PER_SCAN: usize = 50_000;
 /// Intervalo por defecto entre refrescos automáticos del estado Git.
 pub const DEFAULT_GIT_REFRESH_MINUTES: u64 = 5;
 
-/// Directorios excluidos por defecto: dependencias, artefactos de build y
-/// cachés de herramientas.
-///
-/// `.vscode` se excluye siempre: nunca contiene ficheros marcadores, así que
-/// limitar la exclusión a "dentro de proyectos detectados" no cambiaría el
-/// resultado y sí complicaría el recorrido.
+/// Carpetas excluidas por defecto: dependencias, artefactos de build y cachés.
 pub const DEFAULT_EXCLUDED_DIRS: &[&str] = &[
     ".git",
     "node_modules",
@@ -68,6 +55,7 @@ pub const DEFAULT_EXCLUDED_DIRS: &[&str] = &[
     ".turbo",
     ".parcel-cache",
     ".idea",
+    // No tiene marcadores nunca: excluirla siempre da lo mismo y simplifica el recorrido.
     ".vscode",
     "Pods",
     ".dart_tool",
@@ -105,9 +93,7 @@ impl Default for Settings {
     }
 }
 
-/// Los cinco ajustes de escaneo y Git que se editan desde la pantalla de
-/// Ajustes. El editor y el terminal preferidos tienen sus propios comandos y
-/// no van aquí.
+/// Los cinco ajustes de escaneo y Git de la pantalla de Ajustes; editor y terminal van aparte.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AdvancedSettings {
     /// Profundidad máxima del escaneo; la raíz es el nivel 0.
@@ -134,10 +120,7 @@ impl From<&Settings> for AdvancedSettings {
     }
 }
 
-/// Límites de los ajustes avanzados.
-///
-/// Viajan al frontend con los valores, para que la pantalla valide con los
-/// mismos números que el backend en lugar de copiarlos.
+/// Límites de los ajustes avanzados; viajan al frontend para que valide con los mismos números.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SettingsLimits {
     pub max_depth_min: usize,
@@ -151,8 +134,7 @@ pub struct SettingsLimits {
     pub excluded_dir_max_chars: usize,
 }
 
-/// Los límites vigentes. La profundidad se queda en 8: más abajo casi nunca hay
-/// un proyecto, y cada nivel multiplica lo que se recorre.
+/// Los límites vigentes; la profundidad acaba en 8: más abajo casi nunca hay proyectos.
 pub const LIMITS: SettingsLimits = SettingsLimits {
     max_depth_min: 1,
     max_depth_max: 8,
@@ -163,8 +145,7 @@ pub const LIMITS: SettingsLimits = SettingsLimits {
     excluded_dir_max_chars: 255,
 };
 
-/// Lo que necesita la pantalla de Ajustes: los valores, los de fábrica (para
-/// «Restaurar») y los límites.
+/// Lo que necesita la pantalla de Ajustes: valores, los de fábrica («Restaurar») y límites.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AdvancedSettingsView {
     pub current: AdvancedSettings,
@@ -173,11 +154,6 @@ pub struct AdvancedSettingsView {
 }
 
 /// Comprueba unos ajustes avanzados y devuelve su forma normalizada.
-///
-/// Los nombres de carpeta excluida se recortan, y se rechazan los vacíos, los
-/// que llevan una barra (son nombres, no rutas), los que llevan caracteres de
-/// control y los repetidos. Una lista vacía es válida: es elegir no excluir
-/// nada, aunque el escaneo vaya a recorrer `node_modules`.
 pub fn validate_advanced(raw: AdvancedSettings) -> Result<AdvancedSettings> {
     if !(LIMITS.max_depth_min..=LIMITS.max_depth_max).contains(&raw.max_depth) {
         return Err(AppError::validation(
@@ -222,6 +198,7 @@ pub fn validate_advanced(raw: AdvancedSettings) -> Result<AdvancedSettings> {
         .with("max", LIMITS.excluded_dirs_max));
     }
 
+    // Una lista vacía vale: es elegir no excluir nada, aunque se recorra `node_modules`.
     let mut excluded_dirs: Vec<String> = Vec::with_capacity(raw.excluded_dirs.len());
     for nombre in raw.excluded_dirs {
         let nombre = nombre.trim().to_string();

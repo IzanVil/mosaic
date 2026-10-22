@@ -1,7 +1,4 @@
-//! Núcleo de Mosaic: organizador visual local-first de proyectos de código.
-//!
-//! El binario (`main.rs`) delega aquí para que la lógica sea reutilizable
-//! desde los tests de integración y desde los distintos targets de Tauri.
+//! Núcleo de Mosaic. `main.rs` delega aquí para que los tests de integración lo usen.
 
 pub mod commands;
 pub mod config;
@@ -20,26 +17,17 @@ use tracing_subscriber::{fmt, EnvFilter};
 
 use crate::db::Db;
 
-/// Evento que recibe el frontend cuando termina un refresco automático del
-/// estado Git. Su carga útil es un [`core::git::GitRefreshSummary`], que trae
-/// solo las entradas que cambiaron y las que se retiraron de la caché.
+/// Evento del refresco automático de Git, con un [`core::git::GitRefreshSummary`] de lo que cambió.
 pub const EVENT_GIT_STATUS_REFRESHED: &str = "git-status-refreshed";
 /// Evento que recibe el frontend cuando el escaneo al arrancar encontró algo.
 pub const EVENT_PROJECTS_RESCANNED: &str = "projects-rescanned";
 
-/// Espera antes del primer refresco automático, para no competir con el arranque
-/// de la ventana pero dejar los indicadores al día cuanto antes.
+/// Espera antes del primer refresco: sin estorbar al arranque, pero pronto, que la caché envejece.
 const FIRST_REFRESH_DELAY: Duration = Duration::from_secs(5);
-/// Espera antes del escaneo inicial, cuando el ajuste lo pide.
-///
-/// Va después del primer refresco de Git para que el tablero se pinte con la
-/// caché de la sesión anterior antes de que el disco empiece a trabajar.
+/// Espera antes del escaneo inicial: después del primer refresco, con el tablero ya pintado.
 const STARTUP_SCAN_DELAY: Duration = Duration::from_secs(8);
 
-/// Inicializa el logging a stdout.
-///
-/// El nivel se controla con la variable de entorno `MOSAIC_LOG`
-/// (sintaxis de `tracing_subscriber::EnvFilter`); por defecto `info`.
+/// Logging a stdout; el nivel sale de `MOSAIC_LOG` (sintaxis de `EnvFilter`), `info` por defecto.
 fn init_tracing() {
     let filter = EnvFilter::try_from_env("MOSAIC_LOG").unwrap_or_else(|_| EnvFilter::new("info"));
 
@@ -50,23 +38,7 @@ fn init_tracing() {
         .init();
 }
 
-/// Lanza la tarea que refresca el estado Git en segundo plano.
-///
-/// Hace un primer refresco poco después del arranque, porque la caché que quedó
-/// de la sesión anterior puede estar muy desactualizada, y a partir de ahí
-/// respeta el intervalo configurado. El intervalo se relee en cada vuelta, de
-/// modo que un cambio en los ajustes surte efecto sin reiniciar; el valor `0`
-/// desactiva el refresco automático sin detener la tarea.
-/// Lanza el escaneo inicial si el ajuste `scan.on_startup` está activado.
-///
-/// Espera [`STARTUP_SCAN_DELAY`] antes de tocar el disco: al arrancar hay ya
-/// bastante trabajo entre abrir la base de datos, montar la ventana y pintar el
-/// tablero con lo que había de la sesión anterior, y el recorrido puede durar
-/// cientos de milisegundos.
-///
-/// Tras escanear refresca el estado Git, porque los proyectos recién
-/// descubiertos no tienen nada en la caché y sus tarjetas saldrían sin rama
-/// hasta el siguiente ciclo automático.
+/// Lanza el escaneo inicial si el ajuste `scan.on_startup` lo pide.
 fn spawn_startup_scan_task(app: AppHandle, db: Arc<Db>) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(STARTUP_SCAN_DELAY).await;
@@ -91,6 +63,7 @@ fn spawn_startup_scan_task(app: AppHandle, db: Arc<Db>) {
 
         tracing::info!(?summary, "escaneo al arrancar terminado");
 
+        // Los proyectos nuevos no tienen caché: sin esto saldrían sin rama hasta el siguiente ciclo.
         let git_db = Arc::clone(&db);
         match tauri::async_runtime::spawn_blocking(move || core::git::refresh_all(&git_db)).await {
             Ok(Ok(_)) => {}
@@ -104,31 +77,26 @@ fn spawn_startup_scan_task(app: AppHandle, db: Arc<Db>) {
     });
 }
 
-/// Despierta la tarea de refresco de Git antes de que acabe su espera.
-///
-/// Sin ella, bajar el intervalo de 60 minutos a 1 no se notaba hasta que
-/// terminaba la espera en curso: hasta una hora sin efecto aparente. La avisa
-/// `set_advanced_settings` cuando el intervalo cambia.
+/// Despierta el refresco de Git al cambiar el intervalo: si no, bajar de 60 a 1 tardaba una hora.
 #[derive(Default)]
 pub struct GitRefreshSignal(pub Notify);
 
-/// Espera `duration` o hasta que llegue la señal, lo que pase antes.
-///
-/// Devuelve `true` si la despertó la señal. Si la señal llegó mientras no
-/// había nadie esperando, `Notify` la guarda y la próxima espera vuelve en el
-/// acto: un cambio de ajuste no se pierde aunque coincida con un refresco.
+/// Espera `duration` o la señal, lo que llegue antes; `true` si fue la señal.
 async fn wait_or_wake(duration: Duration, signal: &GitRefreshSignal) -> bool {
+    // Si la señal llega sin nadie esperando, `Notify` la guarda: un cambio no se pierde.
     tokio::select! {
         _ = tokio::time::sleep(duration) => false,
         _ = signal.0.notified() => true,
     }
 }
 
+/// Refresca el estado Git en segundo plano: al poco de arrancar y luego cada N minutos.
 fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>, signal: Arc<GitRefreshSignal>) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_REFRESH_DELAY).await;
 
         loop {
+            // Se relee en cada vuelta: un cambio de ajuste vale sin reiniciar.
             let minutes = match db.with_conn(db::repositories::settings::load) {
                 Ok(settings) => settings.git_refresh_interval_minutes,
                 Err(err) => {
@@ -168,13 +136,11 @@ fn spawn_git_refresh_task(app: AppHandle, db: Arc<Db>, signal: Arc<GitRefreshSig
     });
 }
 
-/// Punto de entrada compartido: configura y arranca la aplicación Tauri.
+/// Configura y arranca la aplicación Tauri.
 ///
 /// # Panics
 ///
-/// Si la base de datos no se puede abrir o migrar, o si Tauri no consigue
-/// construir la ventana principal: en ambos casos la aplicación no puede
-/// continuar de ninguna forma útil.
+/// Si la base de datos no se abre o no migra, o si Tauri no construye la ventana.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();

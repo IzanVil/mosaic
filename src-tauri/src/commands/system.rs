@@ -25,10 +25,7 @@ pub async fn list_detected_apps() -> Result<Vec<DetectedApp>, CommandError> {
     Ok(apps)
 }
 
-/// Abre un proyecto en el IDE, la terminal o el explorador de archivos.
-///
-/// Registra el momento de apertura en `last_opened_at`, pero solo si el
-/// lanzamiento ha tenido éxito.
+/// Abre un proyecto en el IDE, la terminal o el explorador, y apunta cuándo si sale bien.
 #[tauri::command]
 pub async fn open_in(
     db: State<'_, Arc<Db>>,
@@ -62,8 +59,7 @@ pub async fn get_preferred_apps(db: State<'_, Arc<Db>>) -> Result<PreferredApps,
     })
 }
 
-/// Guarda el IDE o el terminal preferido. Una cadena vacía vuelve a "el primero
-/// que se detecte".
+/// Guarda el IDE o el terminal preferido; vacío vuelve a «el primero que se detecte».
 #[tauri::command]
 pub async fn set_preferred_app(
     db: State<'_, Arc<Db>>,
@@ -87,10 +83,7 @@ pub async fn set_preferred_app(
     Ok(())
 }
 
-/// Abre un enlace web en el navegador predeterminado.
-///
-/// Lo usan los enlaces del README. Solo pasan `http` y `https`: la lista
-/// blanca y su porqué viven en [`crate::core::launcher::validate_external_url`].
+/// Abre un enlace del README en el navegador; solo `http` y `https` (ver [`crate::core::launcher`]).
 #[tauri::command]
 pub async fn open_external(url: String) -> Result<(), CommandError> {
     open_url(&url)?;

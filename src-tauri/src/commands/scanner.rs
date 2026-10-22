@@ -75,10 +75,7 @@ pub async fn set_scan_path_enabled(
     Ok(())
 }
 
-/// Escanea todas las rutas habilitadas y sincroniza la lista de proyectos.
-///
-/// El recorrido del sistema de ficheros es bloqueante, así que se ejecuta en el
-/// pool de tareas bloqueantes para no congelar la interfaz.
+/// Escanea las rutas habilitadas fuera del hilo de la interfaz y sincroniza los proyectos.
 #[tauri::command]
 pub async fn scan_all_paths(db: State<'_, Arc<Db>>) -> Result<ScanSummary, CommandError> {
     let db = Arc::clone(&db);

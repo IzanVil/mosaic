@@ -16,9 +16,7 @@ fn unreadable(ruta: &Path, err: &std::io::Error) -> AppError {
         .with("detail", err.to_string())
 }
 
-/// Lee y valida la copia de `path`. Un fichero demasiado grande o que no es
-/// texto UTF-8 no es una copia de Mosaic; cualquier otro fallo de lectura es
-/// un problema de la ruta.
+/// Lee y valida la copia de `path`.
 fn read_backup(path: &str) -> Result<Backup, AppError> {
     let ruta = Path::new(path);
     let size = std::fs::metadata(ruta)
@@ -27,6 +25,7 @@ fn read_backup(path: &str) -> Result<Backup, AppError> {
     if size > MAX_BACKUP_BYTES {
         return Err(backup::not_a_backup());
     }
+    // Lo que no es texto UTF-8 no es una copia; cualquier otro fallo es de la ruta.
     let text = std::fs::read_to_string(ruta).map_err(|err| match err.kind() {
         std::io::ErrorKind::InvalidData => backup::not_a_backup(),
         _ => unreadable(ruta, &err),

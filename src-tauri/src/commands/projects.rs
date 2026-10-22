@@ -14,10 +14,7 @@ use crate::model::project::normalize_notes;
 
 use super::blocking;
 
-/// Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
-///
-/// Es la única lectura que necesita el tablero para pintarse: `list_projects`
-/// sigue disponible para quien no necesite etiquetas.
+/// Devuelve todos los proyectos con sus etiquetas y su estado Git: lo único que lee el tablero.
 #[tauri::command]
 pub async fn list_projects_with_tags(
     db: State<'_, Arc<Db>>,
@@ -39,10 +36,6 @@ pub async fn set_project_pinned(
 }
 
 /// Guarda las notas de un proyecto y devuelve lo que ha quedado guardado.
-///
-/// Un texto vacío o de solo espacios se guarda como `NULL`, y el mismo texto
-/// que ya había no se vuelve a escribir. El frontend usa la respuesta para
-/// quedarse con el valor real, no con el que envió.
 #[tauri::command]
 pub async fn set_project_notes(
     db: State<'_, Arc<Db>>,
@@ -55,10 +48,7 @@ pub async fn set_project_notes(
     Ok(normalized)
 }
 
-/// Lee y renderiza el README de un proyecto.
-///
-/// Devuelve `null` si no tiene README, o si la carpeta ya no está en disco:
-/// los dos son casos normales que la interfaz explica con un mensaje.
+/// Lee y renderiza el README; `null` si no tiene o si la carpeta ya no está.
 #[tauri::command]
 pub async fn get_project_readme(
     db: State<'_, Arc<Db>>,

@@ -1,8 +1,4 @@
 //! Comandos de gestión de etiquetas.
-//!
-//! Capa fina: toda la validación vive en [`crate::model::tag`] y todo el SQL en
-//! los repositorios. Aquí solo se resuelve el instante actual y se convierte el
-//! error al `String` que espera el puente de Tauri.
 
 use std::sync::Arc;
 

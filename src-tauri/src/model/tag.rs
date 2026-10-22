@@ -1,10 +1,5 @@
-//! Modelo de dominio de las etiquetas y sus reglas de validación.
-//!
-//! La validación vive aquí y no en el repositorio para que `db/` se quede solo
-//! con SQL y para que estas reglas queden cubiertas por los tests de `core/`.
-//!
-//! Como el resto del dominio, los campos se serializan en `snake_case` para
-//! que `src/lib/types/index.ts` sea un espejo literal de estos structs.
+//! Las etiquetas y sus reglas de validación, aquí para que `db/` se quede solo con
+//! SQL. Los campos van en `snake_case`, como `src/lib/types/index.ts`.
 
 use serde::{Deserialize, Serialize};
 
@@ -24,11 +19,7 @@ pub struct Tag {
     pub created_at: i64,
 }
 
-/// Etiqueta con el número de proyectos que la tienen asignada.
-///
-/// Se serializa aplanada, igual que
-/// [`crate::db::repositories::git_status::GitStatusEntry`], así que el frontend
-/// recibe `project_count` al mismo nivel que los campos de [`Tag`].
+/// Etiqueta con su número de proyectos, aplanada: `project_count` va junto a sus campos.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TagWithCount {
     #[serde(flatten)]
@@ -36,12 +27,7 @@ pub struct TagWithCount {
     pub project_count: i64,
 }
 
-/// Normaliza y valida el nombre de una etiqueta.
-///
-/// Recorta los espacios de los extremos en silencio y exige que lo que queda
-/// tenga entre 1 y [`MAX_NAME_LEN`] caracteres. Los espacios interiores se
-/// permiten ("cliente grande"); los caracteres de control no, porque
-/// romperían el renderizado de los chips y no son escribibles a propósito.
+/// Recorta el nombre de una etiqueta y exige de 1 a [`MAX_NAME_LEN`] caracteres.
 pub fn validate_name(raw: &str) -> Result<String> {
     let name = raw.trim();
 
@@ -62,6 +48,7 @@ pub fn validate_name(raw: &str) -> Result<String> {
         .with("len", len));
     }
 
+    // Romperían el chip, y nadie los escribe a propósito.
     if name.chars().any(|c| c.is_control()) {
         return Err(AppError::validation(
             "tag_name_control",
@@ -72,11 +59,7 @@ pub fn validate_name(raw: &str) -> Result<String> {
     Ok(name.to_string())
 }
 
-/// Normaliza y valida un color de etiqueta.
-///
-/// Acepta `#RRGGBB` en cualquier caja y lo devuelve en mayúsculas, para que la
-/// base de datos no acumule las dos formas del mismo color y el frontend pueda
-/// comparar contra la paleta con una igualdad de cadenas.
+/// Acepta `#RRGGBB` en cualquier caja y lo devuelve en mayúsculas.
 pub fn normalize_color(raw: &str) -> Result<String> {
     let color = raw.trim();
 
@@ -93,13 +76,11 @@ pub fn normalize_color(raw: &str) -> Result<String> {
         return Err(invalid());
     }
 
+    // Una sola forma por color: la paleta del frontend se compara por igualdad.
     Ok(format!("#{}", hex.to_ascii_uppercase()))
 }
 
-/// Clave de comparación para la unicidad insensible a mayúsculas.
-///
-/// Debe coincidir con lo que calcula el índice `idx_tags_name_ci` de la
-/// migración 002, que es `lower(name)`.
+/// Clave de unicidad sin mayúsculas; tiene que coincidir con el `lower(name)` del índice de la 002.
 pub fn name_key(name: &str) -> String {
     name.trim().to_lowercase()
 }

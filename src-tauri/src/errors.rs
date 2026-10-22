@@ -1,8 +1,6 @@
-//! Tipo de error global de Mosaic.
-//!
-//! La capa `core`/`db` trabaja siempre con [`AppError`]. Los comandos Tauri lo
-//! convierten en [`CommandError`], que viaja al frontend con un código estable
-//! y sus datos para que el frontend lo diga en el idioma de la interfaz.
+//! Errores de Mosaic. `core` y `db` usan [`AppError`]; los comandos lo convierten
+//! en [`CommandError`], con un código estable y sus datos para que el frontend
+//! lo diga en el idioma de la interfaz.
 
 use std::fmt;
 use std::path::Path;
@@ -41,8 +39,7 @@ pub enum AppError {
     #[error("{0}")]
     Validation(Coded),
 
-    /// Algo que no depende del usuario falló (un mutex envenenado, una tarea
-    /// de fondo, lanzar un programa).
+    /// Algo que no depende del usuario falló: un mutex, una tarea de fondo, lanzar un programa.
     #[error("error interno: {0}")]
     Internal(Coded),
 }

@@ -1,8 +1,5 @@
-//! Modelo de dominio de un proyecto.
-//!
-//! Los campos se serializan en `snake_case` (el comportamiento por defecto de
-//! serde) para que `src/lib/types/index.ts` sea un espejo literal de estos
-//! structs y de las columnas SQL.
+//! Un proyecto. Los campos van en `snake_case`, como las columnas SQL y
+//! `src/lib/types/index.ts`, que es su espejo literal.
 
 use std::path::{Path, PathBuf};
 
@@ -10,10 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::errors::{AppError, Result};
 
-/// Longitud máxima de las notas de un proyecto, en caracteres (no bytes).
-///
-/// Son notas personales, no documentos: el tope solo existe para que un pegado
-/// accidental de un fichero entero no acabe en la base de datos.
+/// Tope de las notas, en caracteres: solo para que un pegado accidental no llene la base.
 pub const MAX_NOTES_CHARS: usize = 20_000;
 
 /// Proyecto tal y como está registrado en la base de datos.
@@ -51,10 +45,7 @@ pub struct DiscoveredProject {
 }
 
 impl DiscoveredProject {
-    /// Deriva el nombre visible de un proyecto a partir de su ruta.
-    ///
-    /// Usa el nombre de la carpeta; para rutas sin componente final (`/`)
-    /// recurre a la representación completa de la ruta.
+    /// Nombre visible del proyecto: su carpeta, o la ruta entera si no tiene componente final.
     pub fn name_from_path(path: &Path) -> String {
         path.file_name()
             .map(|name| name.to_string_lossy().into_owned())
@@ -62,12 +53,7 @@ impl DiscoveredProject {
     }
 }
 
-/// Prepara las notas que escribió el usuario para guardarlas.
-///
-/// Un texto vacío o hecho solo de espacios se guarda como `NULL`: no son unas
-/// notas, es la ausencia de ellas. Cualquier otro texto se guarda **tal cual**,
-/// sin recortar, porque el editor autoguarda mientras se escribe y recortar
-/// movería el cursor del usuario o le comería el espacio que acaba de teclear.
+/// Prepara las notas para guardarlas: vacías o solo espacios son `NULL`; lo demás, tal cual.
 pub fn normalize_notes(raw: &str) -> Result<Option<String>> {
     if raw.trim().is_empty() {
         return Ok(None);
@@ -79,6 +65,7 @@ pub fn normalize_notes(raw: &str) -> Result<Option<String>> {
         )
         .with("max", MAX_NOTES_CHARS));
     }
+    // Sin recortar: el editor autoguarda al teclear y se comería el espacio recién escrito.
     Ok(Some(raw.to_string()))
 }
 

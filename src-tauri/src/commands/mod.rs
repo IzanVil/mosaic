@@ -1,7 +1,7 @@
-//! Comandos Tauri: capa fina de adaptación entre el frontend y `core`/`db`.
+//! Comandos Tauri: la capa fina entre el frontend y `core`/`db`.
 //!
-//! Aquí no vive lógica de negocio: solo validación de entrada, conversión de
-//! errores a `String` y traslado del trabajo bloqueante fuera del hilo de la UI.
+//! Sin lógica de negocio: validan la entrada, llevan el trabajo bloqueante fuera
+//! del hilo de la interfaz y convierten `AppError` en `CommandError`.
 
 pub mod backup;
 pub mod git;
@@ -13,8 +13,7 @@ pub mod tags;
 
 use crate::errors::{AppError, CommandError};
 
-/// Ejecuta `f` fuera del hilo de la interfaz. Si la tarea se cae, el error dice
-/// qué se estaba haciendo (`what`, por ejemplo «la lectura del historial»).
+/// Ejecuta `f` fuera del hilo de la interfaz; si la tarea se cae, el error dice qué hacía (`what`).
 pub(crate) async fn blocking<T, F>(what: &str, f: F) -> Result<T, CommandError>
 where
     F: FnOnce() -> crate::errors::Result<T> + Send + 'static,
