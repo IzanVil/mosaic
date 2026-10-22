@@ -342,11 +342,16 @@ function patchProject(
   );
 }
 
-/** Compara dos entradas de caché para no reescribir un proyecto sin motivo. */
+/**
+ * Compara dos entradas de caché para no reescribir un proyecto sin motivo.
+ *
+ * `refreshed_at` no entra: es nueva en cada lectura, así que contarla haría que
+ * todo refresco cambiase todos los proyectos y el botón de Git no pudiera decir
+ * nunca «sin cambios». La interfaz no la enseña.
+ */
 function sameGitStatus(a: GitStatusEntry | null, b: GitStatusEntry | null): boolean {
   if (a === null || b === null) return a === b;
   return (
-    a.refreshed_at === b.refreshed_at &&
     a.branch === b.branch &&
     a.ahead === b.ahead &&
     a.behind === b.behind &&
