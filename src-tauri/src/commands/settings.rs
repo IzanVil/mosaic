@@ -32,16 +32,16 @@ const MAX_VIEW_STATE_BYTES: usize = 64 * 1024;
 #[tauri::command]
 pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, CommandError> {
     let raw = db.with_conn(|conn| settings_repo::get_raw(conn, KEY_VIEW_STATE))?;
+    Ok(raw.and_then(readable_view_state))
+}
 
-    let Some(raw) = raw else {
-        return Ok(None);
-    };
-
+/// La vista guardada si sigue siendo JSON; si no, `None` y un aviso en el log.
+fn readable_view_state(raw: String) -> Option<String> {
     match serde_json::from_str::<serde_json::Value>(&raw) {
-        Ok(_) => Ok(Some(raw)),
+        Ok(_) => Some(raw),
         Err(err) => {
             tracing::warn!(error = %err, "vista guardada ilegible: se usan los filtros por defecto");
-            Ok(None)
+            None
         }
     }
 }
@@ -49,24 +49,28 @@ pub async fn get_view_state(db: State<'_, Arc<Db>>) -> Result<Option<String>, Co
 /// Guarda la vista actual. El frontend llama con debounce, no en cada tecla.
 #[tauri::command]
 pub async fn set_view_state(db: State<'_, Arc<Db>>, json: String) -> Result<(), CommandError> {
+    validate_view_state(&json)?;
+    db.with_conn(|conn| settings_repo::set_raw(conn, KEY_VIEW_STATE, &json))?;
+    Ok(())
+}
+
+/// Comprueba que la vista quepa en [`MAX_VIEW_STATE_BYTES`] y sea JSON.
+fn validate_view_state(json: &str) -> Result<(), AppError> {
     if json.len() > MAX_VIEW_STATE_BYTES {
         return Err(AppError::validation(
             "view_state_too_big",
             format!("la vista guardada no puede pasar de {MAX_VIEW_STATE_BYTES} bytes"),
         )
-        .with("max", MAX_VIEW_STATE_BYTES)
-        .into());
+        .with("max", MAX_VIEW_STATE_BYTES));
     }
 
-    serde_json::from_str::<serde_json::Value>(&json).map_err(|err| {
+    serde_json::from_str::<serde_json::Value>(json).map_err(|err| {
         AppError::validation(
             "view_state_invalid",
             format!("la vista guardada no es JSON válido: {err}"),
         )
         .with("detail", err.to_string())
     })?;
-
-    db.with_conn(|conn| settings_repo::set_raw(conn, KEY_VIEW_STATE, &json))?;
     Ok(())
 }
 
@@ -105,4 +109,53 @@ pub async fn set_advanced_settings(
     }
     tracing::debug!(?validos, "set_advanced_settings");
     Ok(validos)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Un JSON de texto que ocupa exactamente `bytes` bytes.
+    fn json_of(bytes: usize) -> String {
+        format!("\"{}\"", "a".repeat(bytes - 2))
+    }
+
+    #[test]
+    fn a_view_right_at_the_limit_is_saved() {
+        assert!(validate_view_state(&json_of(MAX_VIEW_STATE_BYTES)).is_ok());
+    }
+
+    #[test]
+    fn a_view_one_byte_over_the_limit_is_rejected_and_says_the_limit() {
+        let err = validate_view_state(&json_of(MAX_VIEW_STATE_BYTES + 1)).unwrap_err();
+        assert_eq!(err.code(), "view_state_too_big");
+        assert_eq!(CommandError::from(err).params["max"], MAX_VIEW_STATE_BYTES);
+    }
+
+    #[test]
+    fn the_limit_counts_bytes_not_characters() {
+        // «ñ» ocupa dos bytes: medio tope de eñes ya se pasa por las comillas.
+        let json = format!("\"{}\"", "ñ".repeat(MAX_VIEW_STATE_BYTES / 2));
+        assert_eq!(
+            validate_view_state(&json).unwrap_err().code(),
+            "view_state_too_big"
+        );
+    }
+
+    #[test]
+    fn a_view_that_is_not_json_is_rejected_with_the_reason() {
+        let err = validate_view_state(r#"{"query": "#).unwrap_err();
+        assert_eq!(err.code(), "view_state_invalid");
+        assert!(CommandError::from(err).params["detail"].is_string());
+    }
+
+    #[test]
+    fn a_corrupt_saved_view_is_ignored_and_a_valid_one_comes_back_untouched() {
+        assert_eq!(readable_view_state("{roto".into()), None);
+        let guardada = r#"{"query":"api","density":"compacto"}"#;
+        assert_eq!(
+            readable_view_state(guardada.into()).as_deref(),
+            Some(guardada)
+        );
+    }
 }

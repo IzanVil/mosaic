@@ -10,11 +10,15 @@ use crate::db::Db;
 use crate::errors::{AppError, CommandError};
 use crate::GitRefreshSignal;
 
+/// El fichero no se puede leer: no existe, es una carpeta, faltan permisos…
 fn unreadable(ruta: &Path, err: &std::io::Error) -> AppError {
     AppError::invalid_path(ruta, "path_unreadable", &err.to_string())
         .with("detail", err.to_string())
 }
 
+/// Lee y valida la copia de `path`. Un fichero demasiado grande o que no es
+/// texto UTF-8 no es una copia de Mosaic; cualquier otro fallo de lectura es
+/// un problema de la ruta.
 fn read_backup(path: &str) -> Result<Backup, AppError> {
     let ruta = Path::new(path);
     let size = std::fs::metadata(ruta)
@@ -81,4 +85,74 @@ pub async fn apply_import(
     }
     tracing::info!(%path, ?plan, "copia importada");
     Ok(plan)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::Write;
+
+    use super::*;
+
+    fn ruta(dir: &tempfile::TempDir, nombre: &str) -> String {
+        dir.path().join(nombre).to_string_lossy().into_owned()
+    }
+
+    fn copia() -> Backup {
+        let db = Db::open_in_memory().unwrap();
+        db.with_conn(|conn| backup::build_backup(conn, true, 1_700_000_000, "0.0.0"))
+            .unwrap()
+    }
+
+    #[test]
+    fn reads_a_backup_written_by_mosaic() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = ruta(&dir, "copia.json");
+        let escrita = copia();
+        std::fs::write(&path, backup::to_json(&escrita).unwrap()).unwrap();
+
+        assert_eq!(read_backup(&path).unwrap(), escrita);
+    }
+
+    #[test]
+    fn a_valid_backup_over_the_size_limit_is_rejected() {
+        // Rellena con espacios, que el JSON admite: sin el tope, se leería bien.
+        let dir = tempfile::tempdir().unwrap();
+        let path = ruta(&dir, "enorme.json");
+        let json = backup::to_json(&copia()).unwrap();
+        let relleno = MAX_BACKUP_BYTES as usize + 1 - json.len();
+        let mut fichero = std::fs::File::create(&path).unwrap();
+        fichero.write_all(json.as_bytes()).unwrap();
+        fichero.write_all(&vec![b' '; relleno]).unwrap();
+        drop(fichero);
+
+        assert_eq!(read_backup(&path).unwrap_err().code(), "backup_not_mosaic");
+    }
+
+    #[test]
+    fn a_file_that_is_not_utf8_is_not_a_backup_rather_than_unreadable() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = ruta(&dir, "imagen.png");
+        std::fs::write(&path, [0x89, b'P', b'N', b'G', 0xff, 0xfe]).unwrap();
+
+        assert_eq!(read_backup(&path).unwrap_err().code(), "backup_not_mosaic");
+    }
+
+    #[test]
+    fn a_missing_file_is_unreadable_and_carries_its_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = ruta(&dir, "no-existe.json");
+
+        let err = CommandError::from(read_backup(&path).unwrap_err());
+        assert_eq!(err.code, "path_unreadable");
+        assert_eq!(err.params["path"], path);
+        assert!(err.params["detail"].is_string());
+    }
+
+    #[test]
+    fn a_folder_is_unreadable_not_a_backup() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().to_string_lossy().into_owned();
+
+        assert_eq!(read_backup(&path).unwrap_err().code(), "path_unreadable");
+    }
 }

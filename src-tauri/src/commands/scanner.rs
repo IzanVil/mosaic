@@ -85,3 +85,47 @@ pub async fn scan_all_paths(db: State<'_, Arc<Db>>) -> Result<ScanSummary, Comma
 
     blocking("la tarea de escaneo", move || run_full_scan(&db)).await
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::{Component, Path};
+
+    use super::*;
+
+    #[test]
+    fn resolves_a_roundabout_path_to_the_real_folder() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("a").join("b")).unwrap();
+        let rodeo = dir.path().join("a").join("..").join("a").join("b");
+
+        let canonica = canonical_dir(rodeo.to_str().unwrap()).unwrap();
+        assert!(canonica.is_absolute());
+        assert!(canonica.ends_with(Path::new("a").join("b")));
+        assert!(!canonica.components().any(|c| c == Component::ParentDir));
+        // En Windows, `canonicalize` devuelve `\\?\C:\…`: no debe llegar a la base.
+        assert!(
+            !canonica.to_string_lossy().starts_with(r"\\?\"),
+            "{canonica:?}"
+        );
+    }
+
+    #[test]
+    fn a_path_that_does_not_exist_is_unreadable() {
+        let dir = tempfile::tempdir().unwrap();
+        let falta = dir.path().join("no-existe");
+
+        let err = canonical_dir(falta.to_str().unwrap()).unwrap_err();
+        assert_eq!(err.code(), "path_unreadable");
+    }
+
+    #[test]
+    fn a_file_is_not_a_scan_folder() {
+        let dir = tempfile::tempdir().unwrap();
+        let fichero = dir.path().join("notas.txt");
+        std::fs::write(&fichero, "hola").unwrap();
+
+        let err = CommandError::from(canonical_dir(fichero.to_str().unwrap()).unwrap_err());
+        assert_eq!(err.code, "path_not_dir");
+        assert!(err.params["path"].as_str().unwrap().ends_with("notas.txt"));
+    }
+}
