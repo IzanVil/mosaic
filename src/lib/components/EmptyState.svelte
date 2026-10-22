@@ -4,10 +4,13 @@
   interface Props {
     /** Icono opcional, renderizado sobre el título. */
     icon?: Snippet;
+    /** Qué pasa, en una frase. */
     title: string;
+    /** Qué se puede hacer. */
     description: string;
     /** Si se indican ambos, se muestra un botón de acción. */
     actionLabel?: string;
+    /** Lo que hace el botón. */
     onAction?: () => void;
   }
 

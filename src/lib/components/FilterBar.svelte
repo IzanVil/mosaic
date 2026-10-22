@@ -344,12 +344,7 @@
     color: var(--accent);
   }
 
-  /*
-   * Los filtros que no son etiquetas siguen la receta del chip de etiqueta
-   * (fondo, borde y texto con los porcentajes de `--tag-chip-*`) sobre el
-   * neutro secundario. Es la misma gramática, solo que sin color: lo que lo
-   * distingue de una etiqueta es estar en esta fila y llevar la X a la vista.
-   */
+  /* La receta del chip de etiqueta, en neutro: lo distinguen esta fila y la X a la vista. */
   .chip {
     --chip-color: var(--text-secondary);
     display: inline-flex;

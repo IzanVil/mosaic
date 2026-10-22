@@ -14,6 +14,7 @@
     actions: PaletteAction[];
     /** Ejecuta una acción por su id. */
     onAction: (id: string) => void;
+    /** Cierra la paleta. */
     onClose: () => void;
     /** Tecla de mando de este sistema, para la pista de abajo. */
     modKey: string;
@@ -45,10 +46,7 @@
     );
   }
 
-  /**
-   * Ejecuta un resultado. Con la tecla de mando, un proyecto se abre en el
-   * editor en lugar de en su detalle.
-   */
+  /** Ejecuta un resultado; con la tecla de mando, un proyecto se abre en el editor. */
   function run(item: PaletteItem | undefined, inEditor = false) {
     if (!item) return;
     onClose();

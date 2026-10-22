@@ -66,10 +66,7 @@
     void loadAdvancedSettings();
   });
 
-  /**
-   * Guarda un número al confirmarlo (Enter o salir del campo). Si el backend
-   * lo rechaza, el campo vuelve a enseñar el valor que sigue guardado.
-   */
+  /** Guarda un número al confirmarlo; si el backend lo rechaza, el campo vuelve a lo guardado. */
   async function saveNumber(
     field: 'max_depth' | 'max_entries_per_scan',
     input: HTMLInputElement,
@@ -567,12 +564,8 @@
     color: var(--text-secondary);
   }
 
-  /*
-   * Sin `appearance: none`, WebKitGTK pinta el control nativo del tema GTK:
-   * fondo blanco con el texto claro de la aplicación encima, ilegible. La
-   * flecha la pone el icono, porque con la apariencia nativa se va también la
-   * suya.
-   */
+  /* Sin `appearance: none`, WebKitGTK pinta el control del tema GTK: fondo blanco con el texto
+     claro de la app, ilegible. La flecha es un icono porque la nativa se va con él. */
   .desplegable {
     position: relative;
     display: inline-flex;

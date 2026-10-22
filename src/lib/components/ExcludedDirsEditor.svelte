@@ -27,10 +27,7 @@
     dirs.length === defaults.length && dirs.every((dir, i) => dir === defaults[i]),
   );
 
-  /**
-   * Lo que el backend rechazaría, comprobado antes para decirlo junto al campo
-   * sin esperar al error. El backend vuelve a comprobarlo de todos modos.
-   */
+  /** Lo que el backend rechazaría, dicho antes junto al campo; el backend lo comprueba igual. */
   function problem(name: string): string | null {
     if (name === '') return $t('excluidas.escribeNombre');
     if (name.includes('/') || name.includes('\\')) return $t('excluidas.sinBarras');

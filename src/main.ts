@@ -5,11 +5,7 @@ import { lang } from './lib/i18n'
 import { loadViewState, theme } from './lib/stores/filters'
 import { applyTheme } from './lib/utils/theme'
 
-/**
- * La vista guardada se lee antes de montar nada: así el tablero no se pinta
- * sin filtros para reordenarse un instante después, y el tema guardado ya está
- * puesto cuando aparece el primer píxel de la interfaz.
- */
+/** Lee la vista guardada antes de montar: sin reordenar el tablero y con el tema ya puesto. */
 async function start() {
   await loadViewState()
 

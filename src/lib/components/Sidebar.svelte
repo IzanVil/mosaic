@@ -14,8 +14,11 @@
   import { tags } from '../stores/tags';
 
   interface Props {
+    /** El panel está plegado. */
     collapsed: boolean;
+    /** Pliega o despliega el panel. */
     onToggle: () => void;
+    /** Abre el gestor de etiquetas. */
     onManageTags: () => void;
   }
 

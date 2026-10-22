@@ -12,10 +12,7 @@
     onPick: (hex: string) => void;
     /** El selector personalizado ha cambiado. */
     onCustom: (hex: string) => void;
-    /**
-     * Avisar del color personalizado mientras se arrastra y no solo al soltar.
-     * Para una etiqueta que ya existe se deja en `false`: cada aviso la guarda.
-     */
+    /** Avisar mientras se arrastra, no solo al soltar; no si ya existe: cada aviso la guarda. */
     live?: boolean;
     /** Escape o un clic fuera. */
     onDismiss: () => void;

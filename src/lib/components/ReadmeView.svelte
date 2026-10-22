@@ -48,11 +48,7 @@
     timer = setTimeout(() => (notice = null), 3000);
   }
 
-  /**
-   * Ningún enlace del README navega dentro de la ventana: eso sacaría a la
-   * aplicación de sí misma. Los web se abren en el navegador; el resto
-   * (rutas relativas, anclas, correo) se explica en vez de no hacer nada.
-   */
+  /** Ningún enlace navega dentro de la ventana: los web van al navegador y el resto se explica. */
   function onClick(event: MouseEvent) {
     const target = event.target;
     if (!(target instanceof Element)) return;
@@ -111,7 +107,7 @@
   <!-- El clic solo intercepta los enlaces de dentro, que ya son focusables y se activan con Enter. -->
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
   <article class="readme" onclick={onClick}>
-    <!-- El HTML llega descartado de HTML crudo y saneado con ammonia en el backend (core/readme.rs). -->
+    <!-- HTML saneado en el backend con la lista blanca de ammonia (core/readme.rs). -->
     {@html section.data.html}
   </article>
 {/if}

@@ -8,6 +8,7 @@
   interface Props {
     /** Los atajos, ya con la tecla de mando de este sistema. */
     shortcuts: ShortcutInfo[];
+    /** Cierra la ayuda. */
     onClose: () => void;
   }
 

@@ -8,6 +8,7 @@
   import TagColorMenu from './TagColorMenu.svelte';
 
   interface Props {
+    /** Cierra el gestor. */
     onClose: () => void;
   }
 
@@ -212,11 +213,7 @@
 </div>
 
 <style>
-  /*
-   * El velo es el propio fondo de la aplicación medio transparente: oscurece
-   * en el tema oscuro y aclara en el claro, sin un negro fijo que en claro
-   * ensuciaría.
-   */
+  /* El fondo de la app medio transparente: oscurece en oscuro y aclara en claro, sin negro fijo. */
   .fondo {
     position: fixed;
     inset: 0;

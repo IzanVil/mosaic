@@ -43,20 +43,10 @@
   const PROJECTS_RESCANNED = 'projects-rescanned';
   /** Segundos que el resultado de un refresco manual desplaza al «hace X». */
   const OUTCOME_VISIBLE_SECONDS = 8;
-  /**
-   * Cada cuánto se recalcula el «hace X».
-   *
-   * Treinta segundos deja el texto con hasta medio minuto de retraso, que es
-   * preferible a despertar el render cada segundo para contar algo que al
-   * usuario le da igual con esa precisión.
-   */
+  /** Cada cuánto se recalcula el «hace X»: mejor 30 s de retraso que un render por segundo. */
   const CLOCK_TICK_MS = 30_000;
 
-  /**
-   * Un solo botón para tres estados: cada clic pasa al siguiente. El icono es
-   * el del tema actual y el `title` dice cuál viene, para que el clic no sea
-   * una sorpresa.
-   */
+  /** Un botón para tres temas: el icono es el actual y el `title` dice cuál viene. */
   const THEME_INFO = {
     dark: { icon: Moon, label: 'app.temaOscuro', next: 'app.temaSiguienteClaro' },
     light: { icon: Sun, label: 'app.temaClaro', next: 'app.temaSiguienteSistema' },
@@ -116,10 +106,7 @@
     document.getElementById('busqueda')?.focus();
   }
 
-  /**
-   * Atajos globales. Se atienden en `window`, pero los desplegables y modales
-   * que usan `dismissable` se quedan antes con su Escape.
-   */
+  /** Atajos globales; los desplegables con `dismissable` se quedan antes su Escape. */
   function onGlobalKeydown(event: KeyboardEvent) {
     const action = matchShortcut(
       {
@@ -181,8 +168,7 @@
   onMount(() => {
     const stopListening = Promise.all([
       listen<GitRefreshSummary>(GIT_REFRESHED, (event) => applyGitRefresh(event.payload)),
-      // El escaneo al arrancar puede haber descubierto proyectos nuevos, así que
-      // la lista se relee entera en lugar de mezclar solo el estado de Git.
+      // Puede haber proyectos nuevos: la lista se relee entera.
       listen(PROJECTS_RESCANNED, () => void loadProjects()),
     ]);
     const clock = setInterval(() => (tick = now_ts()), CLOCK_TICK_MS);
@@ -354,11 +340,8 @@
     color: var(--danger);
   }
 
-  /*
-   * Cuatro pesos, de más a menos: la marca, la navegación, las acciones y los
-   * metadatos. Antes los seis elementos tenían el mismo tamaño de letra y el
-   * ojo no sabía por dónde empezar.
-   */
+  /* Cuatro pesos, de más a menos: marca, navegación, acciones y metadatos. Con uno solo, el
+     ojo no sabía por dónde empezar. */
   .cabecera {
     display: flex;
     flex: none;

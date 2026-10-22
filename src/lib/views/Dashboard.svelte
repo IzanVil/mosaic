@@ -32,7 +32,9 @@
   import { tagsError } from '../stores/tags';
 
   interface Props {
+    /** Lleva a Ajustes, desde el aviso de que no hay rutas. */
     onGoToSettings: () => void;
+    /** Escanea, desde el aviso de que no hay proyectos. */
     onScan: () => void;
   }
 
@@ -42,17 +44,8 @@
   let hasScanPaths = $derived($scanPaths.length > 0);
   let hasProjects = $derived($projects.length > 0);
 
-  /**
-   * Umbral a partir del cual se explica por qué hay tan poco en pantalla.
-   *
-   * El aviso no lleva botón propio: «Limpiar filtros» ya está en la barra de
-   * justo encima siempre que hay algo filtrado, y dos iguales a la vez era
-   * ruido.
-   *
-   * La rejilla NO se recoloca: la búsqueda filtra en vivo, y centrar el
-   * contenido al bajar de seis resultados haría saltar las tarjetas a mitad de
-   * pantalla entre una letra y la siguiente.
-   */
+  // Por debajo se explica por qué hay tan poco. Sin botón propio: «Limpiar filtros» ya está
+  // encima. Y la rejilla no se centra: con la búsqueda en vivo, saltaría a cada letra.
   const POCOS_RESULTADOS = 5;
 
   let visibles = $derived($visibleProjects.length);
@@ -146,11 +139,7 @@
 {/if}
 
 <style>
-  /*
-   * El fondo de la vista pasa al token nuevo, cinco puntos de luminosidad por
-   * debajo de la superficie de la tarjeta. Con el token anterior la diferencia
-   * era de uno y las tarjetas no se despegaban del fondo.
-   */
+  /* Cinco puntos de luminosidad por debajo de la tarjeta, para que se despegue del fondo. */
   .lienzo {
     background: var(--surface-base);
   }

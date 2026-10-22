@@ -16,8 +16,11 @@
   import { DEFAULT_TAG_COLOR, TAG_COLORS } from '../utils/tagColors';
 
   interface Props {
+    /** El proyecto al que se asignan. */
     projectId: number;
+    /** Las etiquetas que ya tiene. */
     assigned: Tag[];
+    /** Solo el «+», sin el texto. */
     compact?: boolean;
     /** Disparador sin borde, como texto terciario: el de la tarjeta sin etiquetas. */
     plain?: boolean;

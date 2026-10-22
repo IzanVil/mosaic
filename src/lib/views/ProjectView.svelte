@@ -30,11 +30,7 @@
 
   let { projectId }: Props = $props();
 
-  /**
-   * El proyecto sale de `projects`, la única fuente del tablero: así una
-   * etiqueta asignada aquí, o el refresco de Git de fondo, se ven al momento en
-   * las dos vistas sin copiar nada.
-   */
+  // De `projects`, la única fuente: una etiqueta o un refresco de Git se ven en las dos vistas.
   let project = $derived($projects.find((candidate) => candidate.id === projectId));
   let status = $derived(project?.git_status ?? null);
   let branchLabel = $derived(
@@ -47,12 +43,8 @@
     { kind: 'file_manager', icon: FolderOpen, label: 'detalle.carpeta' },
   ] as const;
 
-  /**
-   * El detalle se abre cuando el proyecto ya está en `projects`, no al montar.
-   * Si la lista todavía no ha llegado del backend (por ejemplo, justo al
-   * arrancar), abrirlo al montar cargaría unas notas vacías en el editor
-   * aunque las tuviera guardadas.
-   */
+  // Se abre cuando el proyecto ya está en `projects` y no al montar: justo al arrancar, la
+  // lista aún no ha llegado y el editor cargaría unas notas vacías.
   let opened = false;
   $effect(() => {
     if (opened || !project) return;
@@ -75,8 +67,7 @@
   }
 
   function onKeydown(event: KeyboardEvent) {
-    // Los desplegables cierran con Escape antes que la vista: `dismissable` lo
-    // atrapa en fase de captura y no deja que llegue hasta aquí.
+    // Un desplegable abierto se queda antes el Escape: `dismissable` lo atrapa en captura.
     if (event.key === 'Escape' && !event.defaultPrevented) {
       event.preventDefault();
       void back();

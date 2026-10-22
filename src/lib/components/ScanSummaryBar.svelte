@@ -6,6 +6,7 @@
   import { formatDuration } from '../utils/format';
 
   interface Props {
+    /** Resumen del último escaneo. */
     summary: ScanSummary;
   }
 

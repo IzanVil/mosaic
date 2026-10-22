@@ -11,7 +11,9 @@
   import { nearViewport } from '../utils/nearViewport';
 
   interface Props {
+    /** El proyecto de la tarjeta. */
     project: ProjectWithTags;
+    /** Densidad compacta. */
     compact: boolean;
     /** Montar la tarjeta desde el principio, sin esperar al observador. */
     eager?: boolean;

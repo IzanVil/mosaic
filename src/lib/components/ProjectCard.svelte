@@ -12,6 +12,7 @@
   import { formatRelativeTime } from '../utils/format';
 
   interface Props {
+    /** El proyecto de la tarjeta. */
     project: ProjectWithTags;
     /** Sin ruta ni pie, para que quepan más filas en el modo compacto. */
     compact?: boolean;
@@ -25,14 +26,7 @@
   let shownTags = $derived(project.tags.slice(0, VISIBLE_TAGS));
   let hiddenTags = $derived(project.tags.slice(VISIBLE_TAGS));
 
-  /**
-   * Las dos últimas partes de la ruta.
-   *
-   * Todos los proyectos cuelgan de la misma raíz de escaneo, así que mostrar la
-   * ruta entera repetía el mismo prefijo en cada tarjeta y recortaba por la
-   * izquierda justo lo que distingue a un proyecto de otro. La ruta completa
-   * sigue disponible en el tooltip.
-   */
+  /** Las dos últimas partes de la ruta: el prefijo es el de todas; la entera, en el tooltip. */
   let shortPath = $derived(project.path.split('/').filter(Boolean).slice(-2).join('/'));
 
   let branchLabel = $derived(
@@ -205,10 +199,7 @@
     white-space: nowrap;
   }
 
-  /*
-   * El nombre abre el detalle. Es un botón para que llegue el teclado, y lleva
-   * `data-proyecto` porque es donde vuelve el foco al salir del detalle.
-   */
+  /* Un botón, para que llegue el teclado; `data-proyecto` es donde vuelve el foco del detalle. */
   .nombre {
     display: block;
     max-width: 100%;
@@ -273,15 +264,8 @@
     white-space: nowrap;
   }
 
-  /*
-   * La fila existe siempre, tenga etiquetas o no.
-   *
-   * Cuando era condicional, las tarjetas sin etiquetas dejaban un hueco muerto
-   * al final: la rejilla estira todas las de una fila a la altura de la más
-   * alta, y el hueco aparecía abajo, donde no significa nada. Reservando el
-   * sitio, el espacio siempre está donde corresponde y todas las tarjetas miden
-   * lo mismo sin trucos.
-   */
+  /* Siempre, tenga etiquetas o no: si no, la rejilla estiraba la tarjeta y el hueco quedaba
+     abajo, donde no significa nada. */
   .etiquetas {
     display: flex;
     flex-wrap: wrap;
@@ -290,12 +274,8 @@
     min-height: 22px;
   }
 
-  /*
-   * El selector solo asoma al pasar por la tarjeta o al entrar en ella con el
-   * teclado. Oculto con `display: none` y no con opacidad: invisible seguía
-   * ocupando sitio y, con tres etiquetas en compacto, reservaba una segunda
-   * línea vacía.
-   */
+  /* Solo asoma al pasar o con el teclado. `display: none` y no opacidad: invisible seguía
+     ocupando sitio y, en compacto, reservaba una línea vacía. */
   .anadir {
     display: none;
   }

@@ -5,24 +5,19 @@
   import type { Tag } from '../types';
 
   interface Props {
+    /** La etiqueta que se pinta. */
     tag: Tag;
+    /** Lleva una X para quitarla. */
     removable?: boolean;
+    /** Se ha pulsado la X. */
     onRemove?: () => void;
+    /** Si se da, el chip entero es un botón. */
     onClick?: () => void;
+    /** Número que se enseña al lado del nombre; `null` para ninguno. */
     count?: number | null;
+    /** Tooltip; por defecto, el nombre. */
     title?: string;
-    /**
-     * Oculta la X hasta que **este chip** recibe el ratón o el foco.
-     *
-     * Es lo que usan las tarjetas del tablero: con varias etiquetas por tarjeta
-     * y cientos de tarjetas, una X permanente en cada una es ruido. La X ocupa
-     * su hueco igualmente, así que los chips no se mueven al pasar el cursor, y
-     * sigue en el orden de tabulación: al llegar con el teclado se hace visible
-     * por `:focus-within` y se activa con Enter o Espacio, como cualquier botón.
-     *
-     * El gestor de etiquetas no lo usa: allí la acción de quitar está siempre a
-     * la vista, porque es la pantalla a la que se va justamente a eso.
-     */
+    /** Oculta la X hasta tener el ratón o el foco: en las tarjetas, una X fija es ruido. */
     revealOnHover?: boolean;
   }
 
@@ -36,18 +31,9 @@
     revealOnHover = false,
   }: Props = $props();
 
-  /**
-   * Una sola gramática: fondo y borde tintados, texto en el color mezclado con la tinta.
-   *
-   * Antes había una variante rellena para los filtros activos, con texto
-   * blanco sobre el color de la etiqueta. Con etiquetas de luminosidad alta el
-   * contraste se quedaba en torno a 2:1, y además un filtro se veía distinto
-   * de la etiqueta que filtra.
-   *
-   * Los porcentajes salen de `--tag-chip-*` en `tokens.css`, que cambian con
-   * el tema. Antes eran sufijos de alfa fijos en `tagColors.ts`, iguales en
-   * claro y en oscuro.
-   */
+  // Una sola gramática: fondo y borde tintados y texto mezclado con la tinta, con los
+  // porcentajes de `--tag-chip-*`, que cambian con el tema. Sin variante rellena: con
+  // etiquetas claras, el texto blanco se quedaba en 2:1.
   let style = $derived(
     `--chip-color: ${tag.color};` +
       ' background-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-bg), transparent);' +
@@ -136,12 +122,8 @@
     background: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);
   }
 
-  /*
-   * La X oculta ocupa su hueco igualmente, así que el chip no cambia de ancho
-   * al pasar el cursor. Se revela con el hover o el foco sobre **este** chip,
-   * no sobre la tarjeta: antes dependía del hover de la tarjeta entera y
-   * aparecían tres X a la vez.
-   */
+  /* Oculta, la X sigue ocupando su hueco: el chip no cambia de ancho. Se revela sobre este
+     chip y no sobre la tarjeta, que sacaba todas las X a la vez. */
   .quitar.oculta {
     opacity: 0;
   }

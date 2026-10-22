@@ -12,6 +12,7 @@
     pinned: ProjectWithTags[];
     /** El resto, ya filtrado y ordenado. */
     rest: ProjectWithTags[];
+    /** Cómoda o compacta: decide columnas, huecos y relleno. */
     density: Density;
   }
 
@@ -65,13 +66,8 @@
 {/if}
 
 <style>
-  /*
-   * Las dos densidades salen de los tokens, no de clases sueltas: la compacta
-   * cambia el ancho mínimo de columna, el hueco entre tarjetas y el relleno
-   * interior, y ese último lo lee `ProjectCard` de la variable que se fija
-   * aquí. Con 34 proyectos, la cómoda muestra seis tarjetas y media y la
-   * compacta pasa de quince.
-   */
+  /* Las densidades salen de los tokens: la compacta cambia el ancho de columna, el hueco y
+     el relleno, que `ProjectCard` lee de la variable que se fija aquí. */
   .tablero {
     display: flex;
     flex-direction: column;
