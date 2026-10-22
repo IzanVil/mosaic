@@ -1,10 +1,6 @@
 /**
- * Idioma de la interfaz.
- *
- * La preferencia (`system`, `es` o `en`) se guarda con la vista; el idioma que
- * se usa de verdad sale de ella y, en modo sistema, de lo que diga el navegador.
- * Los componentes leen los textos con `$t('clave')`, así que al cambiar de
- * idioma se repintan solos.
+ * Idioma de la interfaz. La preferencia se guarda con la vista; en modo sistema manda el
+ * navegador. Los componentes leen con `$t('clave')` y se repintan solos al cambiarlo.
  */
 
 import { derived, get, writable, type Readable } from 'svelte/store';
@@ -23,10 +19,7 @@ export const LANG_PREFERENCES: LangPreference[] = ['system', 'es', 'en'];
 export type Key = keyof typeof es;
 type Params<K extends Key> = (typeof es)[K] extends (p: infer P) => string ? [P] : [];
 
-/**
- * El idioma del sistema: el primero de la lista del navegador que Mosaic sepa
- * hablar. Si no habla ninguno, inglés, que es el que más gente entiende.
- */
+/** El primer idioma del navegador que Mosaic hable; si ninguno, inglés, que entiende más gente. */
 export function systemLang(languages: readonly string[] = navigatorLanguages()): Lang {
   for (const language of languages) {
     const base = language.toLowerCase().split(/[-_]/)[0];

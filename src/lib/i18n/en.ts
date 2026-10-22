@@ -4,6 +4,7 @@ import type { es } from './es';
 
 type N = { n: number };
 
+/** El diccionario inglés. */
 export const en: { [K in keyof typeof es]: (typeof es)[K] } = {
   'tiempo.nunca': 'never',
   'tiempo.momento': 'just now',

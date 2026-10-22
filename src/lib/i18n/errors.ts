@@ -1,9 +1,6 @@
 /**
- * Errores del backend en los idiomas que no son el español.
- *
- * El backend ya escribe cada error en español (`message`), así que el español
- * no tiene tabla aquí: se enseña ese mensaje tal cual. Las claves son los
- * códigos de `errors::AppError`, y un test comprueba que no falte ninguno.
+ * Errores del backend en los idiomas que no son el español, que ya llega en `message`.
+ * Las claves son los códigos de `AppError`, y un test vigila que no falte ninguno.
  */
 
 import type { Lang } from './index';

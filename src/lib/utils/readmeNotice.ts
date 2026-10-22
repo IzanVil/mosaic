@@ -5,12 +5,7 @@ import { get } from "svelte/store";
 import { lang, translate, type Lang } from "../i18n";
 import type { ReadmePreview } from "../types";
 
-/**
- * Qué se ha quedado fuera, dicho con números, o `null` si no falta nada. Si el
- * README tiene imágenes y no se dice, el lector cree que no las tiene o que
- * algo ha fallado. Las insignias van aparte: no son contenido que se eche de
- * menos como una captura.
- */
+/** Qué se ha quedado fuera, con números, o `null`: si no se dice, parece que algo ha fallado. */
 export function omittedText(
   readme: Pick<
     ReadmePreview,

@@ -1,10 +1,4 @@
-/**
- * Atajos de teclado de Mosaic.
- *
- * Reconocer un atajo es una función pura de la tecla y del sitio donde está el
- * foco, para poder probarla sin una ventana. Quien la usa (`App.svelte`)
- * decide qué hacer con cada acción.
- */
+/** Atajos de teclado: reconocerlos es una función pura, para probarla sin ventana. */
 
 import type { Key } from '../i18n';
 
@@ -35,10 +29,7 @@ export function isMac(platform: string = navigator.userAgent): boolean {
   return /mac|iphone|ipad/i.test(platform);
 }
 
-/**
- * ¿El foco está en algo donde se escribe? Ahí «/» y «?» son letras, no
- * atajos.
- */
+/** ¿El foco está donde se escribe? Ahí «/» y «?» son letras, no atajos. */
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable) return true;
@@ -49,15 +40,10 @@ export function isTypingTarget(target: EventTarget | null): boolean {
   return false;
 }
 
-/**
- * Qué atajo es esta tecla, o `null` si no es ninguno.
- *
- * Los de modificador (Ctrl+K, Ctrl+R, Ctrl+,) funcionan también escribiendo,
- * como en cualquier editor; los de una sola tecla («/» y «?»), no. Un
- * modificador de más (Ctrl+Shift+R, Ctrl+Alt+K) no cuenta como el atajo: deja
- * libres esas combinaciones para el sistema.
- */
+/** Qué atajo es esta tecla, o `null` si no es ninguno. */
 export function matchShortcut(press: KeyPress, mac: boolean): ShortcutAction | null {
+  // Con modificador valen también escribiendo; «/» y «?», no. Un modificador de más
+  // (Ctrl+Shift+R) no cuenta: esas combinaciones son del sistema.
   const command = mac ? press.metaKey && !press.ctrlKey : press.ctrlKey && !press.metaKey;
   const key = press.key.toLowerCase();
 

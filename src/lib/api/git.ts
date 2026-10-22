@@ -14,10 +14,7 @@ export function refreshAllGitStatus(): Promise<GitRefreshSummary> {
   return invoke<GitRefreshSummary>('refresh_all_git_status');
 }
 
-/**
- * Devuelve los últimos commits del proyecto, del más reciente al más antiguo.
- * Vacío si el proyecto no es un repositorio o ya no está en disco.
- */
+/** Los últimos commits, del más reciente; vacío si no es un repositorio o ya no está. */
 export function getProjectHistory(projectId: number): Promise<CommitInfo[]> {
   return invoke<CommitInfo[]>('get_project_history', { projectId });
 }

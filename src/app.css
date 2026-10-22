@@ -1,11 +1,7 @@
 @import 'tailwindcss';
 @import './lib/styles/tokens.css';
 
-/*
- * Las tipografías viajan dentro de la aplicación, no se enlazan: Mosaic no hace
- * peticiones de red. Hasta ahora se declaraba `Inter` sin incluir ningún
- * fichero, así que la interfaz caía a la fuente del sistema.
- */
+/* Las tipografías van dentro de la aplicación, no enlazadas: Mosaic no hace peticiones de red. */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -31,14 +27,9 @@
 }
 
 /*
- * Tailwind queda solo para las utilidades de maquetación (`flex`, `min-h-0`,
- * `animate-spin`…). El color, la tipografía y el resto salen de
- * `lib/styles/tokens.css`; los tokens anteriores y el puente con `@theme` se
- * retiraron al terminar la migración, el 2026-10-01.
- *
- * El tema lo decide una clase en `<html>` (`.dark` o `.light`) que pone
- * `lib/utils/theme.ts`; `index.html` arranca con `.dark` para el instante
- * anterior a que cargue el script.
+ * Tailwind queda solo para maquetar (`flex`, `min-h-0`, `animate-spin`…); el color, la
+ * tipografía y el resto salen de `lib/styles/tokens.css`. El tema es una clase en
+ * `<html>`, `.dark` o `.light`, que pone antes de pintar el script de `index.html`.
  */
 
 html,

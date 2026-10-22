@@ -1,12 +1,6 @@
 /**
- * Paleta de colores de etiqueta.
- *
- * Son los tonos 500 de la paleta por defecto de Tailwind: se llevan bien con
- * los tokens de `app.css` en claro y en oscuro, y al estar escritos aquí como
- * literales no dependen de que Tailwind genere ninguna clase.
- *
- * El backend guarda hexadecimal, así que el selector libre (`<input
- * type="color">`) del gestor de etiquetas admite cualquier otro valor.
+ * Colores de etiqueta: los tonos 500 de Tailwind, escritos como literales para no
+ * depender de sus clases. El selector libre del gestor admite cualquier otro.
  */
 
 /** Identificador de un color; su nombre visible sale del diccionario (`color.<id>`). */
@@ -14,12 +8,14 @@ export type TagColorId =
   | 'slate' | 'gray' | 'red' | 'orange' | 'amber' | 'yellow' | 'lime' | 'green'
   | 'emerald' | 'teal' | 'cyan' | 'sky' | 'blue' | 'indigo' | 'violet' | 'fuchsia';
 
+/** Un color de la paleta. */
 export interface TagColor {
   id: TagColorId;
   /** Hexadecimal en mayúsculas, la forma que normaliza el backend. */
   hex: string;
 }
 
+/** Los dieciséis colores, en el orden de las muestras. */
 export const TAG_COLORS: readonly TagColor[] = [
   { id: 'slate', hex: '#64748B' },
   { id: 'gray', hex: '#6B7280' },

@@ -15,11 +15,7 @@ export function now_ts(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-/**
- * Convierte una marca de tiempo Unix (segundos) en texto relativo al ahora, en
- * el idioma que se pida o en el actual. En una plantilla conviene pasar `$lang`
- * para que el texto cambie al cambiar de idioma.
- */
+/** Una marca de tiempo Unix como texto relativo; en plantillas, con `$lang` para repintarse. */
 export function formatRelativeTime(timestamp: number | null, language: Lang = get(lang)): string {
   if (timestamp === null) return translate(language, 'tiempo.nunca');
 

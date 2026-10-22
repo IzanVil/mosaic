@@ -1,10 +1,6 @@
 /**
- * Del remoto de Git a la página web del repositorio.
- *
- * El aviso de contenido omitido del README ofrece abrirlo en la web, donde sí
- * se ven las imágenes. Mosaic no habla con la red: esto solo reescribe la URL
- * que ya está en la configuración del repositorio, y la abre el navegador del
- * usuario si él lo pide.
+ * Del remoto de Git a la página web del repositorio, donde sí se ven las imágenes del
+ * README. No toca la red: solo reescribe la URL, y la abre el navegador si se pide.
  */
 
 /** Página web de un repositorio y el nombre de su servicio, si se conoce. */
@@ -22,15 +18,9 @@ const KNOWN_HOSTS: Record<string, string> = {
   'bitbucket.org': 'Bitbucket',
 };
 
-/**
- * Convierte la URL de un remoto en la de su página web.
- *
- * Entiende `https://host/ruta(.git)`, `ssh://git@host[:puerto]/ruta(.git)` y la
- * forma corta `git@host:ruta(.git)`. Devuelve `null` para remotos locales
- * (rutas, `file://`) o que no tengan ruta. Las credenciales que lleve la URL
- * se descartan: no deben acabar en el navegador.
- */
+/** La web de un remoto `https`, `ssh` o `git@host:ruta`; `null` si es local o no tiene ruta. */
 export function remoteWebUrl(remote: string | null | undefined): RemoteWeb | null {
+  // Las credenciales que lleve la URL se descartan: no deben acabar en el navegador.
   const raw = (remote ?? '').trim();
   if (raw === '') return null;
 

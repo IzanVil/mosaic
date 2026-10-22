@@ -1,22 +1,17 @@
 /*
- * Sistema de diseño de Mosaic.
+ * Sistema de diseño de Mosaic: color, tipografía, espaciado y movimiento. Los
+ * componentes no escriben valores literales: leen de aquí.
  *
- * Fuente única de verdad del color, la tipografía, el espaciado y el
- * movimiento. Los componentes no escriben valores literales: leen de aquí.
- *
- * El tema oscuro es el del producto; el claro existe desde el primer día para
- * que la Fase 6 solo tenga que añadir el conmutador, no inventar una paleta.
- * `:root` define el claro, y el oscuro se aplica por preferencia del sistema o
- * por la clase `.dark`, que es la que hoy fija `index.html`.
+ * `:root` es el tema claro; el oscuro, el del producto, sale de `.dark` o de la
+ * preferencia del sistema si no hay `.light`. La clase la pone el script de
+ * `index.html` antes de pintar, y después `lib/utils/theme.ts`.
  */
 
 :root {
   /* --- Superficies -------------------------------------------------------
-   * Tres niveles con cinco puntos de luminosidad entre ellos. La paleta
-   * anterior los separaba cuatro puntos y el resultado era que «todo era gris
-   * oscuro»: el ojo no distinguía el fondo de la tarjeta.
-   * El matiz 75 es cálido a propósito. Es lo que separa a Mosaic del gris azul
-   * que usan Linear, Zed y media categoría.
+   * Tres niveles a cinco puntos de luminosidad, para que el ojo separe el fondo
+   * de la tarjeta. El matiz 75 es cálido a propósito: no es el gris azulado de
+   * media categoría.
    */
   --surface-base: oklch(98.5% 0.003 75);
   --surface-raised: oklch(96% 0.004 75);
@@ -170,13 +165,10 @@
 
 :root {
   /* --- Tipografía --------------------------------------------------------
-   * Inter y JetBrains Mono van empaquetadas con la aplicación (`app.css`
-   * declara sus `@font-face`), no enlazadas: Mosaic no hace peticiones de red.
-   *
-   * Los nombres tienen que coincidir con esas declaraciones. Esta hoja va sin
-   * capa y gana a la `@theme` de Tailwind, así que un nombre que no exista
-   * aquí manda a toda la aplicación a la fuente del sistema. Pasó: decía
-   * `Geist`, que nunca se incluyó.
+   * Inter y JetBrains Mono van empaquetadas (`@font-face` en `app.css`): Mosaic
+   * no hace peticiones de red. Los nombres tienen que coincidir: esta hoja gana
+   * a la `@theme` de Tailwind, y uno que no exista deja la app con la fuente del
+   * sistema.
    */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;

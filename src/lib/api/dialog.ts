@@ -1,10 +1,4 @@
-/**
- * Diálogos nativos de abrir y guardar, a través del plugin oficial de Tauri.
- *
- * Como `clipboard.ts`, vive en `api/` aunque no use `invoke()`: así ningún
- * componente toca el puente. Cada función devuelve la ruta elegida, o `null`
- * si se cancela.
- */
+/** Diálogos nativos de abrir y guardar, por el plugin de Tauri; `null` si se cancela. */
 
 import { open, save } from '@tauri-apps/plugin-dialog';
 

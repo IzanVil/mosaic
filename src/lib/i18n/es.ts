@@ -1,13 +1,11 @@
 /**
- * Textos en español. Es el diccionario de referencia: `en.ts` tiene que tener
- * exactamente las mismas claves, y si falta alguna no compila.
- *
- * Los textos con números son funciones, para que cada idioma resuelva sus
- * plurales.
+ * Textos en español, el diccionario de referencia: si a `en.ts` le falta una clave, no
+ * compila. Los textos con números son funciones, para que cada idioma haga sus plurales.
  */
 
 type N = { n: number };
 
+/** El diccionario español. */
 export const es = {
   // Tiempo relativo
   'tiempo.nunca': 'nunca',

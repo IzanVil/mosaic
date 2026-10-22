@@ -3,6 +3,7 @@ interface Options {
   enabled?: boolean;
 }
 
+/** Acción de Svelte: Escape o un clic fuera cierran. Escucha en captura, así gana a la vista. */
 export function dismissable(node: HTMLElement, options: Options) {
   let current = options;
 

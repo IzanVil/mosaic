@@ -1,10 +1,4 @@
-/**
- * Qué enseña la paleta de comandos para un texto dado.
- *
- * Es una función pura: recibe las acciones y los proyectos, y una función de
- * búsqueda de proyectos (la del tablero), y devuelve la lista ordenada. Así
- * se prueba sin montar el componente.
- */
+/** Qué enseña la paleta para un texto: una función pura, para probarla sin el componente. */
 
 import type { ProjectWithTags } from '../types';
 import { normalizeText } from './text';
@@ -43,11 +37,7 @@ export function recentProjects(projects: ProjectWithTags[], limit: number): Proj
     .slice(0, limit);
 }
 
-/**
- * Resultados para un texto. Sin texto: todas las acciones y los proyectos
- * recientes. Con texto: las acciones que coinciden y, detrás, los proyectos
- * que encuentra `search` (la búsqueda difusa del tablero).
- */
+/** Sin texto, acciones y recientes; con texto, las acciones que coinciden y los proyectos. */
 export function paletteItems(
   query: string,
   actions: PaletteAction[],

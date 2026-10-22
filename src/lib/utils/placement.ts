@@ -1,9 +1,6 @@
 /** Colocación de paneles desplegables. */
 
-/**
- * Si un panel debe abrirse hacia arriba: solo cuando no cabe debajo del
- * disparador y sí cabe encima. Si no cabe en ninguno, abajo.
- */
+/** Si un panel abre hacia arriba: solo si no cabe debajo y sí encima; si no cabe, abajo. */
 export function opensUpward(
   trigger: { top: number; bottom: number },
   panelHeight: number,

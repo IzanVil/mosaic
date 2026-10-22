@@ -7,12 +7,8 @@ export interface Debounced<Args extends unknown[]> {
 }
 
 /**
- * Devuelve una versión de `fn` que espera `delayMs` sin nuevas llamadas antes
- * de ejecutarse.
- *
- * El `cancel()` es obligatorio: sin él, un temporizador vivo dispararía después
- * de destruir el componente y escribiría estado que ya nadie mira. Quien lo use
- * dentro de un `$effect` debe devolver `cancel` como limpieza.
+ * `fn` cuando pasan `delayMs` sin llamadas nuevas. Hay que llamar a `cancel` al
+ * destruir: si no, el temporizador escribiría estado que ya nadie mira.
  */
 export function debounce<Args extends unknown[]>(
   fn: (...args: Args) => void,

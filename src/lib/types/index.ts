@@ -1,10 +1,6 @@
 /**
- * Tipos compartidos con el backend.
- *
- * Son un espejo literal de los structs de Rust: los campos van en `snake_case`
- * porque serde los serializa con sus nombres tal cual, que a su vez coinciden
- * con las columnas SQL. Cualquier cambio aquí debe ir acompañado del cambio
- * equivalente en `src-tauri/src/`.
+ * Tipos compartidos con el backend: espejo literal de los structs de Rust, en `snake_case`
+ * como las columnas SQL. Un cambio aquí va con el mismo cambio en `src-tauri/src/`.
  */
 
 import type { LangPreference } from '../i18n';
@@ -38,22 +34,13 @@ export interface Tag {
   created_at: number;
 }
 
-/**
- * Espejo de `model::tag::TagWithCount`.
- *
- * El backend serializa el `Tag` aplanado, así que `project_count` llega al
- * mismo nivel que sus campos.
- */
+/** Espejo de `model::tag::TagWithCount`, aplanado: `project_count` va junto a los campos. */
 export interface TagWithCount extends Tag {
   /** Proyectos que tienen la etiqueta asignada. */
   project_count: number;
 }
 
-/**
- * Espejo de `db::repositories::projects::ProjectWithTags`.
- *
- * El `Project` llega aplanado. Es la única lectura que necesita el tablero.
- */
+/** Espejo de `db::repositories::projects::ProjectWithTags`, con el `Project` aplanado. */
 export interface ProjectWithTags extends Project {
   /** Etiquetas asignadas, ordenadas por nombre. Vacío si no tiene ninguna. */
   tags: Tag[];
@@ -84,12 +71,7 @@ export interface ScanSummary {
   elapsed_ms: number;
 }
 
-/**
- * Espejo de `db::repositories::git_status::GitStatusEntry`.
- *
- * El backend serializa el `GitStatus` aplanado, así que sus campos llegan al
- * mismo nivel que `project_id` y `refreshed_at`.
- */
+/** Espejo de `db::repositories::git_status::GitStatusEntry`, con el `GitStatus` aplanado. */
 export interface GitStatusEntry {
   project_id: number;
   /** Cuándo se leyó el repositorio, en segundos desde el epoch Unix. */
@@ -224,15 +206,10 @@ export type GitStateFilter = 'all' | 'dirty' | 'clean' | 'no_repo';
 /** Criterio de ordenación del tablero. */
 export type SortOption = 'name' | 'last_opened' | 'created' | 'updated';
 
+/** Dirección del orden. */
 export type SortDirection = 'asc' | 'desc';
 
-/**
- * Búsqueda, filtros y ordenación activos.
- *
- * Las etiquetas de `tag_ids` se combinan en OR entre sí (un proyecto vale si
- * tiene cualquiera de ellas), igual que los lenguajes de `languages`. Todo lo
- * demás se combina en AND.
- */
+/** Búsqueda, filtros y orden: etiquetas en OR entre sí, lenguajes también, y el resto en AND. */
 export interface FilterState {
   query: string;
   tag_ids: number[];

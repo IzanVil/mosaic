@@ -4,12 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 import type { ProjectWithTags, ReadmePreview } from '../types';
 
-/**
- * Devuelve todos los proyectos con sus etiquetas y su estado Git cacheado.
- *
- * Es la lectura que alimenta el tablero: trae en una llamada todo lo que
- * necesita una tarjeta.
- */
+/** Todos los proyectos con sus etiquetas y su estado Git: el tablero, en una llamada. */
 export function listProjectsWithTags(): Promise<ProjectWithTags[]> {
   return invoke<ProjectWithTags[]>('list_projects_with_tags');
 }
@@ -19,18 +14,12 @@ export function setProjectPinned(id: number, pinned: boolean): Promise<void> {
   return invoke<void>('set_project_pinned', { id, pinned });
 }
 
-/**
- * Lee el README del proyecto, ya renderizado y saneado en el backend.
- * `null` si no tiene README o si la carpeta ya no está en disco.
- */
+/** El README ya renderizado y saneado; `null` si no tiene o si la carpeta ya no está. */
 export function getProjectReadme(projectId: number): Promise<ReadmePreview | null> {
   return invoke<ReadmePreview | null>('get_project_readme', { projectId });
 }
 
-/**
- * Guarda las notas del proyecto y devuelve lo que ha quedado guardado: `null`
- * si el texto estaba vacío o era solo espacios.
- */
+/** Guarda las notas y devuelve lo que ha quedado: `null` si estaban en blanco. */
 export function setProjectNotes(id: number, notes: string): Promise<string | null> {
   return invoke<string | null>('set_project_notes', { id, notes });
 }

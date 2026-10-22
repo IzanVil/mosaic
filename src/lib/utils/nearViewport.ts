@@ -1,10 +1,4 @@
-/**
- * Avisa cuando un elemento entra o sale de la zona cercana a lo que se ve.
- *
- * Un solo `IntersectionObserver` por contenedor con scroll, compartido por
- * todas las tarjetas: con miles de proyectos, uno por tarjeta sería otro coste
- * que crece con la lista.
- */
+/** Avisa cuando un elemento se acerca a lo visible, con un observador por contenedor. */
 
 /** Margen alrededor de lo visible en el que una tarjeta ya cuenta como cerca. */
 export const NEAR_MARGIN_PX = 800;
@@ -26,8 +20,7 @@ export function scrollParent(node: Element): Element | null {
 function observerFor(root: Element | null): IntersectionObserver {
   let observer = observers.get(root);
   if (!observer) {
-    // El margen se aplica al contenedor que hace scroll: medido contra la
-    // ventana, el contenedor recortaría lo que queda debajo y nunca estaría cerca.
+    // Contra la ventana, el contenedor recortaría lo de debajo y nunca estaría cerca.
     observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) callbacks.get(entry.target)?.(entry.isIntersecting);

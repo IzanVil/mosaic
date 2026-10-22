@@ -13,11 +13,7 @@ export function isCommandError(value: unknown): value is CommandError {
   return typeof candidate.code === 'string' && typeof candidate.message === 'string';
 }
 
-/**
- * Lo que se enseña de un error capturado. Un error del backend se traduce por
- * su código; si el idioma no tiene ese código (el español nunca lo tiene), sale
- * el mensaje del backend. Los errores de los plugins y los demás, tal cual.
- */
+/** Texto de un error: por su código si el idioma lo tiene; si no, el mensaje del backend. */
 export function errorText(error: unknown, language: Lang = get(lang)): string {
   if (isCommandError(error)) return commandErrorText(error, language);
   if (error instanceof Error) return error.message;

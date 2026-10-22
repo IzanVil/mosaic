@@ -1,11 +1,6 @@
 /**
- * Aplica el tema elegido al documento.
- *
- * Siempre deja **una** de las dos clases en `<html>`, también en modo
- * `system`. Las dos hojas de estilo la necesitan: `tokens.css` pasa a oscuro
- * con `.dark` y a claro con `.light`, y la variante `dark:` de Tailwind solo
- * mira la clase. Dejar que cada una resolviera el modo sistema por su cuenta
- * las podía poner en desacuerdo.
+ * Aplica el tema al documento, dejando siempre `.dark` o `.light` en `<html>`, también
+ * en modo sistema: si `tokens.css` y Tailwind lo resolvieran cada uno, podrían discrepar.
  */
 
 import type { ThemeMode } from '../types';
@@ -15,13 +10,7 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
 /** Clave de la copia del tema que lee el script de `index.html` antes de pintar. */
 export const THEME_STORAGE_KEY = 'mosaic.theme';
 
-/**
- * Pone la clase del tema y, en modo `system`, la mantiene al día si el
- * sistema cambia de preferencia con la aplicación abierta.
- *
- * Devuelve la función que deja de escuchar al sistema; hay que llamarla
- * antes de aplicar otro modo.
- */
+/** Pone la clase del tema y, en `system`, la sigue; devuelve cómo dejar de escuchar. */
 export function applyTheme(mode: ThemeMode): () => void {
   const root = document.documentElement;
   try {
@@ -33,8 +22,7 @@ export function applyTheme(mode: ThemeMode): () => void {
   const paint = (dark: boolean) => {
     root.classList.toggle('dark', dark);
     root.classList.toggle('light', !dark);
-    // Los controles nativos (casillas, la lista de un `<select>`, las barras
-    // de desplazamiento) no leen los tokens: siguen `color-scheme`.
+    // Casillas, listas de `<select>` y barras de desplazamiento no leen los tokens: siguen esto.
     root.style.colorScheme = dark ? 'dark' : 'light';
   };
 
