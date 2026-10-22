@@ -1,10 +1,12 @@
 //! Detección y lanzamiento de aplicaciones externas.
 //!
-//! Mosaic abre proyectos en el IDE, la terminal o el explorador de archivos del
-//! usuario. Nunca se construye una línea de shell: los procesos se lanzan con
-//! `Command` pasando la ruta como argumento suelto, de modo que un nombre de
-//! carpeta con comillas, espacios o `;` no puede convertirse en ejecución de
-//! comandos.
+//! Nunca se construye una línea de shell: la ruta va como argumento suelto de
+//! `Command`, así que una carpeta con comillas, espacios o `;` no ejecuta nada.
+//!
+//! Los enlaces de un README son de terceros: solo se abren `http` y `https`. Un
+//! `file:` abriría el disco, un `javascript:` ejecutaría código y un `vscode:`
+//! lanzaría aplicaciones. Se validan con el crate `url`, que sigue el mismo
+//! estándar que el navegador: lo que se valida es lo que se abre.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -123,10 +125,6 @@ const IDES: &[Candidate] = &[
 ];
 
 /// Emuladores de terminal reconocidos, por orden de preferencia.
-///
-/// Cada uno recibe el directorio con su propia bandera: aunque el proceso se
-/// lanza con `current_dir`, varios terminales hablan con un servidor que ya
-/// existe y no heredarían el directorio de trabajo.
 const TERMINALS: &[Candidate] = &[
     Candidate {
         bin: "kitty",
@@ -234,8 +232,7 @@ fn detect_with(kind: AppKind, available: impl Fn(&str) -> bool) -> Vec<DetectedA
         .collect()
 }
 
-/// Elige qué ejecutable usar: el preferido si sigue disponible, si no el primero
-/// que se detecte.
+/// El ejecutable preferido si sigue instalado; si no, el primero que se detecte.
 fn resolve(kind: AppKind, preferred: Option<&str>) -> Option<&'static Candidate> {
     resolve_with(kind, preferred, is_on_path)
 }
@@ -279,16 +276,13 @@ fn build_command(candidate: &Candidate, path: &Path) -> Command {
             command.arg(path);
         }
     }
-    // Redundante para los terminales que aceptan bandera, pero arregla a los que
-    // simplemente heredan el directorio de trabajo.
+    // Hacen falta la bandera y el directorio: los terminales que hablan con un
+    // servidor ya abierto no lo heredan, y los que no tienen bandera solo lo heredan.
     command.current_dir(path);
     command
 }
 
-/// Abre `path` con la aplicación del tipo indicado.
-///
-/// `preferred` es el identificador guardado en los ajustes; si está vacío o la
-/// aplicación ya no existe, se usa la primera detectada.
+/// Abre `path` con la aplicación preferida de su tipo, o con la primera que haya.
 pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<()> {
     if !path.is_dir() {
         return Err(AppError::invalid_path(
@@ -327,9 +321,7 @@ pub fn open_path(kind: AppKind, path: &Path, preferred: Option<&str>) -> Result<
     Ok(())
 }
 
-/// Abre un proyecto con la aplicación preferida de su tipo y apunta cuándo se
-/// abrió. Solo si el lanzamiento sale bien: un intento fallido no cuenta como
-/// apertura.
+/// Abre un proyecto y apunta cuándo, solo si el lanzamiento ha salido bien.
 pub fn open_project(db: &Db, kind: AppKind, project_id: i64) -> Result<()> {
     open_project_with(db, kind, project_id, open_path)
 }
@@ -356,22 +348,10 @@ fn open_project_with(
     db.with_conn(|conn| projects_repo::touch_last_opened(conn, project_id, crate::core::now_ts()))
 }
 
-/// Esquemas que `open_external` acepta. Cualquier otro se rechaza.
-///
-/// Los enlaces vienen del README de un proyecto, que es contenido de terceros.
-/// Un `file:` abriría rutas del disco, un `javascript:` o un `data:` podrían
-/// ejecutar algo en el navegador, y esquemas propios como `vscode:` lanzarían
-/// aplicaciones. Solo la web pasa.
+/// Esquemas que acepta `open_external`. Cualquier otro se rechaza.
 pub const EXTERNAL_SCHEMES: &[&str] = &["http", "https"];
 
-/// Comprueba que `raw` es una URL web que se puede abrir en el navegador.
-///
-/// Se parsea con el crate `url`, no con comparaciones de prefijo. Ese parser
-/// sigue el estándar WHATWG, el mismo que los navegadores, así que lo que se
-/// valida aquí es exactamente lo que el navegador va a abrir: `HTTPS://` cuenta
-/// como `https`, y una forma rara como `http:/x` se normaliza a `http://x/`, que
-/// sigue siendo una web. Además del esquema, exige un host; una URL web sin
-/// host no lleva a ninguna parte.
+/// Comprueba que `raw` sea una URL web con servidor, tal y como la abriría el navegador.
 pub fn validate_external_url(raw: &str) -> Result<Url> {
     let url = Url::parse(raw.trim()).map_err(|err| {
         AppError::validation("url_invalid", format!("enlace no válido: {err}"))
@@ -395,9 +375,6 @@ pub fn validate_external_url(raw: &str) -> Result<Url> {
 }
 
 /// Abre una URL web en el navegador predeterminado, después de validarla.
-///
-/// La URL se pasa ya serializada por el crate `url`, como argumento suelto, y
-/// nunca dentro de una línea de shell.
 pub fn open_external(raw: &str) -> Result<()> {
     let url = validate_external_url(raw)?;
     open::that_detached(url.as_str())?;

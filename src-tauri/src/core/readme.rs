@@ -1,19 +1,12 @@
 //! Lectura y renderizado del README de un proyecto.
 //!
-//! El README es contenido de terceros: viene de un repositorio que Mosaic no
-//! controla. Muchos montan su portada, sus tablas o sus bloques plegables en
-//! HTML, así que el HTML crudo **sí pasa**, pero solo por una lista blanca de
-//! etiquetas y atributos de `ammonia`: nada de scripts, estilos, iframes ni
-//! manejadores de eventos. Hasta el 2026-10-06 se descartaba entero, y un
-//! README como el del propio Mosaic salía con huecos.
+//! El README es de terceros. Su HTML pasa, porque muchos montan así la portada
+//! o las tablas, pero solo por la lista blanca de `ammonia`: sin scripts,
+//! estilos, iframes ni manejadores. Ninguna imagen se carga, y lo que se quita
+//! se cuenta en [`ReadmePreview`] para que la interfaz lo diga.
 //!
-//! Ninguna imagen se carga, venga del Markdown o del HTML. Las que se quitan,
-//! y los vídeos, iframes y similares, se cuentan en [`ReadmePreview`] para que
-//! la interfaz avise de que falta algo en vez de callarlo.
-//!
-//! El renderizado vive en el backend y no en el webview a propósito: así el
-//! Markdown de origen no se procesa nunca dentro de la ventana, y las reglas de
-//! saneado quedan cubiertas por `cargo test`.
+//! Se renderiza aquí y no en el webview para que el Markdown nunca se procese
+//! dentro de la ventana y el saneado lo cubra `cargo test`.
 
 use std::path::{Path, PathBuf};
 
@@ -25,10 +18,7 @@ use crate::errors::Result;
 /// Tope de tamaño del fichero. Por encima se recorta y se avisa.
 pub const MAX_BYTES: usize = 512 * 1024;
 
-/// Nombres de fichero aceptados, en orden de preferencia.
-///
-/// Se comparan sin distinguir mayúsculas y **solo en la raíz** del proyecto:
-/// un `docs/README.md` no es el README del proyecto.
+/// Nombres de README aceptados, por preferencia, sin distinguir mayúsculas y solo en la raíz.
 const CANDIDATES: &[&str] = &[
     "readme.md",
     "readme.markdown",
@@ -80,13 +70,7 @@ const BADGE_HOSTS: &[&str] = &[
     "travis-ci.com",
 ];
 
-/// Si una imagen es una insignia y no una captura o un dibujo.
-///
-/// Un README con doce insignias y nueve capturas no tiene «veintiún imágenes»
-/// para quien lo lee: las insignias se cuentan aparte para que el aviso diga
-/// lo que de verdad falta. Además de los servicios conocidos, cuenta como
-/// insignia lo que viva en una ruta `badge`/`badges` o se llame `badge.svg`,
-/// que es como las sirven GitHub Actions, GitLab, Codecov o Coveralls.
+/// Si una imagen es una insignia, que se cuenta aparte: doce insignias no son doce capturas.
 pub fn is_badge(src: &str) -> bool {
     let src = src.trim().to_ascii_lowercase();
     let Some((_, resto)) = src.split_once("://") else {
@@ -97,21 +81,17 @@ pub fn is_badge(src: &str) -> bool {
     if BADGE_HOSTS.contains(&host) || host.starts_with("badge") {
         return true;
     }
+    // Así las sirven GitHub Actions, GitLab, Codecov o Coveralls.
     ruta.split('/')
         .any(|tramo| tramo == "badge" || tramo == "badges" || tramo.starts_with("badge."))
 }
 
-/// Etiquetas de HTML que no se muestran y se cuentan como contenido omitido.
-/// Los `<script>` y `<style>` también se quitan, pero no se cuentan: no son
-/// contenido que el lector esperase ver.
+/// Etiquetas que no se muestran y se cuentan como omitidas; `script` y `style` no se cuentan.
 const MEDIA_TAGS: &[&str] = &[
     "video", "audio", "iframe", "object", "embed", "svg", "canvas",
 ];
 
-/// Busca el README en la raíz de `dir`.
-///
-/// Devuelve `None` si no hay ninguno, que es un caso normal y no un error: la
-/// interfaz lo dice con un mensaje en lugar de tratarlo como fallo.
+/// Busca el README en la raíz de `dir`; no tenerlo es normal, no un error.
 pub fn find(dir: &Path) -> Option<PathBuf> {
     let entries: Vec<(String, PathBuf)> = std::fs::read_dir(dir)
         .ok()?
@@ -134,18 +114,11 @@ pub fn find(dir: &Path) -> Option<PathBuf> {
 }
 
 /// Convierte Markdown en HTML seguro.
-///
-/// Las imágenes no se dejan pasar: la CSP de la aplicación bloquea los
-/// orígenes remotos y abrir el protocolo de ficheros para las rutas relativas
-/// daría al webview acceso a cualquier ruta del disco. Una imagen con origen
-/// `https` se convierte en un enlace, que el usuario puede abrir en su
-/// navegador; cualquier otra se queda en su texto alternativo.
 pub fn render(markdown: &str) -> String {
     render_with_report(markdown).html
 }
 
-/// Como [`render`], pero diciendo además cuántas imágenes y otros elementos se
-/// quedaron fuera.
+/// Como [`render`], contando además las imágenes y los elementos que se quedan fuera.
 pub fn render_with_report(markdown: &str) -> Rendered {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
@@ -161,6 +134,8 @@ pub fn render_with_report(markdown: &str) -> Rendered {
 
     for evento in Parser::new_ext(markdown, options) {
         match evento {
+            // Las imágenes no se cargan: la CSP bloquea lo remoto, y abrir el protocolo de
+            // ficheros para las relativas daría al webview acceso a todo el disco.
             Event::Start(Tag::Image { dest_url, .. }) => {
                 if is_badge(&dest_url) {
                     insignias += 1;
@@ -175,17 +150,14 @@ pub fn render_with_report(markdown: &str) -> Rendered {
                     eventos.push(Event::Html(imagen_como_texto(&origen).into()));
                 }
             }
-            // El texto dentro de una imagen es su alternativo, y se emite junto
-            // al resto del reemplazo al cerrar la etiqueta.
+            // Dentro de una imagen, el texto es su alternativo: va en el reemplazo al cerrarla.
             Event::Text(texto) if en_imagen.is_some() => {
                 if let Some(origen) = en_imagen.take() {
                     en_imagen = Some(format!("{origen}\n{texto}"));
                 }
             }
-            // El HTML literal pasa, pero antes se le quitan las imágenes (que
-            // el saneador no sabría sustituir por su texto alternativo) y se
-            // cuentan los elementos que no se van a ver. Lo demás lo filtra la
-            // lista blanca de abajo.
+            // El saneador no sabe cambiar un `<img>` por su alternativo: se hace antes, y
+            // aquí se cuenta lo que no se verá. Lo demás lo filtra la lista blanca.
             Event::Html(fragmento) | Event::InlineHtml(fragmento) => {
                 medios += contar_medios(&fragmento);
                 let limpio = sustituir_imagenes_html(&fragmento, &mut imagenes, &mut insignias);
@@ -246,14 +218,9 @@ fn contar_medios(fragmento: &str) -> u32 {
         .sum()
 }
 
-/// Sustituye cada `<img>` de un fragmento de HTML por su texto alternativo y
-/// suma cuántas había, separando las insignias.
-///
-/// Es un reemplazo de presentación, no de seguridad: lo que quede, bien o mal
-/// formado, lo filtra después `ammonia`, que además quita cualquier `<img>`
-/// que se escape de aquí. Dentro de un enlace (las insignias, por ejemplo) el
-/// texto alternativo queda como texto del enlace, que es lo que se espera.
+/// Cambia cada `<img>` de un fragmento por su alternativo y cuenta imágenes e insignias.
 fn sustituir_imagenes_html(fragmento: &str, imagenes: &mut u32, insignias: &mut u32) -> String {
+    // Es presentación, no seguridad: lo que se escape de aquí lo quita `ammonia` después.
     let minusculas = fragmento.to_ascii_lowercase();
     let mut salida = String::with_capacity(fragmento.len());
     let mut resto = 0;
@@ -287,8 +254,7 @@ fn sustituir_imagenes_html(fragmento: &str, imagenes: &mut u32, insignias: &mut 
     salida
 }
 
-/// Longitud de una etiqueta hasta su `>` de cierre, saltando los `>` que vayan
-/// dentro de comillas. `None` si no se cierra.
+/// Longitud de una etiqueta hasta su `>`, saltando los que van entre comillas.
 fn fin_de_etiqueta(texto: &str) -> Option<usize> {
     let mut comillas: Option<char> = None;
     for (i, c) in texto.char_indices() {
@@ -362,8 +328,7 @@ pub fn read(dir: &Path) -> Result<Option<ReadmePreview>> {
 
     let bytes = std::fs::read(&path)?;
     let truncated = bytes.len() > MAX_BYTES;
-    // `from_utf8_lossy` sobre un corte a mitad de carácter deja un reemplazo
-    // visible, que es preferible a rechazar el fichero entero.
+    // Cortar a mitad de un carácter deja un reemplazo visible: mejor que rechazar el fichero.
     let markdown = String::from_utf8_lossy(&bytes[..bytes.len().min(MAX_BYTES)]);
 
     let rendered = render_with_report(&markdown);

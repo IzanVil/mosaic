@@ -6,17 +6,9 @@ pub mod launcher;
 pub mod readme;
 pub mod scanner;
 
-/// Quita el prefijo verbatim que Windows pone en las rutas canónicas.
-///
-/// `std::fs::canonicalize` devuelve en Windows rutas como `\\?\C:\proyectos`,
-/// que funcionan para el sistema de ficheros pero se guardarían tal cual en
-/// `projects.path` y se verían en cada tarjeta. El caso UNC
-/// (`\\?\UNC\servidor\recurso`) se reescribe a su forma normal.
-///
-/// No va tras `#[cfg(windows)]` a propósito: trabajando sobre el texto, la
-/// función es comprobable desde cualquier plataforma y en Linux no encuentra
-/// nunca esos prefijos.
+/// Quita el prefijo `\\?\` de las rutas canónicas de Windows, que si no llegaría a cada tarjeta.
 pub fn strip_verbatim_prefix(path: std::path::PathBuf) -> std::path::PathBuf {
+    // Sin `#[cfg(windows)]` a propósito: trabajando sobre el texto, se prueba en cualquier sistema.
     let Some(texto) = path.to_str() else {
         return path;
     };
@@ -31,13 +23,11 @@ pub fn strip_verbatim_prefix(path: std::path::PathBuf) -> std::path::PathBuf {
 }
 
 /// Marca de tiempo actual en segundos desde el epoch Unix.
-///
-/// Si el reloj del sistema estuviese antes del epoch se devuelve `0`, que es
-/// preferible a propagar un error por algo que no puede corregir el usuario.
 pub fn now_ts() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
+        // Un reloj anterior a 1970 no lo puede arreglar el usuario: mejor 0 que un error.
         .unwrap_or(0)
 }
 

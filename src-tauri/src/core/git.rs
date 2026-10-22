@@ -1,10 +1,8 @@
 //! Lectura del estado de un repositorio Git.
 //!
-//! Mosaic **solo lee**: nunca escribe en los repositorios ni habla con la red.
-//! Por eso `git2` se compila sin las features `ssh` ni `https`, y `ahead`/
-//! `behind` se calculan comparando referencias locales, sin hacer `fetch`. Los
-//! números pueden estar desactualizados respecto al remoto real, que es
-//! exactamente lo que muestra `git status` sin conexión.
+//! Mosaic solo lee: nunca escribe en los repositorios ni habla con la red, así
+//! que `ahead` y `behind` comparan referencias locales, sin `fetch`, como
+//! `git status` sin conexión.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -42,34 +40,26 @@ pub struct BranchInfo {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Branches {
     pub local: Vec<BranchInfo>,
-    /// Ramas remotas **conocidas localmente**: las que dejó el último `fetch`
-    /// o `clone` que hiciera el usuario. Mosaic no habla con la red, así que
-    /// una rama creada en el servidor después de eso no aparece aquí. La
-    /// interfaz lo advierte junto al listado.
+    /// Ramas remotas que dejó el último `fetch` o `clone`: Mosaic no habla con la red.
     pub remote: Vec<BranchInfo>,
 }
 
 /// Commits que enseña la vista de detalle de un proyecto.
 pub const HISTORY_LIMIT: usize = 10;
 
-/// Lee los últimos `limit` commits accesibles desde HEAD, del más reciente al
-/// más antiguo.
-///
-/// Devuelve una lista vacía, y no un error, cuando la rama todavía no tiene
-/// commits: un repositorio recién inicializado es un caso normal.
+/// Los últimos `limit` commits desde HEAD, del más reciente al más antiguo.
 pub fn read_history(path: &Path, limit: usize) -> Result<Vec<CommitInfo>> {
     let repo = Repository::open(path)?;
 
+    // Una rama sin commits es un repositorio recién creado, no un error.
     if repo.head().is_err() {
         return Ok(Vec::new());
     }
 
     let mut walk = repo.revwalk()?;
     walk.push_head()?;
-    // TIME a secas no basta: las marcas de tiempo de Git tienen resolución de
-    // un segundo, así que varios commits del mismo segundo salen en un orden
-    // arbitrario. TOPOLOGICAL garantiza que un commit vaya siempre antes que
-    // sus padres, que es el orden que espera quien lee un historial.
+    // TIME a secas desordena los commits del mismo segundo, que es la resolución
+    // de Git; TOPOLOGICAL deja siempre cada commit antes que sus padres.
     walk.set_sorting(git2::Sort::TIME | git2::Sort::TOPOLOGICAL)?;
 
     let mut commits = Vec::with_capacity(limit.min(64));
@@ -96,13 +86,11 @@ pub fn read_branches(path: &Path) -> Result<Branches> {
         for entrada in repo.branches(Some(tipo))? {
             let (branch, _) = entrada?;
             let Some(name) = branch.name()?.map(str::to_string) else {
-                // Un nombre que no es UTF-8 válido no se puede mostrar, y
-                // descartarlo es mejor que abortar el listado entero.
+                // Un nombre que no es UTF-8 no se puede mostrar: mejor saltarlo que abortar.
                 continue;
             };
 
-            // `origin/HEAD` es un puntero simbólico a la rama por defecto del
-            // remoto, no una rama que el usuario reconozca como tal.
+            // `origin/HEAD` apunta a la rama por defecto del remoto: no es una rama más.
             if name.ends_with("/HEAD") {
                 continue;
             }
@@ -121,11 +109,9 @@ pub fn read_branches(path: &Path) -> Result<Branches> {
     Ok(branches)
 }
 
-/// Lee el estado del repositorio que hay en `path`.
-///
-/// `path` debe ser la raíz del repositorio: no se busca hacia arriba, de modo
-/// que un repositorio anidado devuelve su propio estado y no el de su contenedor.
+/// Lee el estado del repositorio cuya raíz es `path`.
 pub fn read_git_status(path: &Path) -> Result<GitStatus> {
+    // `open` no busca hacia arriba: un repositorio anidado da su propio estado.
     let repo = Repository::open(path)?;
 
     let (branch, commit) = read_head(&repo);
@@ -150,11 +136,7 @@ pub fn read_git_status(path: &Path) -> Result<GitStatus> {
     })
 }
 
-/// Devuelve la rama actual y el commit al que apunta HEAD.
-///
-/// Contempla los dos casos en los que no hay commit: un repositorio recién
-/// inicializado (rama sin nacer, de la que sí sabemos el nombre) y un HEAD
-/// separado (hay commit pero no rama).
+/// Rama actual y commit de HEAD, contando la rama sin nacer y el HEAD separado.
 fn read_head(repo: &Repository) -> (Option<String>, Option<git2::Commit<'_>>) {
     let Ok(head) = repo.head() else {
         return (unborn_branch_name(repo), None);
@@ -189,8 +171,6 @@ fn ahead_behind(repo: &Repository, branch_name: &str) -> Option<(u32, u32)> {
 }
 
 /// Indica si hay cambios sin commitear, incluidos ficheros sin seguir.
-///
-/// Los repositorios bare no tienen árbol de trabajo, así que nunca están sucios.
 fn is_dirty(repo: &Repository) -> Result<bool> {
     if repo.is_bare() {
         return Ok(false);
@@ -199,8 +179,7 @@ fn is_dirty(repo: &Repository) -> Result<bool> {
     let mut options = StatusOptions::new();
     options
         .include_untracked(true)
-        // Basta con saber que un directorio sin seguir existe: entrar a contar
-        // sus ficheros puede ser carísimo y no cambia la respuesta.
+        // Basta con saber que existe un directorio sin seguir; recorrerlo puede ser carísimo.
         .recurse_untracked_dirs(false)
         .include_ignored(false);
 
@@ -216,16 +195,12 @@ fn remote_url(repo: &Repository) -> Option<String> {
     }
 
     let names = repo.remotes().ok()?;
-    // `StringArray::iter` entrega `Result<Option<&str>, Error>` por nombre.
     let first = names.iter().find_map(|name| name.ok().flatten())?;
     let remote = repo.find_remote(first).ok()?;
     remote.url().ok().map(str::to_string)
 }
 
-/// Resumen de un refresco masivo del estado Git, con lo que ha cambiado.
-///
-/// `changed` y `removed` son el parche que aplica la interfaz: con ellos no
-/// necesita volver a pedir la caché entera después de cada vuelta.
+/// Resumen de un refresco de todos los repositorios, con el parche que aplica la interfaz.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitRefreshSummary {
     /// Repositorios leídos y cacheados con éxito.
@@ -233,18 +208,13 @@ pub struct GitRefreshSummary {
     /// Repositorios que no se pudieron leer; su entrada en la caché se borra.
     pub failed: usize,
     pub elapsed_ms: u64,
-    /// Entradas cuyo estado no es el que había en la caché, tal y como han
-    /// quedado guardadas. La hora de lectura no cuenta: cambia en cada vuelta.
+    /// Entradas con un estado distinto del de la caché; la hora de lectura no cuenta.
     pub changed: Vec<GitStatusEntry>,
-    /// Proyectos que tenían estado en la caché y lo han perdido por no
-    /// poderse leer.
+    /// Proyectos que se han quedado sin estado por no poderse leer.
     pub removed: Vec<i64>,
 }
 
-/// Relee el estado de todos los proyectos que son repositorios Git y lo cachea.
-///
-/// Un repositorio ilegible no aborta el refresco: se registra el fallo, se borra
-/// su entrada de la caché para no mostrar datos rancios y se sigue con el resto.
+/// Relee todos los repositorios, guarda su estado en la caché y dice qué ha cambiado.
 pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
     use crate::db::repositories::{git_status as cache, projects as projects_repo};
 
@@ -278,6 +248,8 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
                     });
                 }
             }
+            // Un repositorio ilegible no aborta el refresco, y su entrada se borra
+            // para no enseñar datos rancios.
             Err(err) => {
                 tracing::warn!(path = %project.path, %err, "no se pudo leer el repositorio");
                 db.with_conn(|conn| cache::delete(conn, project.id))?;
@@ -307,10 +279,7 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
     Ok(summary)
 }
 
-/// Relee el estado de un único proyecto.
-///
-/// Devuelve `None` si el proyecto no es un repositorio Git. Si lo es pero no se
-/// puede leer, borra su entrada de la caché y propaga el error.
+/// Relee un proyecto: `None` si no es un repositorio; si no se puede leer, borra su caché.
 pub fn refresh_one(db: &crate::db::Db, project_id: i64) -> Result<Option<GitStatusEntry>> {
     use crate::db::repositories::{git_status as cache, projects as projects_repo};
 

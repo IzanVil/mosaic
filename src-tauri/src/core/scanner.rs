@@ -1,23 +1,12 @@
 //! Descubrimiento de proyectos en disco.
 //!
-//! # Qué cuenta como proyecto
+//! Una carpeta con alguno de [`PROJECT_MARKERS`] se registra si tiene su propio
+//! `.git` o si ningún ancestro está registrado ya: un monorepo da una tarjeta y
+//! dos repositorios anidados, dos.
 //!
-//! Una carpeta es candidata si contiene al menos uno de [`PROJECT_MARKERS`].
-//! Una candidata se registra como proyecto cuando:
-//!
-//! 1. contiene su propio `.git`, aunque un ancestro ya esté registrado; **o**
-//! 2. ningún ancestro suyo está registrado ya como proyecto.
-//!
-//! Así, un monorepo (`.git` en la raíz y `package.json` en `packages/*`) produce
-//! una sola tarjeta, mientras que dos repositorios anidados (`.git` en la raíz y
-//! en `sub/`) producen dos.
-//!
-//! # Recorrido
-//!
-//! Se usa `walkdir` con `follow_links(false)`: los enlaces simbólicos no se
-//! siguen, lo que hace inmune al escáner frente a ciclos de symlinks. La
-//! profundidad se cuenta con la raíz como nivel 0, y el recorrido se aborta con
-//! un aviso si supera `max_entries_per_scan` entradas.
+//! Los enlaces simbólicos no se siguen (`follow_links(false)`), así que un ciclo
+//! no cuelga el escaneo. La raíz es el nivel 0, y el recorrido se corta con un
+//! aviso al pasar de `max_entries_per_scan` entradas.
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -87,10 +76,8 @@ struct Candidate {
 }
 
 /// Indica si una entrada es un directorio excluido.
-///
-/// La raíz nunca se excluye: si el usuario configura `~/code/node_modules`
-/// como ruta de escaneo, es su decisión.
 fn is_excluded(entry: &DirEntry, excluded: &HashSet<String>) -> bool {
+    // La raíz nunca: si el usuario elige `~/code/node_modules` como ruta, es su decisión.
     entry.depth() > 0
         && entry.file_type().is_dir()
         && entry
@@ -140,8 +127,7 @@ pub fn discover(root: &Path, options: &ScanOptions) -> ScanOutcome {
             }
         };
 
-        // `is_dir()` es falso para enlaces simbólicos con `follow_links(false)`,
-        // así que un ciclo de symlinks nunca se recorre.
+        // Con `follow_links(false)` un enlace no es un directorio: los ciclos no se recorren.
         if !entry.file_type().is_dir() {
             continue;
         }
@@ -216,9 +202,7 @@ fn register_candidates(
 /// Profundidad a la que se cuentan extensiones dentro de un proyecto.
 const LANGUAGE_SCAN_DEPTH: usize = 2;
 
-/// Extensión de fichero -> lenguaje. Se omiten deliberadamente Markdown, JSON,
-/// YAML y TOML: aparecen en casi todos los repositorios y no dicen nada sobre
-/// el lenguaje principal.
+/// Extensión -> lenguaje, sin Markdown, JSON, YAML ni TOML: están en todos los repositorios.
 const EXTENSION_LANGUAGES: &[(&str, &str)] = &[
     ("rs", "Rust"),
     ("ts", "TypeScript"),
@@ -259,10 +243,7 @@ const EXTENSION_LANGUAGES: &[(&str, &str)] = &[
 /// Lenguajes que puede designar un `package.json`, a resolver contando extensiones.
 const JS_FAMILY: &[&str] = &["TypeScript", "JavaScript", "Svelte", "Vue"];
 
-/// Lenguaje que implica inequívocamente cada fichero de manifiesto.
-///
-/// `package.json` no aparece aquí: no distingue TypeScript de JavaScript, de
-/// Svelte o de Vue, así que se resuelve contando extensiones.
+/// Lenguaje que implica un manifiesto; `package.json` no, porque no distingue TS de JS.
 fn language_from_manifest(dir: &Path) -> Option<&'static str> {
     const MANIFESTS: &[(&str, &str)] = &[
         ("Cargo.toml", "Rust"),
@@ -309,9 +290,7 @@ fn count_extensions(dir: &Path, excluded: &HashSet<String>) -> HashMap<&'static 
     counts
 }
 
-/// Devuelve el lenguaje más frecuente entre `allowed`, o el más frecuente de
-/// todos si `allowed` es `None`. Los empates se rompen por orden alfabético
-/// para que el resultado sea determinista.
+/// El lenguaje más frecuente de `allowed`, o de todos si es `None`.
 fn top_language(
     counts: &HashMap<&'static str, usize>,
     allowed: Option<&[&str]>,
@@ -319,25 +298,14 @@ fn top_language(
     counts
         .iter()
         .filter(|(language, _)| allowed.is_none_or(|list| list.contains(language)))
+        // Empates por orden alfabético: si no, el resultado dependería del orden del `HashMap`.
         .max_by(|(lang_a, count_a), (lang_b, count_b)| {
             count_a.cmp(count_b).then_with(|| lang_b.cmp(lang_a))
         })
         .map(|(language, _)| *language)
 }
 
-/// Deduce el lenguaje principal de un proyecto.
-///
-/// Heurística, en orden:
-///
-/// 1. **Manifiesto.** `Cargo.toml` -> Rust, `go.mod` -> Go, `pyproject.toml` ->
-///    Python, `build.gradle.kts` -> Kotlin, `build.gradle`/`pom.xml` -> Java,
-///    `composer.json` -> PHP, `Gemfile` -> Ruby.
-/// 2. **`package.json`.** Ambiguo por sí solo: se resuelve contando extensiones
-///    y quedándose con el lenguaje más frecuente de la familia JS; si no hay
-///    ninguno, JavaScript.
-/// 3. **Conteo de extensiones** hasta dos niveles, ignorando los directorios
-///    excluidos y los formatos de documentación y configuración.
-/// 4. Si nada de lo anterior decide, `None`.
+/// Lenguaje principal: el del manifiesto, el de la familia JS con `package.json`, o el más contado.
 pub fn detect_primary_language(dir: &Path, excluded: &HashSet<String>) -> Option<String> {
     if let Some(language) = language_from_manifest(dir) {
         return Some(language.to_string());
@@ -375,18 +343,10 @@ pub struct ScanSummary {
     pub elapsed_ms: u64,
 }
 
-/// Escanea todas las rutas habilitadas y sincroniza la tabla `projects`.
-///
-/// Los proyectos que dejan de verse se marcan como ausentes pero nunca se
-/// borran, para no perder las etiquetas y notas que el usuario les haya puesto.
-/// Escanea al arrancar, si el usuario lo tiene activado.
-///
-/// Devuelve `None` cuando el ajuste `scan.on_startup` está desactivado, que es
-/// el valor por defecto: quien no lo pidió no paga el recorrido del disco cada
-/// vez que abre la aplicación. La decisión vive aquí, y no en el arranque de
-/// Tauri, para que se pueda comprobar con un test.
+/// Escanea al arrancar si el ajuste lo pide, que por defecto no; si no, `None`.
 pub fn run_startup_scan(db: &crate::db::Db) -> crate::errors::Result<Option<ScanSummary>> {
     let settings = db.with_conn(crate::db::repositories::settings::load)?;
+    // Se decide aquí y no en el arranque de Tauri para que lo cubra un test.
     if !settings.scan_on_startup {
         tracing::debug!("escaneo al arrancar desactivado");
         return Ok(None);
@@ -396,6 +356,7 @@ pub fn run_startup_scan(db: &crate::db::Db) -> crate::errors::Result<Option<Scan
     run_full_scan(db).map(Some)
 }
 
+/// Escanea las rutas habilitadas y sincroniza la tabla `projects`.
 pub fn run_full_scan(db: &crate::db::Db) -> crate::errors::Result<ScanSummary> {
     use crate::db::repositories::{projects as projects_repo, scan_paths as scan_paths_repo};
 
@@ -454,6 +415,7 @@ pub fn run_full_scan(db: &crate::db::Db) -> crate::errors::Result<ScanSummary> {
         scanned_roots.push(root_path);
     }
 
+    // Lo que ya no se ve se marca ausente y no se borra: se llevaría sus etiquetas y notas.
     summary.projects_missing = db.with_conn(|conn| {
         projects_repo::mark_missing_under_roots(conn, &scanned_roots, &seen_ids)
     })?;
