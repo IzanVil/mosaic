@@ -156,6 +156,58 @@ fn a_repository_that_disappears_drops_out_of_the_cache() {
     assert_eq!(db.with_conn(cache::list_all).unwrap().len(), 1);
 }
 
+/// El evento del refresco automático lleva solo lo que cambió, y la interfaz
+/// aplica ese parche sin pedir la caché entera. Si el parche se deja algo, el
+/// tablero se queda con un estado viejo hasta reiniciar.
+#[test]
+fn a_refresh_reports_only_what_changed() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = fs::canonicalize(tmp.path()).unwrap();
+    build_tree(&root);
+
+    let db = scanned_db(&root);
+    let projects = db.with_conn(projects_repo::list_all).unwrap();
+    let id_of = |name: &str| projects.iter().find(|p| p.name == name).unwrap().id;
+
+    let primero = refresh_all(&db).unwrap();
+    assert_eq!(primero.changed.len(), 2, "la caché estaba vacía");
+    assert!(primero.removed.is_empty());
+
+    let segundo = refresh_all(&db).unwrap();
+    assert_eq!(segundo.refreshed, 2);
+    assert!(
+        segundo.changed.is_empty(),
+        "nada ha cambiado en disco: {:?}",
+        segundo.changed
+    );
+
+    write(&root.join("limpio/nuevo.rs"), "// sin commitear");
+    let tercero = refresh_all(&db).unwrap();
+    assert_eq!(tercero.changed.len(), 1);
+    let cambio = &tercero.changed[0];
+    assert_eq!(cambio.project_id, id_of("limpio"));
+    assert!(cambio.status.is_dirty);
+    assert_eq!(
+        db.with_conn(|conn| cache::get(conn, id_of("limpio")))
+            .unwrap()
+            .as_ref(),
+        Some(cambio),
+        "el parche es lo mismo que ha quedado en la caché"
+    );
+
+    fs::remove_dir_all(root.join("sucio")).unwrap();
+    let cuarto = refresh_all(&db).unwrap();
+    assert!(cuarto.changed.is_empty());
+    assert_eq!(cuarto.removed, vec![id_of("sucio")]);
+
+    let quinto = refresh_all(&db).unwrap();
+    assert!(
+        quinto.removed.is_empty(),
+        "ya no estaba en la caché: no hay nada que retirar"
+    );
+    assert_eq!(quinto.failed, 1);
+}
+
 /// El refresco automático corre cada pocos minutos: si tocara `updated_at`,
 /// la fecha de modificación de todos los proyectos avanzaría sola para siempre.
 /// `upsert_by_path` solo compara metadatos propios de `projects` —entre ellos la

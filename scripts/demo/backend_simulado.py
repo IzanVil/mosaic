@@ -61,7 +61,7 @@ R = {"get_view_state": view, "list_projects_with_tags": projects, "list_scan_pat
      "list_tags": [dict(t, project_count=counts[t['id']]) for t in tags], "list_detected_apps": [{"id":"code","name":"VS Code","kind":"ide"},{"id":"konsole","name":"Konsole","kind":"terminal"}],
      "get_preferred_apps": {"ide":"","terminal":""}, "list_git_status": [p['git_status'] for p in projects],
      "get_advanced_settings": {"current":adv,"defaults":adv,"limits":{"max_depth_min":1,"max_depth_max":8,"max_entries_min":1000,"max_entries_max":500000,"git_refresh_max_minutes":60,"excluded_dirs_max":100,"excluded_dir_max_chars":255}},
-     "refresh_all_git_status": {"refreshed":0,"failed":0,"elapsed_ms":1},
+     "refresh_all_git_status": {"refreshed":0,"failed":0,"elapsed_ms":1,"changed":[],"removed":[]},
      "get_project_readme": README, "get_project_history": HISTORY, "get_project_branches": BRANCHES,
      "plugin:dialog|open": "/home/izan/mosaic-backup.json" if EN else "/home/izan/mosaic-copia.json", "preview_import": PLAN}
 js = ("(function(){var R=%s;var n=0;var V=new URLSearchParams(location.search).get('vista');if(V)R.get_view_state=V;window.__TAURI_INTERNALS__={transformCallback:function(){return ++n;},"

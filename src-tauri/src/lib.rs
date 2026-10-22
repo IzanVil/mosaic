@@ -21,7 +21,8 @@ use tracing_subscriber::{fmt, EnvFilter};
 use crate::db::Db;
 
 /// Evento que recibe el frontend cuando termina un refresco automático del
-/// estado Git. Su carga útil es un [`core::git::GitRefreshSummary`].
+/// estado Git. Su carga útil es un [`core::git::GitRefreshSummary`], que trae
+/// solo las entradas que cambiaron y las que se retiraron de la caché.
 pub const EVENT_GIT_STATUS_REFRESHED: &str = "git-status-refreshed";
 /// Evento que recibe el frontend cuando el escaneo al arrancar encontró algo.
 pub const EVENT_PROJECTS_RESCANNED: &str = "projects-rescanned";

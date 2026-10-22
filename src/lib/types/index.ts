@@ -114,6 +114,10 @@ export interface GitRefreshSummary {
   refreshed: number;
   failed: number;
   elapsed_ms: number;
+  /** Entradas cuyo estado cambió, tal y como han quedado en la caché. */
+  changed: GitStatusEntry[];
+  /** Proyectos que se han quedado sin estado porque no se pudieron leer. */
+  removed: number[];
 }
 
 /** Espejo de `core::git::CommitInfo`. */

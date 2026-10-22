@@ -20,6 +20,7 @@
   import { cycleTheme, startPersistingViewState, theme } from './lib/stores/filters';
   import {
     gitError,
+    applyGitRefresh,
     lastGitRefresh,
     loadGitStatus,
     refreshAllGitStatus,
@@ -30,6 +31,7 @@
   import { loadScanPaths, scanPaths } from './lib/stores/scanPaths';
   import { loadTags } from './lib/stores/tags';
   import { lang, t, tNow, translate } from './lib/i18n';
+  import type { GitRefreshSummary } from './lib/types';
   import { formatRelativeTime, now_ts } from './lib/utils/format';
   import type { PaletteAction } from './lib/utils/palette';
   import { isMac, isTypingTarget, matchShortcut, shortcutList } from './lib/utils/shortcuts';
@@ -178,7 +180,7 @@
 
   onMount(() => {
     const stopListening = Promise.all([
-      listen(GIT_REFRESHED, () => void loadGitStatus()),
+      listen<GitRefreshSummary>(GIT_REFRESHED, (event) => applyGitRefresh(event.payload)),
       // El escaneo al arrancar puede haber descubierto proyectos nuevos, así que
       // la lista se relee entera en lugar de mezclar solo el estado de Git.
       listen(PROJECTS_RESCANNED, () => void loadProjects()),

@@ -9,9 +9,10 @@
 import { writable } from 'svelte/store';
 
 import * as api from '../api/git';
+import type { GitRefreshSummary } from '../types';
 import { errorText } from '../utils/errors';
 import { now_ts } from '../utils/format';
-import { mergeGitStatus } from './projects';
+import { mergeGitStatus, patchGitStatus } from './projects';
 
 /** Qué pasó en el último refresco, para poder contarlo en la interfaz. */
 export interface GitRefreshOutcome {
@@ -43,13 +44,8 @@ function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-/**
- * Lee la caché tal y como está, sin releer los repositorios.
- *
- * La llama el arranque y el evento `git-status-refreshed` del backend, de ahí
- * que `manual` sea `false` por defecto.
- */
-export async function loadGitStatus(manual = false): Promise<void> {
+/** Lee la caché tal y como está, sin releer los repositorios. La llama el arranque. */
+export async function loadGitStatus(): Promise<void> {
   gitError.set(null);
   try {
     const entries = await api.listGitStatus();
@@ -59,11 +55,27 @@ export async function loadGitStatus(manual = false): Promise<void> {
       read: entries.length,
       failed: 0,
       changed,
-      manual,
+      manual: false,
     });
   } catch (error) {
     gitError.set(errorText(error));
   }
+}
+
+/**
+ * Aplica lo que trae un refresco: solo las entradas que cambiaron y las que se
+ * retiraron. Lo usan el botón y el evento `git-status-refreshed` del refresco
+ * automático, que por eso deja `manual` en `false`.
+ */
+export function applyGitRefresh(summary: GitRefreshSummary, manual = false): void {
+  const changed = patchGitStatus(summary.changed, summary.removed);
+  lastGitRefresh.set({
+    at: now_ts(),
+    read: summary.refreshed,
+    failed: summary.failed,
+    changed,
+    manual,
+  });
 }
 
 /** Relee todos los repositorios del disco y mezcla el resultado. */
@@ -72,15 +84,7 @@ export async function refreshAllGitStatus(): Promise<void> {
   gitError.set(null);
   const started = Date.now();
   try {
-    const summary = await api.refreshAllGitStatus();
-    const changed = mergeGitStatus(await api.listGitStatus());
-    lastGitRefresh.set({
-      at: now_ts(),
-      read: summary.refreshed,
-      failed: summary.failed,
-      changed,
-      manual: true,
-    });
+    applyGitRefresh(await api.refreshAllGitStatus(), true);
   } catch (error) {
     gitError.set(errorText(error));
   } finally {

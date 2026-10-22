@@ -280,13 +280,33 @@ export function markProjectOpened(id: number, openedAt: number): void {
  */
 export function mergeGitStatus(entries: GitStatusEntry[]): number {
   const byProject = new Map(entries.map((entry) => [entry.project_id, entry]));
+  return replaceGitStatus((project) => byProject.get(project.id) ?? null);
+}
+
+/**
+ * Aplica el parche de un refresco: las entradas que cambiaron y los proyectos
+ * que se quedaron sin estado. Los demás no se tocan. Devuelve cuántos
+ * proyectos han cambiado de verdad.
+ */
+export function patchGitStatus(changed: GitStatusEntry[], removed: number[]): number {
+  const byProject = new Map<number, GitStatusEntry | null>(
+    changed.map((entry) => [entry.project_id, entry]),
+  );
+  for (const id of removed) byProject.set(id, null);
+  return replaceGitStatus((project) =>
+    byProject.has(project.id) ? (byProject.get(project.id) ?? null) : project.git_status,
+  );
+}
+
+/** Pone a cada proyecto el estado que diga `next` y cuenta los que cambian. */
+function replaceGitStatus(next: (project: ProjectWithTags) => GitStatusEntry | null): number {
   let changed = 0;
   projects.update((current) =>
     current.map((project) => {
-      const next = byProject.get(project.id) ?? null;
-      if (sameGitStatus(project.git_status, next)) return project;
+      const status = next(project);
+      if (sameGitStatus(project.git_status, status)) return project;
       changed += 1;
-      return { ...project, git_status: next };
+      return { ...project, git_status: status };
     }),
   );
   return changed;

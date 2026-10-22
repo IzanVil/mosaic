@@ -6,11 +6,13 @@
 //! números pueden estar desactualizados respecto al remoto real, que es
 //! exactamente lo que muestra `git status` sin conexión.
 
+use std::collections::HashMap;
 use std::path::Path;
 
 use git2::{BranchType, Repository, StatusOptions};
 use serde::{Deserialize, Serialize};
 
+use crate::db::repositories::git_status::GitStatusEntry;
 use crate::errors::Result;
 use crate::model::git::GitStatus;
 
@@ -220,7 +222,10 @@ fn remote_url(repo: &Repository) -> Option<String> {
     remote.url().ok().map(str::to_string)
 }
 
-/// Resumen de un refresco masivo del estado Git.
+/// Resumen de un refresco masivo del estado Git, con lo que ha cambiado.
+///
+/// `changed` y `removed` son el parche que aplica la interfaz: con ellos no
+/// necesita volver a pedir la caché entera después de cada vuelta.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GitRefreshSummary {
     /// Repositorios leídos y cacheados con éxito.
@@ -228,6 +233,12 @@ pub struct GitRefreshSummary {
     /// Repositorios que no se pudieron leer; su entrada en la caché se borra.
     pub failed: usize,
     pub elapsed_ms: u64,
+    /// Entradas cuyo estado no es el que había en la caché, tal y como han
+    /// quedado guardadas. La hora de lectura no cuenta: cambia en cada vuelta.
+    pub changed: Vec<GitStatusEntry>,
+    /// Proyectos que tenían estado en la caché y lo han perdido por no
+    /// poderse leer.
+    pub removed: Vec<i64>,
 }
 
 /// Relee el estado de todos los proyectos que son repositorios Git y lo cachea.
@@ -241,8 +252,15 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
     let now = crate::core::now_ts();
 
     let projects = db.with_conn(projects_repo::list_all)?;
+    let before: HashMap<i64, GitStatus> = db
+        .with_conn(cache::list_all)?
+        .into_iter()
+        .map(|entry| (entry.project_id, entry.status))
+        .collect();
     let mut refreshed = 0;
     let mut failed = 0;
+    let mut changed = Vec::new();
+    let mut removed = Vec::new();
 
     for project in projects
         .iter()
@@ -252,11 +270,21 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
             Ok(status) => {
                 db.with_conn(|conn| cache::upsert(conn, project.id, &status, now))?;
                 refreshed += 1;
+                if before.get(&project.id) != Some(&status) {
+                    changed.push(GitStatusEntry {
+                        project_id: project.id,
+                        refreshed_at: now,
+                        status,
+                    });
+                }
             }
             Err(err) => {
                 tracing::warn!(path = %project.path, %err, "no se pudo leer el repositorio");
                 db.with_conn(|conn| cache::delete(conn, project.id))?;
                 failed += 1;
+                if before.contains_key(&project.id) {
+                    removed.push(project.id);
+                }
             }
         }
     }
@@ -265,8 +293,17 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
         refreshed,
         failed,
         elapsed_ms: started.elapsed().as_millis() as u64,
+        changed,
+        removed,
     };
-    tracing::info!(?summary, "estado Git refrescado");
+    tracing::info!(
+        refreshed,
+        failed,
+        changed = summary.changed.len(),
+        removed = summary.removed.len(),
+        elapsed_ms = summary.elapsed_ms,
+        "estado Git refrescado"
+    );
     Ok(summary)
 }
 
@@ -274,10 +311,7 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
 ///
 /// Devuelve `None` si el proyecto no es un repositorio Git. Si lo es pero no se
 /// puede leer, borra su entrada de la caché y propaga el error.
-pub fn refresh_one(
-    db: &crate::db::Db,
-    project_id: i64,
-) -> Result<Option<crate::db::repositories::git_status::GitStatusEntry>> {
+pub fn refresh_one(db: &crate::db::Db, project_id: i64) -> Result<Option<GitStatusEntry>> {
     use crate::db::repositories::{git_status as cache, projects as projects_repo};
 
     let project = db.with_conn(|conn| projects_repo::get_by_id(conn, project_id))?;

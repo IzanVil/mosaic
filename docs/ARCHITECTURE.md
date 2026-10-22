@@ -145,9 +145,13 @@ eso, bajar de 60 a 1 minuto tardaría hasta una hora en notarse. Hace un
 primer refresco a los 5 segundos del arranque porque la caché que quedó de la
 sesión anterior puede estar muy desactualizada.
 
-Al terminar emite el evento `git-status-refreshed`, que el frontend escucha para
-recargar la caché. La caché es reconstruible: si se borra, el siguiente refresco
-la repuebla.
+Al terminar emite el evento `git-status-refreshed` con un `GitRefreshSummary`
+que trae solo lo que cambió: las entradas cuyo estado no es el que había en la
+caché y los proyectos que se quedaron sin estado por no poderse leer. La hora de
+lectura no cuenta como cambio, porque es nueva en cada vuelta. El frontend
+aplica ese parche sin volver a pedir la caché, y el botón de Git hace lo mismo
+con la respuesta de `refresh_all_git_status`. La caché es reconstruible: si se
+borra, el siguiente refresco la repuebla.
 
 ### `core/launcher.rs`
 
@@ -350,10 +354,11 @@ también de los filtros activos: si no, el tablero aparecería vacío sin nada q
 lo explicara en el siguiente arranque. El conteo por etiqueta del panel lateral
 se ajusta al asignar y al desasignar, sin recalcularlo entero.
 
-El estado Git que llega con el refresco automático se **mezcla** por
+El estado Git que llega con un refresco se **aplica como parche** por
 `project_id` en los proyectos que ya están en memoria en lugar de reemplazar la
 lista: con cientos de proyectos, reescribir el array completo cada cinco minutos
-haría parpadear el tablero.
+haría parpadear el tablero. Los proyectos que no cambian conservan el mismo
+objeto, y de esa cuenta sale el «sin cambios» del botón de Git.
 
 El estilo de cada componente va en su `<style>` con scope y lee los tokens de
 `lib/styles/tokens.css`: color, tipografía, espaciado, radios, sombras y
