@@ -67,13 +67,6 @@ pub fn list_tags_for_project(conn: &Connection, project_id: i64) -> Result<Vec<T
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
-/// Devuelve los identificadores de los proyectos que tienen una etiqueta.
-pub fn list_projects_for_tag(conn: &Connection, tag_id: i64) -> Result<Vec<i64>> {
-    let mut stmt = conn.prepare("SELECT project_id FROM project_tags WHERE tag_id = ?1")?;
-    let rows = stmt.query_map(params![tag_id], |row| row.get(0))?;
-    Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
-}
-
 /// Todas las asignaciones agrupadas por proyecto: la segunda consulta del tablero.
 pub fn list_all_grouped(conn: &Connection) -> Result<HashMap<i64, Vec<Tag>>> {
     let mut stmt = conn.prepare(
@@ -100,24 +93,6 @@ pub fn list_all_grouped(conn: &Connection) -> Result<HashMap<i64, Vec<Tag>>> {
         grouped.entry(project_id).or_default().push(tag);
     }
     Ok(grouped)
-}
-
-/// Asigna una etiqueta a varios proyectos y dice cuántas asignaciones son nuevas.
-pub fn bulk_assign(conn: &mut Connection, project_ids: &[i64], tag_id: i64) -> Result<usize> {
-    // En una transacción, para que un identificador inválido no deje el lote a medias.
-    let tx = conn.transaction()?;
-    let mut inserted = 0;
-    {
-        let mut stmt =
-            tx.prepare("INSERT OR IGNORE INTO project_tags (project_id, tag_id) VALUES (?1, ?2)")?;
-        for &project_id in project_ids {
-            inserted += stmt
-                .execute(params![project_id, tag_id])
-                .map_err(|err| map_missing_reference(err, project_id, tag_id))?;
-        }
-    }
-    tx.commit()?;
-    Ok(inserted)
 }
 
 #[cfg(test)]
@@ -253,24 +228,6 @@ mod tests {
     }
 
     #[test]
-    fn list_projects_for_tag_returns_the_ids() {
-        let db = Db::open_in_memory().unwrap();
-        let uno = project(&db, "/code/uno");
-        let dos = project(&db, "/code/dos");
-        project(&db, "/code/tres");
-        let cliente = tag(&db, "cliente");
-
-        db.with_conn(|conn| assign(conn, uno, cliente)).unwrap();
-        db.with_conn(|conn| assign(conn, dos, cliente)).unwrap();
-
-        let mut ids = db
-            .with_conn(|conn| list_projects_for_tag(conn, cliente))
-            .unwrap();
-        ids.sort_unstable();
-        assert_eq!(ids, vec![uno, dos]);
-    }
-
-    #[test]
     fn deleting_a_tag_keeps_the_project() {
         let db = Db::open_in_memory().unwrap();
         let project_id = project(&db, "/code/uno");
@@ -307,11 +264,8 @@ mod tests {
         })
         .unwrap();
 
-        assert_eq!(
-            db.with_conn(|conn| list_projects_for_tag(conn, cliente))
-                .unwrap(),
-            vec![dos]
-        );
+        let grouped = db.with_conn(list_all_grouped).unwrap();
+        assert_eq!(grouped.keys().copied().collect::<Vec<_>>(), vec![dos]);
     }
 
     #[test]
@@ -362,35 +316,5 @@ mod tests {
         let de_uno: Vec<&str> = grouped[&uno].iter().map(|t| t.name.as_str()).collect();
         assert_eq!(de_uno, vec!["Alfa", "zeta"], "ordenadas por nombre");
         assert_eq!(grouped[&dos].len(), 1);
-    }
-
-    #[test]
-    fn bulk_assign_counts_only_the_new_rows() {
-        let db = Db::open_in_memory().unwrap();
-        let uno = project(&db, "/code/uno");
-        let dos = project(&db, "/code/dos");
-        let cliente = tag(&db, "cliente");
-        db.with_conn(|conn| assign(conn, uno, cliente)).unwrap();
-
-        let inserted = db
-            .with_conn_mut(|conn| bulk_assign(conn, &[uno, dos], cliente))
-            .unwrap();
-        assert_eq!(inserted, 1, "«uno» ya la tenía");
-    }
-
-    #[test]
-    fn bulk_assign_rolls_back_on_an_unknown_project() {
-        let db = Db::open_in_memory().unwrap();
-        let uno = project(&db, "/code/uno");
-        let cliente = tag(&db, "cliente");
-
-        let err = db.with_conn_mut(|conn| bulk_assign(conn, &[uno, 999], cliente));
-        assert!(matches!(err, Err(AppError::NotFound(_))));
-        assert!(
-            db.with_conn(|conn| list_projects_for_tag(conn, cliente))
-                .unwrap()
-                .is_empty(),
-            "el lote no debe quedar a medias"
-        );
     }
 }

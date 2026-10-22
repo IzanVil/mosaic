@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 
 use git2::{IndexAddOption, Repository, RepositoryInitOptions, Signature};
-use mosaic_lib::core::git::{refresh_all, refresh_one};
+use mosaic_lib::core::git::refresh_all;
 use mosaic_lib::core::now_ts;
 use mosaic_lib::core::scanner::run_full_scan;
 use mosaic_lib::db::repositories::{
@@ -245,70 +245,4 @@ fn refreshing_git_status_never_touches_the_projects_table() {
     }
 
     assert!(db.with_conn(cache::list_all).unwrap().len() == 2);
-}
-
-#[test]
-fn refresh_one_updates_a_single_repository() {
-    let tmp = tempfile::tempdir().unwrap();
-    let root = fs::canonicalize(tmp.path()).unwrap();
-    build_tree(&root);
-
-    let db = scanned_db(&root);
-    let projects = db.with_conn(projects_repo::list_all).unwrap();
-    let limpio = projects.iter().find(|p| p.name == "limpio").unwrap();
-
-    let entry = refresh_one(&db, limpio.id).unwrap().unwrap();
-
-    assert_eq!(entry.project_id, limpio.id);
-    assert_eq!(entry.status.branch.as_deref(), Some("main"));
-    assert!(!entry.status.is_dirty);
-    assert_eq!(
-        db.with_conn(cache::list_all).unwrap().len(),
-        1,
-        "solo se ha refrescado el proyecto pedido"
-    );
-}
-
-#[test]
-fn refresh_one_returns_nothing_for_a_project_without_git() {
-    let tmp = tempfile::tempdir().unwrap();
-    let root = fs::canonicalize(tmp.path()).unwrap();
-    build_tree(&root);
-
-    let db = scanned_db(&root);
-    let projects = db.with_conn(projects_repo::list_all).unwrap();
-    let sin_git = projects.iter().find(|p| p.name == "sin-git").unwrap();
-
-    assert!(refresh_one(&db, sin_git.id).unwrap().is_none());
-    assert!(db.with_conn(cache::list_all).unwrap().is_empty());
-}
-
-#[test]
-fn refresh_one_clears_the_cache_when_the_repository_becomes_unreadable() {
-    let tmp = tempfile::tempdir().unwrap();
-    let root = fs::canonicalize(tmp.path()).unwrap();
-    build_tree(&root);
-
-    let db = scanned_db(&root);
-    let projects = db.with_conn(projects_repo::list_all).unwrap();
-    let sucio = projects.iter().find(|p| p.name == "sucio").unwrap();
-
-    refresh_one(&db, sucio.id).unwrap();
-    assert!(db
-        .with_conn(|conn| cache::get(conn, sucio.id))
-        .unwrap()
-        .is_some());
-
-    fs::remove_dir_all(root.join("sucio")).unwrap();
-
-    assert!(
-        refresh_one(&db, sucio.id).is_err(),
-        "un refresco manual debe informar del fallo al usuario"
-    );
-    assert!(
-        db.with_conn(|conn| cache::get(conn, sucio.id))
-            .unwrap()
-            .is_none(),
-        "y no dejar datos rancios en la caché"
-    );
 }

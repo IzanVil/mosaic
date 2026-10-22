@@ -279,28 +279,6 @@ pub fn refresh_all(db: &crate::db::Db) -> Result<GitRefreshSummary> {
     Ok(summary)
 }
 
-/// Relee un proyecto: `None` si no es un repositorio; si no se puede leer, borra su caché.
-pub fn refresh_one(db: &crate::db::Db, project_id: i64) -> Result<Option<GitStatusEntry>> {
-    use crate::db::repositories::{git_status as cache, projects as projects_repo};
-
-    let project = db.with_conn(|conn| projects_repo::get_by_id(conn, project_id))?;
-    if !project.is_git_repo {
-        return Ok(None);
-    }
-
-    let now = crate::core::now_ts();
-    match read_git_status(Path::new(&project.path)) {
-        Ok(status) => {
-            db.with_conn(|conn| cache::upsert(conn, project_id, &status, now))?;
-            db.with_conn(|conn| cache::get(conn, project_id))
-        }
-        Err(err) => {
-            db.with_conn(|conn| cache::delete(conn, project_id))?;
-            Err(err)
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::fs;

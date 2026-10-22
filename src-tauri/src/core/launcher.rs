@@ -8,7 +8,7 @@
 //! lanzaría aplicaciones. Se validan con el crate `url`, que sigue el mismo
 //! estándar que el navegador: lo que se valida es lo que se abre.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
@@ -381,14 +381,6 @@ pub fn open_external(raw: &str) -> Result<()> {
     Ok(())
 }
 
-/// Ruta del ejecutable de una aplicación detectada, para diagnóstico.
-pub fn which(bin: &str) -> Option<PathBuf> {
-    let path = std::env::var_os("PATH")?;
-    std::env::split_paths(&path)
-        .map(|dir| dir.join(bin))
-        .find(|candidate| candidate.is_file() && is_executable(candidate))
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -451,6 +443,8 @@ mod tests {
             );
         }
     }
+
+    use std::path::PathBuf;
 
     use super::*;
     use crate::model::project::DiscoveredProject;
@@ -676,16 +670,5 @@ mod tests {
         #[cfg(unix)]
         assert!(is_on_path("sh"));
         assert!(!is_on_path("ejecutable-que-no-existe-en-ningun-sitio"));
-    }
-
-    #[test]
-    fn which_returns_the_full_path_of_an_executable() {
-        #[cfg(unix)]
-        {
-            let path = which("sh").expect("sh debería estar en el PATH");
-            assert!(path.is_absolute());
-            assert!(path.ends_with("sh"));
-        }
-        assert_eq!(which("ejecutable-que-no-existe-en-ningun-sitio"), None);
     }
 }
