@@ -1,10 +1,6 @@
 /**
- * Ajustes avanzados de escaneo y Git, tal y como se editan en Ajustes.
- *
- * Cada cambio se guarda en el acto, sin botón, y el campo que se cambió dice
- * «Guardado» a su lado durante un momento: un ajuste que se guarda sin que se
- * note parece que no se ha guardado (§10.4). Si el backend lo rechaza, el
- * campo vuelve a su valor anterior y enseña el motivo.
+ * Ajustes avanzados de escaneo y Git. Cada cambio se guarda al momento y su campo
+ * dice «Guardado»: un ajuste que se guarda sin que se note parece no guardado.
  */
 
 import { get, writable } from 'svelte/store';
@@ -60,12 +56,7 @@ export async function loadAdvancedSettings(): Promise<void> {
   }
 }
 
-/**
- * Cambia un ajuste y lo guarda ya.
- *
- * El valor nuevo se ve al momento; si el backend lo rechaza, se vuelve al
- * anterior y el campo dice por qué. Devuelve si se guardó.
- */
+/** Cambia un ajuste y lo guarda ya; si el backend lo rechaza, vuelve atrás y dice por qué. */
 export async function saveAdvancedField<K extends AdvancedField>(
   field: K,
   value: AdvancedSettings[K],

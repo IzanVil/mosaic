@@ -6,7 +6,9 @@ import * as api from '../api/scanner';
 import type { ScanPath } from '../types';
 import { errorText } from '../utils/errors';
 
+/** Las rutas raíz configuradas. */
 export const scanPaths = writable<ScanPath[]>([]);
+/** Las rutas se están cargando. */
 export const loadingScanPaths = writable(false);
 /** Último error de gestión de rutas, para mostrarlo en la interfaz. */
 export const scanPathsError = writable<string | null>(null);

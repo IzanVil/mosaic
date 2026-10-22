@@ -1,10 +1,6 @@
 /**
- * Navegación entre las vistas de la aplicación.
- *
- * Una unión discriminada y nada más: no hay router, ni URLs, ni historial.
- * Mosaic tiene tres pantallas y ninguna necesita un enlace propio. Tampoco se
- * persiste: al abrir la aplicación se vuelve siempre al tablero, y el detalle
- * de un proyecto no sobrevive a un reinicio.
+ * Navegación entre vistas: una unión discriminada, sin router, URLs ni historial,
+ * que tres pantallas no necesitan. No se guarda: la app abre siempre en el tablero.
  */
 
 import { get, writable } from 'svelte/store';
@@ -18,13 +14,7 @@ export type Route =
 /** Pantalla actual. Se cambia solo con las funciones de este módulo. */
 export const route = writable<Route>({ view: 'dashboard' });
 
-/**
- * Tarjeta a la que vuelve el foco al salir del detalle.
- *
- * Se olvida en cuanto la navegación pasa por Ajustes: volver al tablero
- * después de eso ya no es «volver de la tarjeta», y saltar a una tarjeta que
- * el usuario abrió hace dos pantallas sería una sorpresa.
- */
+/** Tarjeta a la que vuelve el foco al salir del detalle; se olvida al pasar por Ajustes. */
 let returnFocusTo: number | null = null;
 
 /** Abre el detalle de un proyecto, recordando de qué tarjeta se vino. */
@@ -44,13 +34,7 @@ export function goToDashboard(): void {
   route.set({ view: 'dashboard' });
 }
 
-/**
- * Sale del detalle de vuelta al tablero.
- *
- * Devuelve el proyecto cuya tarjeta debe recibir el foco, o `null` si no toca
- * devolverlo. Quien llama se encarga del foco cuando el tablero ya esté
- * pintado: este módulo no sabe nada del DOM.
- */
+/** Vuelve al tablero y dice qué tarjeta recibe el foco; lo pone quien llama: aquí no hay DOM. */
 export function leaveProjectDetail(): number | null {
   const target = get(route).view === 'project' ? returnFocusTo : null;
   returnFocusTo = null;
@@ -58,10 +42,7 @@ export function leaveProjectDetail(): number | null {
   return target;
 }
 
-/**
- * El gestor de etiquetas está abierto. Vive aquí y no en el tablero porque
- * también se abre desde la paleta de comandos, estando en otra pantalla.
- */
+/** El gestor de etiquetas está abierto; vive aquí porque también se abre desde la paleta. */
 export const tagManagerOpen = writable(false);
 
 /** Abre el gestor de etiquetas, volviendo antes al tablero si hace falta. */

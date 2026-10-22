@@ -1,10 +1,4 @@
-/**
- * Refresco del estado Git y resultado del último intento.
- *
- * Este módulo ya no guarda una copia de la caché: la fuente de verdad del
- * tablero es `stores/projects.ts`, y aquí solo se orquesta la relectura y se
- * mezcla el resultado por `project_id`.
- */
+/** Refresco del estado Git y lo que pasó en el último; el estado vive en `stores/projects.ts`. */
 
 import { writable } from 'svelte/store';
 
@@ -28,16 +22,14 @@ export interface GitRefreshOutcome {
   manual: boolean;
 }
 
-/**
- * Duración mínima del indicador de carga.
- *
- * Leer tres repositorios tarda 40 ms: sin este suelo, el usuario pulsa el botón
- * y no ve absolutamente nada, que es exactamente el bug que hubo que arreglar.
- */
+/** Duración mínima del indicador: leer tres repositorios tarda 40 ms y el clic no se veía. */
 const MIN_SPINNER_MS = 450;
 
+/** Hay un refresco pedido por el usuario en marcha. */
 export const refreshingGit = writable(false);
+/** Último error del refresco, para enseñarlo en la interfaz. */
 export const gitError = writable<string | null>(null);
+/** Lo que pasó en el último refresco. */
 export const lastGitRefresh = writable<GitRefreshOutcome | null>(null);
 
 function delay(milliseconds: number): Promise<void> {
@@ -62,11 +54,7 @@ export async function loadGitStatus(): Promise<void> {
   }
 }
 
-/**
- * Aplica lo que trae un refresco: solo las entradas que cambiaron y las que se
- * retiraron. Lo usan el botón y el evento `git-status-refreshed` del refresco
- * automático, que por eso deja `manual` en `false`.
- */
+/** Aplica lo que trae un refresco, del botón o del evento automático (`manual` en `false`). */
 export function applyGitRefresh(summary: GitRefreshSummary, manual = false): void {
   const changed = patchGitStatus(summary.changed, summary.removed);
   lastGitRefresh.set({

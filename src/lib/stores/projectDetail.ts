@@ -1,16 +1,9 @@
 /**
- * Estado de la vista de detalle de un proyecto.
+ * El detalle de un proyecto: README, historial, ramas y las notas. El proyecto en
+ * sí sale de `projects`, la única fuente.
  *
- * El proyecto en sí (nombre, ruta, etiquetas, estado Git) no se guarda aquí:
- * sale de `projects`, que sigue siendo la única fuente. Este módulo solo trae
- * lo que el tablero no necesita, que es el README, el historial y las ramas, y
- * gestiona la edición de las notas.
- *
- * Las notas siguen cuatro reglas, decididas en la Fase 5:
- * 1. se guardan solas 1,5 s después de la última tecla;
- * 2. al salir de la vista se guardan en el acto, sin esperar a ese plazo;
- * 3. un texto vacío o de solo espacios se guarda como `NULL`;
- * 4. si el texto no ha cambiado respecto a lo guardado, no se escribe nada.
+ * Las notas se guardan solas 1,5 s después de la última tecla y en el acto al
+ * salir; en blanco son `NULL`, y si no han cambiado no se escribe nada.
  */
 
 import { get, writable } from 'svelte/store';
@@ -32,10 +25,7 @@ export type Section<T> =
   | { status: 'ready'; data: T }
   | { status: 'error'; message: string };
 
-/**
- * Estado de las notas, para que el editor diga siempre qué ha pasado con lo
- * que se escribió: un guardado que nadie ve es un guardado que no se cree.
- */
+/** Qué ha pasado con las notas: un guardado que nadie ve es un guardado que no se cree. */
 export type NotesStatus = 'saved' | 'pending' | 'saving' | 'error';
 
 /** README renderizado; `null` dentro de `data` significa que no tiene. */
@@ -80,10 +70,7 @@ function load<T>(
   );
 }
 
-/**
- * Abre el detalle de un proyecto: carga sus tres secciones en paralelo y pone
- * en el editor las notas que ya tenía.
- */
+/** Abre el detalle: carga sus tres secciones en paralelo y pone las notas en el editor. */
 export function openDetail(projectId: number, notes: string | null): void {
   scheduleSave.cancel();
   currentId = projectId;
@@ -110,10 +97,7 @@ export function editNotes(text: string): void {
   scheduleSave();
 }
 
-/**
- * Guarda las notas ya, sin esperar al plazo. No escribe nada si el texto no ha
- * cambiado respecto a lo último guardado.
- */
+/** Guarda las notas ya, sin esperar al plazo, si han cambiado. */
 export async function flushNotes(): Promise<void> {
   scheduleSave.cancel();
   const projectId = currentId;
@@ -144,15 +128,11 @@ export async function flushNotes(): Promise<void> {
   }
 }
 
-/**
- * Cierra el detalle: guarda en el acto lo que quedara pendiente y olvida el
- * proyecto. Se espera a que el guardado termine antes de soltar el estado.
- */
+/** Cierra el detalle: guarda lo pendiente, espera a que acabe y olvida el proyecto. */
 export async function closeDetail(): Promise<void> {
   await flushNotes();
   if (get(notesStatus) === 'error') {
-    // La vista ya no está para enseñarlo: si no se dice aquí, las notas se
-    // perderían en silencio. Sale en el aviso de errores del tablero.
+    // La vista ya no está: sin esto se perderían en silencio. Sale en el aviso del tablero.
     projectsError.set(
       tNow('notas.errorAlSalir', { error: get(notesError) ?? tNow('notas.errorDesconocido') }),
     );

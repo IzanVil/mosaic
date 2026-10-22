@@ -1,13 +1,9 @@
 /**
- * Búsqueda, filtros, ordenación y estado del sidebar.
+ * Búsqueda, filtros, orden y panel lateral: solo la intención del usuario.
  *
- * Este módulo solo guarda la *intención* del usuario; quien la aplica es el
- * store derivado `visibleProjects` de `stores/projects.ts`. La separación evita
- * el bucle clásico de escribir filtros desde un efecto que lee la lista ya
- * filtrada: aquí todo se cambia desde manejadores de eventos.
- *
- * La vista se persiste en la clave `ui.view_state` con 500 ms de debounce, no
- * en cada tecla.
+ * La aplica `visibleProjects`, y aquí todo se cambia desde manejadores de
+ * eventos: escribir filtros desde un efecto que lee la lista filtrada es el
+ * bucle clásico de Svelte. La vista se guarda en `ui.view_state`.
  */
 
 import { derived, get, writable } from 'svelte/store';
@@ -32,8 +28,7 @@ export const DEFAULT_FILTERS: FilterState = {
   languages: [],
   git_state: 'all',
   pinned_only: false,
-  // Los proyectos ausentes se muestran por defecto: son los que el usuario
-  // querrá revisar o soltar, esconderlos por su cuenta sería perderlos.
+  // Los ausentes se ven por defecto: esconderlos sin que nadie lo pida sería perderlos.
   include_missing: true,
   sort: 'name',
   sort_dir: 'asc',
@@ -45,42 +40,24 @@ const GIT_STATES: GitStateFilter[] = ['all', 'dirty', 'clean', 'no_repo'];
 const SORT_OPTIONS: SortOption[] = ['name', 'last_opened', 'created', 'updated'];
 const THEMES: ThemeMode[] = ['dark', 'light', 'system'];
 
+/** Búsqueda, filtros y orden que ha elegido el usuario. */
 export const filters = writable<FilterState>({ ...DEFAULT_FILTERS });
+/** El panel lateral está plegado. */
 export const sidebarCollapsed = writable(false);
 
-/**
- * Densidad del tablero.
- *
- * Arranca en cómodo: quien tiene veinte proyectos no necesita apretarlos, y
- * quien tiene trescientos descubre el modo compacto en cuanto le estorba el
- * scroll.
- */
+/** Densidad del tablero; arranca en cómodo, y quien tiene trescientos ya buscará el compacto. */
 export const density = writable<Density>('comodo');
 
-/**
- * Tema de la interfaz. Arranca en oscuro, que es el del producto; `system`
- * sigue la preferencia del sistema operativo.
- */
+/** Tema de la interfaz; arranca en oscuro, el del producto, y `system` sigue al sistema. */
 export const theme = writable<ThemeMode>('dark');
 
-/**
- * `true` cuando algo recorta la lista; el orden no cuenta como filtro.
- *
- * Aquí la búsqueda sí cuenta, a diferencia de `filterChipCount`: de esto
- * dependen «Limpiar filtros» y el aviso de pocos resultados, y una búsqueda
- * recorta la lista igual que cualquier chip.
- */
+/** `true` si algo recorta la lista, búsqueda incluida; el orden no cuenta. */
 export const hasActiveFilters = derived(
   filters,
   (current) => current.query.trim() !== '' || filterChipCount(current) > 0,
 );
 
-/**
- * Cuántos chips pinta la barra de filtros, para el contador del botón.
- *
- * La búsqueda no entra: vive en su propio campo, que ya muestra el texto y su
- * X. Contarla hacía que el botón dijera «Filtros 4» con tres chips a la vista.
- */
+/** Chips de la barra de filtros, sin la búsqueda: si no, «Filtros 4» con tres chips a la vista. */
 export function filterChipCount(current: FilterState): number {
   return (
     current.tag_ids.length +
@@ -91,6 +68,7 @@ export function filterChipCount(current: FilterState): number {
   );
 }
 
+/** Cambia el texto de búsqueda. */
 export function setQuery(query: string): void {
   filters.update((current) => ({ ...current, query }));
 }
@@ -105,13 +83,7 @@ export function toggleTagFilter(tagId: number): void {
   }));
 }
 
-/**
- * Saca una etiqueta de la selección.
- *
- * La llama el borrado de etiquetas: si el id borrado siguiera en los filtros,
- * el tablero aparecería vacío sin nada que lo explique la próxima vez que se
- * abriera la aplicación.
- */
+/** Saca una etiqueta borrada de la selección: si no, el tablero saldría vacío sin explicación. */
 export function removeTagFilter(tagId: number): void {
   filters.update((current) =>
     current.tag_ids.includes(tagId)
@@ -120,6 +92,7 @@ export function removeTagFilter(tagId: number): void {
   );
 }
 
+/** Añade o quita un lenguaje de la selección (se combinan en OR). */
 export function toggleLanguageFilter(language: string): void {
   filters.update((current) => ({
     ...current,
@@ -129,14 +102,17 @@ export function toggleLanguageFilter(language: string): void {
   }));
 }
 
+/** Filtra por estado de Git. */
 export function setGitState(git_state: GitStateFilter): void {
   filters.update((current) => ({ ...current, git_state }));
 }
 
+/** Enseña solo los fijados, o todos. */
 export function setPinnedOnly(pinned_only: boolean): void {
   filters.update((current) => ({ ...current, pinned_only }));
 }
 
+/** Enseña u oculta los proyectos ausentes. */
 export function setIncludeMissing(include_missing: boolean): void {
   filters.update((current) => ({ ...current, include_missing }));
 }
@@ -150,6 +126,7 @@ export function setSort(sort: SortOption): void {
   );
 }
 
+/** Cambia la dirección del orden. */
 export function setSortDirection(sort_dir: SortDirection): void {
   filters.update((current) => ({ ...current, sort_dir }));
 }
@@ -163,10 +140,12 @@ export function clearFilters(): void {
   }));
 }
 
+/** Pliega o despliega el panel lateral. */
 export function toggleSidebar(): void {
   sidebarCollapsed.update((collapsed) => !collapsed);
 }
 
+/** Alterna entre las densidades cómoda y compacta. */
 export function toggleDensity(): void {
   density.update((actual) => (actual === 'comodo' ? 'compacto' : 'comodo'));
 }
@@ -176,29 +155,18 @@ export function cycleTheme(): void {
   theme.update((actual) => THEMES[(THEMES.indexOf(actual) + 1) % THEMES.length] ?? 'dark');
 }
 
-/**
- * Dirección natural de cada criterio: los nombres se leen de la A a la Z, y
- * las fechas de lo más reciente a lo más antiguo.
- */
+/** Dirección natural de cada criterio: nombres de la A a la Z, fechas de la más reciente. */
 function defaultDirectionFor(sort: SortOption): SortDirection {
   return sort === 'name' ? 'asc' : 'desc';
 }
 
-/**
- * Lee la vista guardada. Hay que llamarla (y esperarla) antes del primer
- * render para no pintar el tablero sin filtros y reordenarlo un instante
- * después.
- *
- * Cualquier campo ausente o con un tipo inesperado cae a su valor por defecto:
- * una vista guardada por una versión anterior no debe romper el arranque.
- */
+/** Lee la vista guardada; se espera antes de pintar para no reordenar el tablero después. */
 export async function loadViewState(): Promise<void> {
   let raw: string | null;
   try {
     raw = await api.getViewState();
   } catch {
-    // La vista es una comodidad: si no se puede leer, se arranca con los
-    // valores por defecto en silencio.
+    // La vista es una comodidad: si no se puede leer, se arranca de cero en silencio.
     return;
   }
   if (raw === null) return;
@@ -215,13 +183,7 @@ export async function loadViewState(): Promise<void> {
   }
 }
 
-/**
- * Empieza a guardar cada cambio de vista, con debounce.
- *
- * Devuelve la función de parada, que cancela la escritura pendiente. Hay que
- * llamarla después de [`loadViewState`]: la primera emisión de cada store se
- * ignora precisamente para que cargar no provoque una escritura.
- */
+/** Guarda cada cambio de vista con debounce, después de `loadViewState`; devuelve cómo pararlo. */
 export function startPersistingViewState(): () => void {
   const save = debounce(() => {
     void api.setViewState(JSON.stringify(currentViewState())).catch(() => {
@@ -229,10 +191,9 @@ export function startPersistingViewState(): () => void {
     });
   }, PERSIST_DELAY_MS);
 
-  // Cada store emite su valor al suscribirse, y eso no es un cambio del
-  // usuario. Se ignora todo lo que llega mientras se suscribe en vez de contar
-  // emisiones: con un contador, quitar un store dejó de guardar el primer
-  // cambio de verdad.
+  // Cada store emite al suscribirse, y eso no es un cambio. Se ignora lo que llega
+  // mientras tanto en vez de contar emisiones: con un contador, quitar un store
+  // dejó de guardar el primer cambio de verdad.
   let subscribing = true;
   const onChange = () => {
     if (!subscribing) save();
@@ -253,12 +214,7 @@ export function startPersistingViewState(): () => void {
   };
 }
 
-/**
- * Construye el `ViewState` que se persiste, a partir de los stores actuales.
- *
- * Se exporta para poder comprobar en un test que no se olvida ningún campo:
- * en la Fase 4 la vista guardada ya se rompió una vez por ahí.
- */
+/** El `ViewState` que se guarda; exportado para que un test vigile que no falte ningún campo. */
 export function currentViewState(): ViewState {
   return {
     filters: get(filters),
@@ -269,14 +225,9 @@ export function currentViewState(): ViewState {
   };
 }
 
-/**
- * Reconstruye un `ViewState` válido a partir de lo que hubiera guardado.
- *
- * Exportada por el mismo motivo que [`currentViewState`]: es la mitad del
- * viaje de ida y vuelta, y la que decide qué pasa con una vista guardada por
- * una versión anterior.
- */
+/** Un `ViewState` válido a partir de lo guardado; lo que no cuadre toma su valor por defecto. */
 export function sanitizeViewState(raw: unknown): ViewState {
+  // Campo a campo: una vista de una versión anterior no puede romper el arranque.
   const source = isRecord(raw) ? raw : {};
   const stored = isRecord(source.filters) ? source.filters : {};
 

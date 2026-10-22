@@ -7,12 +7,17 @@ import { compareNames } from '../utils/text';
 import { removeTagFilter } from './filters';
 import { applyTagChangeEverywhere, attachTag, detachTag } from './projects';
 
+/** Todas las etiquetas con su número de proyectos, ordenadas por nombre. */
 export const tags = writable<TagWithCount[]>([]);
+/** Las etiquetas se están cargando. */
 export const loadingTags = writable(false);
+/** Último error de etiquetas, para enseñarlo en la interfaz. */
 export const tagsError = writable<string | null>(null);
 
+/** Las mismas etiquetas, por id. */
 export const tagsById = derived(tags, (current) => new Map(current.map((tag) => [tag.id, tag])));
 
+/** Recarga las etiquetas desde la base de datos. */
 export async function loadTags(): Promise<void> {
   loadingTags.set(true);
   tagsError.set(null);
@@ -25,6 +30,7 @@ export async function loadTags(): Promise<void> {
   }
 }
 
+/** Crea una etiqueta; `null` si el backend la rechaza. */
 export async function createTag(name: string, color: string): Promise<Tag | null> {
   tagsError.set(null);
   try {
@@ -39,6 +45,7 @@ export async function createTag(name: string, color: string): Promise<Tag | null
   }
 }
 
+/** Renombra o cambia el color de una etiqueta, también en las tarjetas que la llevan. */
 export async function updateTag(id: number, name: string, color: string): Promise<Tag | null> {
   tagsError.set(null);
   try {
@@ -56,6 +63,7 @@ export async function updateTag(id: number, name: string, color: string): Promis
   }
 }
 
+/** Borra una etiqueta, la quita de las tarjetas y de los filtros. */
 export async function deleteTag(id: number): Promise<boolean> {
   tagsError.set(null);
   try {
@@ -70,6 +78,7 @@ export async function deleteTag(id: number): Promise<boolean> {
   }
 }
 
+/** Asigna una etiqueta a un proyecto y ajusta su conteo, sin recalcularlo. */
 export async function assignTagToProject(projectId: number, tagId: number): Promise<boolean> {
   const tag = get(tagsById).get(tagId);
   if (tag === undefined) return false;
@@ -86,6 +95,7 @@ export async function assignTagToProject(projectId: number, tagId: number): Prom
   }
 }
 
+/** Quita una etiqueta de un proyecto y ajusta su conteo. */
 export async function unassignTagFromProject(projectId: number, tagId: number): Promise<boolean> {
   tagsError.set(null);
   try {

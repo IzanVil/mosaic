@@ -7,13 +7,18 @@ import type { AppKind, DetectedApp } from '../types';
 import { errorText } from '../utils/errors';
 import { markProjectOpened } from './projects';
 
+/** Los IDEs y terminales reconocidos que hay instalados. */
 export const detectedApps = writable<DetectedApp[]>([]);
+/** IDE preferido; vacío es «el primero que haya». */
 export const preferredIde = writable('');
+/** Terminal preferido; vacío es «el primero que haya». */
 export const preferredTerminal = writable('');
 /** Último error al abrir un proyecto o al detectar aplicaciones. */
 export const appsError = writable<string | null>(null);
 
+/** Los IDEs detectados. */
 export const ides = derived(detectedApps, (apps) => apps.filter((app) => app.kind === 'ide'));
+/** Los terminales detectados. */
 export const terminals = derived(detectedApps, (apps) =>
   apps.filter((app) => app.kind === 'terminal'),
 );

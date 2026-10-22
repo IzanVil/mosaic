@@ -1,13 +1,9 @@
 /**
- * Estado global de los proyectos, del escaneo y de la lista visible.
+ * Los proyectos, el escaneo y la lista visible.
  *
- * `projects` es la única fuente de verdad del tablero: cada elemento llega del
- * backend con sus etiquetas y su estado Git ya dentro (`list_projects_with_tags`).
- *
- * Todo el filtrado y la ordenación viven en el store derivado
- * [`visibleProjects`], y en ningún otro sitio: un componente que filtrase por su
- * cuenta acabaría discrepando del contador de resultados de la barra de
- * búsqueda.
+ * `projects` es la única fuente del tablero, con etiquetas y estado Git dentro.
+ * Filtrar y ordenar solo se hace en `visibleProjects`: un componente que filtrase
+ * por su cuenta discreparía del contador de la barra de búsqueda.
  */
 
 import Fuse, { type IFuseOptions } from 'fuse.js';
@@ -20,9 +16,13 @@ import { errorText } from '../utils/errors';
 import { compareNames, normalizeText } from '../utils/text';
 import { filters } from './filters';
 
+/** Todos los proyectos, con sus etiquetas y su estado Git. */
 export const projects = writable<ProjectWithTags[]>([]);
+/** La lista se está cargando. */
 export const loadingProjects = writable(false);
+/** Hay un escaneo en marcha. */
 export const scanning = writable(false);
+/** Resumen del último escaneo. */
 export const lastScan = writable<ScanSummary | null>(null);
 /** Último error de proyectos o de escaneo, para mostrarlo en la interfaz. */
 export const projectsError = writable<string | null>(null);
@@ -34,12 +34,7 @@ const FUSE_OPTIONS: IFuseOptions<IndexedProject> = {
   ignoreLocation: true,
 };
 
-/**
- * Índice de búsqueda, reconstruido solo cuando cambia la lista de proyectos.
- *
- * Reindexar en cada pulsación de tecla con cientos de proyectos se nota; la
- * clave es la identidad del array, que solo cambia cuando el store se reescribe.
- */
+/** Lo que indexa la búsqueda difusa, con el texto ya normalizado. */
 interface IndexedProject {
   id: number;
   name: string;
@@ -48,7 +43,9 @@ interface IndexedProject {
 
 let indexCache: { source: ProjectWithTags[]; fuse: Fuse<IndexedProject> } | null = null;
 
+/** El índice de búsqueda, que solo se rehace cuando cambia la lista. */
 function searchIndex(source: ProjectWithTags[]): Fuse<IndexedProject> {
+  // La clave es la identidad del array: reindexar en cada tecla se nota con cientos.
   if (indexCache?.source === source) return indexCache.fuse;
 
   const rows: IndexedProject[] = source.map((project) => ({
@@ -61,11 +58,7 @@ function searchIndex(source: ProjectWithTags[]): Fuse<IndexedProject> {
   return fuse;
 }
 
-/**
- * Proyectos que coinciden con un texto, del más parecido al menos, hasta
- * `limit`. Usa el mismo índice que la búsqueda del tablero, así que la paleta
- * de comandos y la barra de búsqueda nunca discrepan.
- */
+/** Proyectos que coinciden con un texto, del más parecido al menos; mismo índice que el tablero. */
 export function rankProjects(
   source: ProjectWithTags[],
   query: string,
@@ -108,8 +101,7 @@ function matchesFilters(project: ProjectWithTags, current: FilterState): boolean
     case 'dirty':
       return project.git_status?.is_dirty === true;
     case 'clean':
-      // Un repositorio sin estado cacheado todavía no se sabe si está limpio,
-      // así que no cuenta como limpio.
+      // Sin estado cacheado todavía no se sabe si está limpio: no cuenta como limpio.
       return project.is_git_repo && project.git_status?.is_dirty === false;
     case 'no_repo':
       return !project.is_git_repo;
@@ -132,13 +124,9 @@ function compareBy(a: ProjectWithTags, b: ProjectWithTags, current: FilterState)
   }
 }
 
-/**
- * Manda al final los proyectos que nunca se han abierto, al ordenar por última
- * apertura. Un proyecto sin abrir no es «el más antiguo»: es otra categoría, y
- * queda al final en las dos direcciones, así que esto se aplica antes de la
- * dirección y no se invierte con ella.
- */
+/** Al ordenar por última apertura, los nunca abiertos van al final en las dos direcciones. */
 function neverOpenedLast(a: ProjectWithTags, b: ProjectWithTags, current: FilterState): number {
+  // No son «los más antiguos», son otra categoría: por eso esto va antes de la dirección.
   if (current.sort !== 'last_opened') return 0;
   const aNever = a.last_opened_at === null;
   const bNever = b.last_opened_at === null;
@@ -146,12 +134,7 @@ function neverOpenedLast(a: ProjectWithTags, b: ProjectWithTags, current: Filter
   return aNever ? 1 : -1;
 }
 
-/**
- * La lista que pinta el tablero: filtrada, buscada y ordenada.
- *
- * Los proyectos fijados van siempre primero, como en la Fase 3: son los que el
- * usuario quiere tener a mano, y la tarjeta lo explica con su borde de acento.
- */
+/** La lista que pinta el tablero: filtrada, buscada y ordenada, con los fijados primero. */
 export const visibleProjects = derived([projects, filters], ([source, current]) => {
   const matches = matchingIds(source, current.query);
 
@@ -168,18 +151,14 @@ export const visibleProjects = derived([projects, filters], ([source, current]) 
     if (never !== 0) return never;
 
     const bySort = compareBy(a, b, current) * direction;
-    // El nombre desempata para que el orden no baile entre renders cuando dos
-    // proyectos comparten fecha.
+    // El nombre desempata, para que dos proyectos con la misma fecha no bailen entre renders.
     return bySort !== 0 ? bySort : compareNames(a.name, b.name);
   });
 });
 
 /**
- * La misma lista, partida en los dos grupos que pinta el tablero.
- *
- * Los fijados van siempre arriba, en su propio bloque y con la ordenación
- * elegida aplicada dentro de cada grupo. Nunca se mezclan: así «ordenar por
- * nombre descendente» no tiene una excepción inexplicable en la primera fila.
+ * La misma lista en los dos grupos del tablero, fijados y resto, ordenados cada uno.
+ * No se mezclan: así «nombre descendente» no tiene una excepción en la primera fila.
  */
 export const visibleGroups = derived(visibleProjects, (list) => ({
   pinned: list.filter((project) => project.pinned),
@@ -213,13 +192,7 @@ export async function loadProjects(): Promise<void> {
   }
 }
 
-/**
- * Lanza un escaneo completo y refresca la lista al terminar.
- *
- * Devuelve el resumen, o `null` si el escaneo falló. El refresco del estado Git
- * de los proyectos nuevos lo encadena quien llama (`App.svelte`), que es quien
- * puede indicar que el botón de Git está trabajando.
- */
+/** Escanea y recarga la lista; `null` si falló. El refresco de Git lo encadena `App.svelte`. */
 export async function runScan(): Promise<ScanSummary | null> {
   scanning.set(true);
   projectsError.set(null);
@@ -236,12 +209,7 @@ export async function runScan(): Promise<ScanSummary | null> {
   }
 }
 
-/**
- * Fija o deja de fijar un proyecto.
- *
- * Actualiza la lista en local antes de esperar al backend para que la tarjeta
- * responda al instante, y recarga si la escritura falla.
- */
+/** Fija o deja de fijar un proyecto: primero en local, para que la tarjeta responda ya. */
 export async function togglePinned(id: number, pinned: boolean): Promise<void> {
   patchProject(id, (project) => ({ ...project, pinned }));
 
@@ -258,36 +226,20 @@ export function setProjectNotesLocally(id: number, notes: string | null): void {
   patchProject(id, (project) => ({ ...project, notes }));
 }
 
-/**
- * Registra en local que un proyecto se acaba de abrir.
- *
- * El backend ya ha movido `last_opened_at`; sin esto la tarjeta seguiría
- * diciendo «Sin abrir desde Mosaic» y la ordenación por última apertura no se
- * movería hasta el siguiente arranque.
- */
+/** Apunta en local la apertura que ya guardó el backend, para que la tarjeta y el orden la vean. */
 export function markProjectOpened(id: number, openedAt: number): void {
   patchProject(id, (project) => ({ ...project, last_opened_at: openedAt }));
 }
 /**
- * Mezcla la caché de Git recién leída en los proyectos que ya están en memoria
- * y devuelve cuántos han cambiado de verdad.
- *
- * **No reemplaza la lista.** El refresco automático entra cada cinco minutos y
- * reescribir el array completo haría parpadear las tarjetas de cientos de
- * proyectos; además, los objetos que no cambian conservan su identidad, así que
- * Svelte no vuelve a montar sus tarjetas. Ese mismo cálculo alimenta el «sin
- * cambios» que muestra el botón de Git.
+ * Mezcla la caché de Git entera en los proyectos y dice cuántos han cambiado.
+ * No reemplaza la lista: lo que no cambia conserva su objeto y su tarjeta no parpadea.
  */
 export function mergeGitStatus(entries: GitStatusEntry[]): number {
   const byProject = new Map(entries.map((entry) => [entry.project_id, entry]));
   return replaceGitStatus((project) => byProject.get(project.id) ?? null);
 }
 
-/**
- * Aplica el parche de un refresco: las entradas que cambiaron y los proyectos
- * que se quedaron sin estado. Los demás no se tocan. Devuelve cuántos
- * proyectos han cambiado de verdad.
- */
+/** Aplica el parche de un refresco, sin tocar los demás, y dice cuántos han cambiado. */
 export function patchGitStatus(changed: GitStatusEntry[], removed: number[]): number {
   const byProject = new Map<number, GitStatusEntry | null>(
     changed.map((entry) => [entry.project_id, entry]),
@@ -329,12 +281,7 @@ export function detachTag(projectId: number, tagId: number): void {
   }));
 }
 
-/**
- * Aplica un cambio de etiqueta a todos los proyectos que la llevan.
- *
- * Lo usan el renombrado y el borrado desde el gestor: sin esto, las tarjetas
- * seguirían mostrando el nombre o el color viejos hasta la siguiente recarga.
- */
+/** Aplica un renombrado o un borrado de etiqueta a todos los proyectos que la llevan. */
 export function applyTagChangeEverywhere(tagId: number, updated: Tag | null): void {
   projects.update((current) =>
     current.map((project) => {
@@ -362,15 +309,10 @@ function patchProject(
   );
 }
 
-/**
- * Compara dos entradas de caché para no reescribir un proyecto sin motivo.
- *
- * `refreshed_at` no entra: es nueva en cada lectura, así que contarla haría que
- * todo refresco cambiase todos los proyectos y el botón de Git no pudiera decir
- * nunca «sin cambios». La interfaz no la enseña.
- */
+/** Compara dos entradas de caché para no reescribir un proyecto sin motivo. */
 function sameGitStatus(a: GitStatusEntry | null, b: GitStatusEntry | null): boolean {
   if (a === null || b === null) return a === b;
+  // Sin `refreshed_at`: es nueva en cada lectura, y el botón de Git no diría nunca «sin cambios».
   return (
     a.branch === b.branch &&
     a.ahead === b.ahead &&
