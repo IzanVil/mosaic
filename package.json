@@ -16,24 +16,24 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@lucide/svelte": "^1.45.0",
+    "@lucide/svelte": "^1.61.0",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-clipboard-manager": "~2.3.3",
     "@tauri-apps/plugin-dialog": "^2",
     "fuse.js": "^7.5.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.0",
-    "@sveltejs/vite-plugin-svelte": "^7.3.0",
-    "@tailwindcss/vite": "^4.2.4",
+    "@playwright/test": "1.64.1",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@tauri-apps/cli": "^2",
     "@tsconfig/svelte": "^5.0.8",
-    "@types/node": "^24.13.3",
-    "svelte": "^5.57.0",
-    "svelte-check": "^4.7.6",
-    "tailwindcss": "^4.2.4",
-    "typescript": "~6.0.2",
-    "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "@types/node": "^24.19.2",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   }
 }
