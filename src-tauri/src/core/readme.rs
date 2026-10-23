@@ -449,6 +449,22 @@ mod tests {
         assert!(!html.contains("<iframe"), "sin iframes: {html}");
     }
 
+    // Los fallos de `ammonia` 4.2.0 (RUSTSEC-2021-0157, -2021-0158 y -2026-0373)
+    // entraban por `style` y por las animaciones de SVG; esta lista no admite ninguno.
+    #[test]
+    fn render_never_lets_through_inline_css_or_svg_animations() {
+        let html = render(
+            "<p style=\"background:URL('javascript:alert(1)')\">x</p>\n\n<svg><a><animate attributeName=\"href\" values=\"javascript:alert(1)\"/><text>y</text></a><animateMotion/><animateTransform/><animateColor/></svg>\n",
+        );
+        assert!(!html.contains("style="), "sin estilos en línea: {html}");
+        assert!(!html.contains("<svg"), "sin SVG: {html}");
+        assert!(
+            !html.to_ascii_lowercase().contains("animate"),
+            "sin animaciones: {html}"
+        );
+        assert!(!html.contains("javascript:"), "sin javascript: {html}");
+    }
+
     #[test]
     fn render_turns_html_images_into_their_alt_text() {
         let html = render(
