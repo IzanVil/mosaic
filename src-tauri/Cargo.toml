@@ -38,7 +38,7 @@ pulldown-cmark = "0.13"
 ammonia = "4"
 url = "2"
 # Fijado a la serie 2: `cargo add` a secas instala la alfa para Tauri 3. El
-# paquete de npm va fijado a la misma versión menor (`~2.3.3` en package.json),
+# paquete de npm va fijado a la misma versión menor (`~2.5.0` en package.json),
 # porque la CLI de Tauri se niega a arrancar si no coinciden.
 tauri-plugin-clipboard-manager = "2"
 
