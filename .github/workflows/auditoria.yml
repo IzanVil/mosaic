@@ -1,0 +1,49 @@
+name: Auditoría
+
+# Además de en cada cambio, una vez por semana: los avisos de seguridad se
+# publican sin que haya commits, y una dependencia que estaba bien deja de
+# estarlo sola.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  npm:
+    name: Dependencias de npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Solo lo que va dentro de la aplicación; lo de desarrollo se queda en la
+      # máquina de quien compila.
+      - name: pnpm audit
+        run: pnpm audit --prod
+
+  cargo:
+    name: Crates
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Binario precompilado: compilar cargo-audit tarda más que la auditoría.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+
+      # Lee el Cargo.lock contra la base de RustSec; falla con vulnerabilidades,
+      # no con las advertencias de crates sin mantener.
+      - name: cargo audit
+        working-directory: src-tauri
+        run: cargo audit

@@ -80,7 +80,8 @@ Also:
 - **A change in behavior comes with a test.** The non-obvious rules, like a
   project's timestamps or what counts as a project, are the most tested.
 - **No new dependencies without discussing them first.** Each one is code we
-  don't control.
+  don't control. CI audits them on every change and every Monday
+  (`pnpm audit --prod` and `cargo audit`).
 - **Never `unwrap()` outside tests**, and errors go through `AppError`.
 - **Comments only for the why.** One line of docs on public items and, inside
   the code, only what explains a decision you can't see by reading it.

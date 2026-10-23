@@ -81,7 +81,8 @@ Y además:
   como las fechas de un proyecto o qué cuenta como proyecto, son las que más
   tests tienen.
 - **Sin dependencias nuevas sin hablarlo antes.** Cada una es código que no
-  controlamos.
+  controlamos. El CI las audita en cada cambio y cada lunes
+  (`pnpm audit --prod` y `cargo audit`).
 - **Nunca `unwrap()` fuera de los tests**, y los errores van por `AppError`.
 - **Comentarios solo para el porqué.** Una línea de documentación en lo público
   y, dentro del código, solo lo que explique una decisión que no se ve leyendo.
