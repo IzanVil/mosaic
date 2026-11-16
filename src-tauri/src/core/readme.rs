@@ -465,6 +465,29 @@ mod tests {
         assert!(!html.contains("javascript:"), "sin javascript: {html}");
     }
 
+    // El fallo de `ammonia` 4.2.4 (RUSTSEC-2026-0533) necesita MathML o SVG y una
+    // etiqueta de texto crudo (`title`, `style`, `textarea`…); esta lista no admite ninguna.
+    #[test]
+    fn render_never_lets_through_mathml_svg_or_raw_text_tags() {
+        let html = render(
+            "<math><mi><svg><title><img src=x onerror=alert(1)></title></svg></mi></math>\n\n<svg><foreignObject><math><mi><style><img src=x onerror=alert(1)></style></mi></math></foreignObject></svg>\n\n<textarea><img src=x onerror=alert(1)></textarea><noscript><p>x</p></noscript>\n",
+        )
+        .to_ascii_lowercase();
+        for etiqueta in [
+            "<math",
+            "<mi",
+            "<svg",
+            "<foreignobject",
+            "<title",
+            "<style",
+            "<textarea",
+            "<noscript",
+            "<img",
+        ] {
+            assert!(!html.contains(etiqueta), "sin {etiqueta}: {html}");
+        }
+    }
+
     #[test]
     fn render_turns_html_images_into_their_alt_text() {
         let html = render(
