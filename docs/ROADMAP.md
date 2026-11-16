@@ -349,3 +349,10 @@ Pendiente:
 - [x] Mosaic 0.3.0 publicado el 2026-10-18 con los siete instaladores (dos
       `.msi`); el README en inglés usa sus capturas y ya no avisa de que la
       interfaz solo está en español, y los README y la web enlazan los dos `.msi`
+
+## Mantenimiento
+
+- [x] Mosaic 0.3.1 publicado el 2026-11-16: el botón de Git ya dice «sin
+      cambios» y el refresco solo redibuja lo que cambió, el selector de
+      etiquetas se ve bien en una tarjeta sin etiquetas, y SQLite 3.54.1,
+      `ammonia` 4.2.5 y Tauri 2.12 al día
