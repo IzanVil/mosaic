@@ -24,7 +24,7 @@ Local, private, and not a single network request.</p>
 </p>
 
 <p>
-<a href="https://mosaic-app.i-vilches.workers.dev"><b>Website</b></a> ·
+<a href="https://mosaic-app.i-vilches.workers.dev/en/"><b>Website</b></a> ·
 <a href="#-download"><b>Download</b></a> ·
 <a href="#-what-it-does"><b>What it does</b></a> ·
 <a href="#-screenshots"><b>Screenshots</b></a> ·
