@@ -56,6 +56,11 @@
   --info: oklch(50% 0.12 250);
   --info-surface: oklch(50% 0.12 250 / 0.12);
 
+  /* El botón principal va en tinta, no en el acento: el turquesa se queda para el estado. */
+  --primary-bg: var(--text-primary);
+  --primary-bg-hover: color-mix(in oklab, var(--text-primary) 84%, var(--surface-base));
+  --primary-text: var(--surface-base);
+
   /* Sitio de los tres botones de ventana de macOS, que se dibujan encima de la cabecera. */
   --titlebar-inset-mac: 84px;
 

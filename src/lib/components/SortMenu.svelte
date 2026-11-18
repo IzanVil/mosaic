@@ -98,7 +98,7 @@
     align-items: center;
     gap: var(--space-2);
     padding: 5px var(--space-3);
-    border: 1px solid var(--border-default);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: transparent;
     font: inherit;

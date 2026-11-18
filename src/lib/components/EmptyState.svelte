@@ -69,17 +69,17 @@
     padding: var(--space-2) var(--space-4);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--accent);
+    background: var(--primary-bg);
     font: inherit;
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     font-weight: 500;
-    color: var(--text-on-accent);
+    color: var(--primary-text);
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out);
   }
   button:hover {
-    background: var(--accent-hover);
+    background: var(--primary-bg-hover);
   }
   button:active {
     background: var(--accent-active);

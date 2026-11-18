@@ -349,7 +349,7 @@
     gap: var(--space-5);
     min-height: 48px;
     padding: 0 var(--space-5);
-    border-bottom: 1px solid var(--border-subtle);
+    /* Sin borde, como el panel lateral: los dos son la misma capa sobre el tablero. */
     background: var(--surface-raised);
   }
   .cabecera.mac {
@@ -365,7 +365,7 @@
     color: var(--text-primary);
   }
 
-  /* Las pestañas ocupan todo el alto para que el subrayado pise el borde. */
+  /* Las pestañas ocupan todo el alto para que el subrayado quede en el filo de la cabecera. */
   .pestanas {
     display: flex;
     align-self: stretch;
@@ -398,7 +398,7 @@
     content: '';
     position: absolute;
     right: var(--space-3);
-    bottom: -1px;
+    bottom: 0;
     left: var(--space-3);
     height: 2px;
     border-radius: var(--radius-pill);
@@ -426,7 +426,6 @@
     color: var(--text-disabled);
   }
 
-  /* Un solo bloque con borde: dos acciones hermanas, no dos botones sueltos. */
   .tema {
     display: inline-flex;
     flex: none;
@@ -445,12 +444,11 @@
     color: var(--text-primary);
   }
 
+  /* Sin caja, como el botón del tema: un borde por botón era una línea más en la cabecera. */
   .acciones {
     display: flex;
     flex: none;
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    overflow: hidden;
+    gap: 2px;
   }
 
   .accion {
@@ -459,6 +457,7 @@
     gap: var(--space-2);
     padding: 5px var(--space-3);
     border: 0;
+    border-radius: var(--radius-md);
     background: transparent;
     font: inherit;
     font-size: var(--text-body);
@@ -468,9 +467,6 @@
     transition:
       background var(--duration-fast) var(--ease-out),
       color var(--duration-fast) var(--ease-out);
-  }
-  .accion + .accion {
-    border-left: 1px solid var(--border-default);
   }
   .accion:hover:not(:disabled) {
     background: var(--surface-sunken);

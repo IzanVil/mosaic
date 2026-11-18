@@ -176,7 +176,7 @@
     width: 14rem;
     overflow-y: auto;
     padding: var(--space-3) var(--space-2);
-    border-right: 1px solid var(--border-subtle);
+    /* Sin borde: lo separa del tablero el tono, una capa de neutro más. */
     background: var(--surface-raised);
   }
 
@@ -198,13 +198,12 @@
     margin-top: var(--space-4);
   }
 
+  /* En minúscula y con peso, no en versal: así se rotula todo en la aplicación. */
   .rotulo {
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
-    font-weight: 500;
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--text-tertiary);
+    font-weight: 600;
+    color: var(--text-secondary);
   }
 
   .fila {
@@ -229,9 +228,11 @@
     background: var(--surface-sunken);
     color: var(--text-primary);
   }
+  /* El fondo es el mismo que al pasar el ratón; lo que distingue la vista actual es el peso. */
   .fila.activo {
     background: var(--surface-sunken);
     color: var(--text-primary);
+    font-weight: 550;
   }
   .fila :global(.glifo) {
     flex: none;

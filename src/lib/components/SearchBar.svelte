@@ -94,20 +94,23 @@
     width: 100%;
     box-sizing: border-box;
     padding: 5px 32px 5px 34px;
-    border: 1px solid var(--border-default);
+    /* El fondo lo marca como campo; el borde se queda transparente para no mover nada al enfocar. */
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: var(--surface-raised);
     font: inherit;
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     color: var(--text-primary);
-    transition: border-color var(--duration-fast) var(--ease-out);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
   }
   input::placeholder {
     color: var(--text-tertiary);
   }
   input:hover {
-    border-color: var(--border-strong);
+    background: var(--surface-sunken);
   }
   input:focus-visible {
     outline: 2px solid var(--accent);

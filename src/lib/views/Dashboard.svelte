@@ -139,7 +139,7 @@
 {/if}
 
 <style>
-  /* Cinco puntos de luminosidad por debajo de la tarjeta, para que se despegue del fondo. */
+  /* La capa de abajo: las tarjetas no llevan fondo propio y la cabecera y el lateral, uno más claro. */
   .lienzo {
     background: var(--surface-base);
   }
@@ -160,7 +160,6 @@
     flex-direction: column;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-5);
-    border-bottom: 1px solid var(--border-subtle);
   }
 
   .cargando {
@@ -177,7 +176,7 @@
     display: inline-flex;
     flex: none;
     padding: 6px;
-    border: 1px solid var(--border-default);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: transparent;
     color: var(--text-tertiary);
