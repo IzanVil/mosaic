@@ -30,7 +30,6 @@
   --text-secondary: oklch(42% 0.008 75);
   --text-tertiary: oklch(56% 0.008 75);
   --text-disabled: oklch(70% 0.006 75);
-  --text-on-accent: oklch(99% 0.002 195);
 
   /* --- Acento ------------------------------------------------------------
    * Turquesa en vez de azul. El azul es la elección por defecto de la
@@ -89,7 +88,6 @@
     --text-secondary: oklch(78% 0.006 75);
     --text-tertiary: oklch(63% 0.008 75);
     --text-disabled: oklch(48% 0.007 75);
-    --text-on-accent: oklch(16% 0.02 195);
 
     --accent: oklch(72% 0.16 195);
     --accent-hover: oklch(78% 0.15 195);
@@ -127,7 +125,6 @@
   --text-secondary: oklch(78% 0.006 75);
   --text-tertiary: oklch(63% 0.008 75);
   --text-disabled: oklch(48% 0.007 75);
-  --text-on-accent: oklch(16% 0.02 195);
 
   --accent: oklch(72% 0.16 195);
   --accent-hover: oklch(78% 0.15 195);
@@ -192,7 +189,6 @@
 
   --tracking-tight: -0.014em;  /* títulos */
   --tracking-normal: 0;
-  --tracking-wide: 0.06em;     /* rótulos en versal */
 
   /* --- Espaciado --------------------------------------------------------- */
   --space-1: 4px;

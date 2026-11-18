@@ -299,10 +299,8 @@
     padding: 0 var(--space-2) var(--space-1);
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
-    font-weight: 500;
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--text-tertiary);
+    font-weight: 600;
+    color: var(--text-secondary);
   }
 
   .separado {
