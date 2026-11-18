@@ -125,8 +125,7 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 1px 2px 1px var(--space-2);
-    border: 1px solid var(--border-default);
+    padding: 2px 2px 2px var(--space-2);
     border-radius: var(--radius-pill);
     background: var(--surface-raised);
   }
@@ -168,7 +167,7 @@
     flex: 1;
     min-width: 12rem;
     padding: 6px var(--space-3);
-    border: 1px solid var(--border-default);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: var(--surface-raised);
     font-family: var(--font-mono);

@@ -319,17 +319,17 @@
     padding: 6px var(--space-3);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--accent);
+    background: var(--primary-bg);
     font: inherit;
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     font-weight: 500;
-    color: var(--text-on-accent);
+    color: var(--primary-text);
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out);
   }
   .primario:hover:not(:disabled) {
-    background: var(--accent-hover);
+    background: var(--primary-bg-hover);
   }
   .primario:disabled {
     opacity: 0.5;

@@ -163,9 +163,8 @@
     gap: var(--space-2);
     margin: 0 0 var(--space-4);
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    background: var(--surface-sunken);
+    background: var(--surface-raised);
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
     color: var(--text-secondary);
@@ -182,14 +181,14 @@
     padding: 3px var(--space-2);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
-    background: var(--surface-raised);
+    background: transparent;
     font: inherit;
     color: var(--text-primary);
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out);
   }
   .omitido button:hover {
-    background: var(--surface-base);
+    background: var(--surface-sunken);
   }
   .omitido button:focus-visible {
     outline: 2px solid var(--accent);
@@ -268,9 +267,8 @@
   .readme :global(pre) {
     padding: var(--space-3) var(--space-4);
     overflow-x: auto;
-    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    background: var(--surface-base);
+    background: var(--surface-raised);
   }
   .readme :global(pre code) {
     padding: 0;

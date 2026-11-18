@@ -203,8 +203,8 @@
 
   .cabecera {
     padding-block: var(--space-4) var(--space-5);
+    /* Sobre el fondo y con una regla: con el tono de la cabecera de la app se fundían en una. */
     border-bottom: 1px solid var(--border-subtle);
-    background: var(--surface-raised);
   }
 
   .volver {
@@ -316,19 +316,19 @@
     color: var(--text-tertiary);
   }
 
+  /* Tres secundarios sueltos, no un bloque con divisiones: cada línea de más era ruido. */
   .acciones {
     display: flex;
     flex: none;
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    overflow: hidden;
+    gap: var(--space-2);
   }
   .accion {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    padding: 6px var(--space-3);
-    border: 0;
+    padding: 5px var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
     background: transparent;
     font: inherit;
     font-size: var(--text-body);
@@ -338,9 +338,6 @@
     transition:
       background var(--duration-fast) var(--ease-out),
       color var(--duration-fast) var(--ease-out);
-  }
-  .accion + .accion {
-    border-left: 1px solid var(--border-default);
   }
   .accion:hover:not(:disabled) {
     background: var(--surface-sunken);
@@ -380,12 +377,11 @@
     padding-block: var(--space-5) var(--space-7);
   }
 
+  /* El README se lee sobre el fondo, como una página: una caja alrededor era una más. Sin
+     la caja, su rótulo y sus reglas llegaban más lejos que el texto; el ancho es el suyo. */
   .principal {
     min-width: 0;
-    padding: var(--space-5);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    background: var(--surface-raised);
+    max-width: 46rem;
   }
 
   .lateral {

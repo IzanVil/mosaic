@@ -409,38 +409,35 @@
     padding: var(--space-2) var(--space-3);
     border: 0;
     border-radius: var(--radius-md);
-    background: var(--accent);
+    background: var(--primary-bg);
     font: inherit;
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     font-weight: 500;
-    color: var(--text-on-accent);
+    color: var(--primary-text);
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out);
   }
   .primario:hover:not(:disabled) {
-    background: var(--accent-hover);
+    background: var(--primary-bg-hover);
   }
   .primario:disabled {
     opacity: 0.6;
     cursor: progress;
   }
 
+  /* Una lista con reglas, como las tarjetas del tablero: sin caja alrededor. */
   .rutas {
     margin: 0;
     padding: 0;
     list-style: none;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    background: var(--surface-raised);
+    border-bottom: 1px solid var(--border-subtle);
   }
   .rutas li {
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-3) var(--space-4);
-  }
-  .rutas li + li {
+    padding: var(--space-3) 0;
     border-top: 1px solid var(--border-subtle);
   }
 
@@ -509,16 +506,30 @@
     gap: var(--space-4);
   }
 
+  /* Como la búsqueda: el fondo marca el campo y el borde se queda transparente. */
   .numero {
     width: 6rem;
     padding: 6px var(--space-3);
-    border: 1px solid var(--border-default);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: var(--surface-raised);
     font: inherit;
     font-size: var(--text-body);
     font-variant-numeric: tabular-nums;
     color: var(--text-primary);
+    appearance: textfield;
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  /* Las flechas nativas salen con el tema del sistema, no con el de Mosaic. Las del teclado
+     siguen subiendo y bajando el número. */
+  .numero::-webkit-inner-spin-button,
+  .numero::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+  .numero:hover,
+  select:hover {
+    background: var(--surface-sunken);
   }
   .numero.ancho {
     width: 9rem;
@@ -581,7 +592,7 @@
   select {
     appearance: none;
     padding: 6px calc(var(--space-3) + 18px) 6px var(--space-3);
-    border: 1px solid var(--border-default);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: var(--surface-raised);
     font: inherit;
@@ -589,6 +600,7 @@
     line-height: var(--text-body-lh);
     color: var(--text-primary);
     cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
   }
 
   button:focus-visible,

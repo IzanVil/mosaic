@@ -83,12 +83,8 @@
     align-items: center;
     gap: var(--space-1);
     padding: 2px var(--space-2);
-    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    background: var(--surface-base);
-  }
-  li.actual {
-    border-color: var(--accent-border);
+    background: var(--surface-raised);
   }
 
   code {

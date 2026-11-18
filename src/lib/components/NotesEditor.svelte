@@ -49,21 +49,23 @@
     box-sizing: border-box;
     min-height: 7.5rem;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border-default);
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
-    background: var(--surface-base);
+    background: var(--surface-raised);
     font: inherit;
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     color: var(--text-primary);
     resize: vertical;
-    transition: border-color var(--duration-fast) var(--ease-out);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background var(--duration-fast) var(--ease-out);
   }
   textarea::placeholder {
     color: var(--text-tertiary);
   }
   textarea:hover {
-    border-color: var(--border-strong);
+    background: var(--surface-sunken);
   }
   textarea:focus-visible {
     outline: 2px solid var(--accent);

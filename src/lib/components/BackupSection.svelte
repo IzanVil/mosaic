@@ -158,21 +158,22 @@
     cursor: pointer;
     transition: background var(--duration-fast) var(--ease-out);
   }
+  /* El secundario de toda la aplicación: contorno y sin fondo, para no confundirse con un campo. */
   .boton {
     border: 1px solid var(--border-default);
-    background: var(--surface-raised);
+    background: transparent;
     color: var(--text-primary);
   }
   .boton:hover:not(:disabled) {
-    background: var(--surface-overlay);
+    background: var(--surface-sunken);
   }
   .primario {
     border: 0;
-    background: var(--accent);
-    color: var(--text-on-accent);
+    background: var(--primary-bg);
+    color: var(--primary-text);
   }
   .primario:hover {
-    background: var(--accent-hover);
+    background: var(--primary-bg-hover);
   }
   .boton:disabled {
     opacity: 0.6;
@@ -217,9 +218,8 @@
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-4);
-    border: 1px solid var(--accent-border);
     border-radius: var(--radius-md);
-    background: var(--accent-surface);
+    background: var(--surface-raised);
   }
   .resumen-titulo {
     margin: 0;
