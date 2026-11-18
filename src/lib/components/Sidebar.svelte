@@ -176,8 +176,8 @@
     width: 14rem;
     overflow-y: auto;
     padding: var(--space-3) var(--space-2);
-    /* Sin borde: lo separa del tablero el tono, una capa de neutro más. */
-    background: var(--surface-raised);
+    /* Una franja de cobalto: el armazón lleva el color de la marca. */
+    background: var(--rail-bg);
   }
 
   .panel.plegado {
@@ -203,7 +203,7 @@
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--rail-text-secondary);
   }
 
   .fila {
@@ -218,25 +218,25 @@
     font-size: var(--text-body);
     line-height: var(--text-body-lh);
     text-align: left;
-    color: var(--text-secondary);
+    color: var(--rail-text-secondary);
     cursor: pointer;
     transition:
       background var(--duration-fast) var(--ease-out),
       color var(--duration-fast) var(--ease-out);
   }
   .fila:hover {
-    background: var(--surface-sunken);
-    color: var(--text-primary);
+    background: var(--rail-bg-active);
+    color: var(--rail-text);
   }
   /* El fondo es el mismo que al pasar el ratón; lo que distingue la vista actual es el peso. */
   .fila.activo {
-    background: var(--surface-sunken);
-    color: var(--text-primary);
+    background: var(--rail-bg-active);
+    color: var(--rail-text);
     font-weight: 550;
   }
   .fila :global(.glifo) {
     flex: none;
-    color: var(--text-tertiary);
+    color: var(--rail-text-secondary);
   }
 
   .nombre {
@@ -252,19 +252,23 @@
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
     font-variant-numeric: tabular-nums;
-    color: var(--text-tertiary);
+    color: var(--rail-text-secondary);
+  }
+  .fila.activo .numero {
+    color: var(--rail-text);
   }
 
+  /* Con un filo claro: algunos colores de etiqueta se pierden sobre el cobalto. */
   .color {
     flex: none;
     width: 10px;
     height: 10px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--tag-tile-radius);
+    box-shadow: 0 0 0 1.5px var(--rail-text);
   }
 
   .gestionar {
     margin-top: auto;
-    color: var(--text-tertiary);
   }
 
   .vacio {
@@ -272,7 +276,7 @@
     padding: var(--space-1) var(--space-2);
     font-size: var(--text-meta);
     line-height: var(--text-meta-lh);
-    color: var(--text-tertiary);
+    color: var(--rail-text-secondary);
   }
 
   .icono {
@@ -281,7 +285,7 @@
     border: 0;
     border-radius: var(--radius-sm);
     background: transparent;
-    color: var(--text-tertiary);
+    color: var(--rail-text-secondary);
     cursor: pointer;
     transition:
       background var(--duration-fast) var(--ease-out),
@@ -291,11 +295,12 @@
     padding: var(--space-1);
   }
   .icono:hover {
-    background: var(--surface-sunken);
-    color: var(--text-primary);
+    background: var(--rail-bg-active);
+    color: var(--rail-text);
   }
   .icono.activo {
-    color: var(--accent);
+    background: var(--rail-bg-active);
+    color: var(--rail-text);
   }
   .icono.final {
     margin-top: auto;
@@ -315,7 +320,8 @@
     height: 14px;
     padding: 0;
     border: 2px solid transparent;
-    border-radius: var(--radius-pill);
+    border-radius: var(--tag-tile-radius);
+    box-shadow: 0 0 0 1.5px var(--rail-text);
     cursor: pointer;
     transition: transform var(--duration-fast) var(--ease-out);
   }
@@ -323,11 +329,12 @@
     transform: scale(1.1);
   }
   .punto.elegido {
-    border-color: var(--text-primary);
+    border-color: var(--rail-bg);
   }
 
+  /* En blanco: el acento no se ve sobre su propio color. */
   button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--rail-text);
     outline-offset: 2px;
   }
 </style>

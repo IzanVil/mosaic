@@ -76,7 +76,7 @@
     height: 20px;
     padding: 0;
     border: 0;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: transform var(--duration-fast) var(--ease-out);
   }

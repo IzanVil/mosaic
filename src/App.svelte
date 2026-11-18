@@ -357,12 +357,27 @@
   }
 
   .marca {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     margin: 0;
     font-size: var(--text-section);
     line-height: var(--text-section-lh);
-    font-weight: var(--text-section-weight);
+    font-weight: 700;
     letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
+  }
+  /* Cuatro teselas de 8 con su llaga de 2. */
+  .marca::before {
+    content: '';
+    flex: none;
+    width: 18px;
+    height: 18px;
+    background:
+      linear-gradient(var(--tile-cobalt), var(--tile-cobalt)) 0 0 / 8px 8px no-repeat,
+      linear-gradient(var(--tile-ochre), var(--tile-ochre)) 10px 0 / 8px 8px no-repeat,
+      linear-gradient(var(--tile-verdigris), var(--tile-verdigris)) 0 10px / 8px 8px no-repeat,
+      linear-gradient(var(--tile-terracotta), var(--tile-terracotta)) 10px 10px / 8px 8px no-repeat;
   }
 
   /* Las pestañas ocupan todo el alto para que el subrayado quede en el filo de la cabecera. */

@@ -11,6 +11,7 @@
   import type { ProjectWithTags } from '../types';
   import { formatRelativeTime } from '../utils/format';
   import { parentFolder } from '../utils/path';
+  import { tagBand } from '../utils/tagColors';
 
   interface Props {
     /** El proyecto de la tarjeta. */
@@ -30,6 +31,7 @@
   /** Las dos últimas partes de la ruta: el prefijo es el de todas; la entera, en el tooltip. */
   // Solo la carpeta que lo contiene: el nombre ya está encima y repetirlo era ruido.
   let folder = $derived(parentFolder(project.path));
+  let band = $derived(tagBand(project.tags.map((tag) => tag.color)));
 
   let branchLabel = $derived(
     status?.branch ?? (status?.last_commit_sha ? status.last_commit_sha.slice(0, 7) : null),
@@ -42,7 +44,12 @@
   ] as const;
 </script>
 
-<article class="tarjeta" class:fijada={project.pinned} class:ausente={project.missing}>
+<article
+  class="tarjeta"
+  class:fijada={project.pinned}
+  class:ausente={project.missing}
+  style:--cenefa={band}
+>
   <header>
     <div class="titulo">
       <h3>
@@ -155,26 +162,39 @@
 </article>
 
 <style>
-  /* Una cartela, no una caja: sin fondo, borde ni sombra, solo una regla fina encima. El
-     relleno es vertical; el horizontal lo pone el hueco entre columnas de la rejilla. */
+  /* Un azulejo: la única superficie blanca del tablero, con su cenefa encima. */
   .tarjeta {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--card-stack);
-    /* La rejilla fija el relleno según la densidad; el 16 es el de reserva. */
-    padding: var(--card-padding, var(--space-4)) 0
-      calc(var(--card-padding, var(--space-4)) + var(--space-2));
+    /* La rejilla fija el relleno según la densidad; el 16 es el de reserva. Arriba se suma
+       la cenefa, que va encima del relleno y no dentro. */
+    --relleno: var(--card-padding, var(--space-4));
+    padding: calc(var(--relleno) + var(--tile-band) - var(--space-1)) var(--relleno) var(--space-3);
     min-width: 0;
-    border-top: 1px solid var(--border-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
     transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  /* La cenefa: los colores de sus etiquetas, o la neutra si no tiene. Redondeada a mano y
+     no con `overflow: hidden`, que recortaría el selector de etiquetas y la pista. */
+  .tarjeta::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: var(--tile-band);
+    border-radius: calc(var(--radius-sm) - 1px) calc(var(--radius-sm) - 1px) 0 0;
+    background: var(--cenefa, var(--border-default));
   }
   .tarjeta:hover,
   .tarjeta:focus-within {
-    border-top-color: var(--border-strong);
+    border-color: var(--border-strong);
   }
   /* El estado lleva el acento; el grupo «Fijados» y la chincheta dicen ya el resto. */
   .tarjeta.fijada {
-    border-top-color: var(--accent);
+    border-color: var(--accent-border);
   }
   .tarjeta.ausente {
     opacity: 0.55;
@@ -372,7 +392,7 @@
       color var(--duration-fast) var(--ease-out);
   }
   .acciones button:hover:not(:disabled) {
-    background: var(--surface-raised);
+    background: var(--surface-sunken);
     color: var(--text-primary);
   }
   .acciones button:disabled {

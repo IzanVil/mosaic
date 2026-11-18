@@ -292,7 +292,7 @@
   .punto {
     width: 14px;
     height: 14px;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
   }
 
   .campo {

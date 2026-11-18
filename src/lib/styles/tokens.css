@@ -9,37 +9,55 @@
 
 :root {
   /* --- Superficies -------------------------------------------------------
-   * Tres niveles a cinco puntos de luminosidad, para que el ojo separe el fondo
-   * de la tarjeta. El matiz 75 es cálido a propósito: no es el gris azulado de
-   * media categoría.
+   * Azulejo: blanco esmaltado y cobalto. Todos los neutros llevan una pizca del
+   * matiz 264, el del cobalto, para que el fondo, las tarjetas y el lateral sean
+   * de la misma familia. `raised` y `sunken` son pasos de tono sobre el fondo;
+   * la tarjeta es la única superficie blanca del tablero.
    */
-  --surface-base: oklch(98.5% 0.003 75);
-  --surface-raised: oklch(96% 0.004 75);
-  --surface-sunken: oklch(93% 0.005 75);
+  --surface-base: oklch(97.4% 0.006 262);
+  --surface-raised: oklch(94.5% 0.01 262);
+  --surface-sunken: oklch(91.5% 0.014 262);
   --surface-overlay: oklch(100% 0 0);
+  --surface-card: oklch(100% 0 0);
 
-  --border-subtle: oklch(89% 0.005 75);
-  --border-default: oklch(84% 0.006 75);
-  --border-strong: oklch(72% 0.008 75);
+  --border-subtle: oklch(90% 0.016 262);
+  --border-default: oklch(84% 0.024 262);
+  --border-strong: oklch(70% 0.035 262);
 
   /* --- Texto -------------------------------------------------------------
    * Cuatro niveles. El terciario es el suelo de lo legible: por debajo está
    * `disabled`, que no se usa para contenido.
    */
-  --text-primary: oklch(24% 0.008 75);
-  --text-secondary: oklch(42% 0.008 75);
-  --text-tertiary: oklch(56% 0.008 75);
-  --text-disabled: oklch(70% 0.006 75);
+  --text-primary: oklch(23% 0.05 264);
+  --text-secondary: oklch(41% 0.05 264);
+  --text-tertiary: oklch(50% 0.04 264);
+  --text-disabled: oklch(70% 0.03 264);
 
   /* --- Acento ------------------------------------------------------------
-   * Turquesa en vez de azul. El azul es la elección por defecto de la
-   * categoría entera, y además choca con el azul de las etiquetas.
+   * El cobalto del lateral, en el tono que da contraste sobre el fondo. No es el
+   * azul de categoría porque no va solo: el armazón entero es de ese color.
    */
-  --accent: oklch(50% 0.15 195);
-  --accent-hover: oklch(44% 0.15 195);
-  --accent-active: oklch(38% 0.14 195);
-  --accent-surface: oklch(50% 0.15 195 / 0.1);
-  --accent-border: oklch(50% 0.15 195 / 0.38);
+  --accent: oklch(45% 0.18 264);
+  --accent-hover: oklch(39% 0.18 264);
+  --accent-active: oklch(34% 0.16 264);
+  --accent-surface: oklch(45% 0.18 264 / 0.09);
+  --accent-border: oklch(45% 0.18 264 / 0.38);
+
+  /* --- Lateral -----------------------------------------------------------
+   * Una franja de cobalto: el armazón lleva el color de la marca, no solo el
+   * acento. Encima, el texto va en dos claros del mismo matiz y el foco en
+   * blanco, porque el acento no se ve sobre su propio color.
+   */
+  --rail-bg: oklch(37% 0.16 264);
+  --rail-bg-active: oklch(45% 0.16 264);
+  --rail-text: oklch(98% 0.01 264);
+  --rail-text-secondary: oklch(86% 0.045 264);
+
+  /* Las cuatro teselas de la marca. */
+  --tile-cobalt: oklch(37% 0.16 264);
+  --tile-ochre: oklch(79% 0.13 82);
+  --tile-verdigris: oklch(66% 0.09 175);
+  --tile-terracotta: oklch(62% 0.14 40);
 
   /* --- Semánticos --------------------------------------------------------
    * Cada uno con su pareja de superficie, para no calcularla en el componente.
@@ -52,8 +70,8 @@
   --warning-surface: oklch(58% 0.14 70 / 0.14);
   --danger: oklch(52% 0.18 25);
   --danger-surface: oklch(52% 0.18 25 / 0.12);
-  --info: oklch(50% 0.12 250);
-  --info-surface: oklch(50% 0.12 250 / 0.12);
+  --info: oklch(50% 0.1 215);
+  --info-surface: oklch(50% 0.1 215 / 0.12);
 
   /* El botón principal va en tinta, no en el acento: el turquesa se queda para el estado. */
   --primary-bg: var(--text-primary);
@@ -64,36 +82,47 @@
   --titlebar-inset-mac: 84px;
 
   /* --- Sombras -----------------------------------------------------------
-   * Teñidas con el matiz cálido de la paleta: una sombra negra pura sobre un
-   * fondo cálido se ve sucia.
+   * Teñidas con el matiz de la paleta: una sombra negra pura sobre un fondo
+   * azulado se ve sucia.
    */
-  --shadow-sm: 0 1px 2px oklch(24% 0.008 75 / 0.06);
-  --shadow-md: 0 4px 12px oklch(24% 0.008 75 / 0.09), 0 1px 2px oklch(24% 0.008 75 / 0.05);
-  --shadow-lg: 0 16px 40px oklch(24% 0.008 75 / 0.14), 0 2px 6px oklch(24% 0.008 75 / 0.06);
+  --shadow-sm: 0 1px 2px oklch(23% 0.05 264 / 0.06);
+  --shadow-md: 0 4px 12px oklch(23% 0.05 264 / 0.09), 0 1px 2px oklch(23% 0.05 264 / 0.05);
+  --shadow-lg: 0 16px 40px oklch(23% 0.05 264 / 0.14), 0 2px 6px oklch(23% 0.05 264 / 0.06);
   --shadow-inset-top: inset 0 1px 0 oklch(100% 0 0 / 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --surface-base: oklch(15% 0.006 75);
-    --surface-raised: oklch(20% 0.007 75);
-    --surface-sunken: oklch(25.5% 0.008 75);
-    --surface-overlay: oklch(23% 0.008 75);
+    --surface-base: oklch(17% 0.04 264);
+    --surface-raised: oklch(21.5% 0.045 264);
+    --surface-sunken: oklch(26% 0.05 264);
+    --surface-overlay: oklch(24% 0.05 264);
+    --surface-card: oklch(21.5% 0.045 264);
 
-    --border-subtle: oklch(29% 0.008 75);
-    --border-default: oklch(35% 0.009 75);
-    --border-strong: oklch(48% 0.01 75);
+    --border-subtle: oklch(29% 0.05 264);
+    --border-default: oklch(36% 0.055 264);
+    --border-strong: oklch(48% 0.055 264);
 
-    --text-primary: oklch(96% 0.004 75);
-    --text-secondary: oklch(78% 0.006 75);
-    --text-tertiary: oklch(63% 0.008 75);
-    --text-disabled: oklch(48% 0.007 75);
+    --text-primary: oklch(96% 0.01 264);
+    --text-secondary: oklch(81% 0.03 264);
+    --text-tertiary: oklch(67% 0.035 264);
+    --text-disabled: oklch(48% 0.035 264);
 
-    --accent: oklch(72% 0.16 195);
-    --accent-hover: oklch(78% 0.15 195);
-    --accent-active: oklch(66% 0.16 195);
-    --accent-surface: oklch(72% 0.16 195 / 0.14);
-    --accent-border: oklch(72% 0.16 195 / 0.42);
+    --accent: oklch(75% 0.13 258);
+    --accent-hover: oklch(81% 0.12 258);
+    --accent-active: oklch(69% 0.13 258);
+    --accent-surface: oklch(75% 0.13 258 / 0.14);
+    --accent-border: oklch(75% 0.13 258 / 0.42);
+
+    --rail-bg: oklch(30% 0.13 264);
+    --rail-bg-active: oklch(37% 0.14 264);
+    --rail-text: oklch(97% 0.01 264);
+    --rail-text-secondary: oklch(83% 0.05 264);
+
+    --tile-cobalt: oklch(52% 0.17 264);
+    --tile-ochre: oklch(80% 0.12 82);
+    --tile-verdigris: oklch(72% 0.09 175);
+    --tile-terracotta: oklch(68% 0.13 40);
 
     --success: oklch(76% 0.14 155);
     --success-surface: oklch(76% 0.14 155 / 0.16);
@@ -101,8 +130,8 @@
     --warning-surface: oklch(80% 0.14 70 / 0.16);
     --danger: oklch(70% 0.17 25);
     --danger-surface: oklch(70% 0.17 25 / 0.16);
-    --info: oklch(74% 0.12 250);
-    --info-surface: oklch(74% 0.12 250 / 0.16);
+    --info: oklch(76% 0.1 215);
+    --info-surface: oklch(76% 0.1 215 / 0.16);
 
     --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
     --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);
@@ -112,25 +141,36 @@
 }
 
 .dark {
-  --surface-base: oklch(15% 0.006 75);
-  --surface-raised: oklch(20% 0.007 75);
-  --surface-sunken: oklch(25.5% 0.008 75);
-  --surface-overlay: oklch(23% 0.008 75);
+  --surface-base: oklch(17% 0.04 264);
+  --surface-raised: oklch(21.5% 0.045 264);
+  --surface-sunken: oklch(26% 0.05 264);
+  --surface-overlay: oklch(24% 0.05 264);
+  --surface-card: oklch(21.5% 0.045 264);
 
-  --border-subtle: oklch(29% 0.008 75);
-  --border-default: oklch(35% 0.009 75);
-  --border-strong: oklch(48% 0.01 75);
+  --border-subtle: oklch(29% 0.05 264);
+  --border-default: oklch(36% 0.055 264);
+  --border-strong: oklch(48% 0.055 264);
 
-  --text-primary: oklch(96% 0.004 75);
-  --text-secondary: oklch(78% 0.006 75);
-  --text-tertiary: oklch(63% 0.008 75);
-  --text-disabled: oklch(48% 0.007 75);
+  --text-primary: oklch(96% 0.01 264);
+  --text-secondary: oklch(81% 0.03 264);
+  --text-tertiary: oklch(67% 0.035 264);
+  --text-disabled: oklch(48% 0.035 264);
 
-  --accent: oklch(72% 0.16 195);
-  --accent-hover: oklch(78% 0.15 195);
-  --accent-active: oklch(66% 0.16 195);
-  --accent-surface: oklch(72% 0.16 195 / 0.14);
-  --accent-border: oklch(72% 0.16 195 / 0.42);
+  --accent: oklch(75% 0.13 258);
+  --accent-hover: oklch(81% 0.12 258);
+  --accent-active: oklch(69% 0.13 258);
+  --accent-surface: oklch(75% 0.13 258 / 0.14);
+  --accent-border: oklch(75% 0.13 258 / 0.42);
+
+  --rail-bg: oklch(30% 0.13 264);
+  --rail-bg-active: oklch(37% 0.14 264);
+  --rail-text: oklch(97% 0.01 264);
+  --rail-text-secondary: oklch(83% 0.05 264);
+
+  --tile-cobalt: oklch(52% 0.17 264);
+  --tile-ochre: oklch(80% 0.12 82);
+  --tile-verdigris: oklch(72% 0.09 175);
+  --tile-terracotta: oklch(68% 0.13 40);
 
   --success: oklch(76% 0.14 155);
   --success-surface: oklch(76% 0.14 155 / 0.16);
@@ -138,8 +178,8 @@
   --warning-surface: oklch(80% 0.14 70 / 0.16);
   --danger: oklch(70% 0.17 25);
   --danger-surface: oklch(70% 0.17 25 / 0.16);
-  --info: oklch(74% 0.12 250);
-  --info-surface: oklch(74% 0.12 250 / 0.16);
+  --info: oklch(76% 0.1 215);
+  --info-surface: oklch(76% 0.1 215 / 0.16);
 
   --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
   --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);
@@ -149,12 +189,12 @@
 
 :root {
   /* --- Tipografía --------------------------------------------------------
-   * Inter y JetBrains Mono van empaquetadas (`@font-face` en `app.css`): Mosaic
-   * no hace peticiones de red. Los nombres tienen que coincidir: esta hoja gana
+   * Schibsted Grotesk y JetBrains Mono van empaquetadas (`@font-face` en
+   * `app.css`): Mosaic no hace peticiones de red. Los nombres tienen que coincidir: esta hoja gana
    * a la `@theme` de Tailwind, y uno que no exista deja la app con la fuente del
    * sistema.
    */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   /* Seis tamaños. Cada uno con su altura de línea y su peso: el peso forma
@@ -171,9 +211,9 @@
   --text-card-lh: 1.35;
   --text-card-weight: 560;
 
-  --text-card-title: 1.0625rem; /* 17px · nombre en la tarjeta: lo único fuerte de ella */
-  --text-card-title-lh: 1.4;
-  --text-card-title-weight: 620;
+  --text-card-title: 1.125rem;  /* 18px · nombre en la tarjeta: lo único fuerte de ella */
+  --text-card-title-lh: 1.35;
+  --text-card-title-weight: 700;
 
   --text-body: 0.8438rem;      /* 13.5px · texto corriente */
   --text-body-lh: 1.5;
@@ -187,7 +227,7 @@
   --text-code-lh: 1.45;
   --text-code-weight: 400;
 
-  --tracking-tight: -0.014em;  /* títulos */
+  --tracking-tight: -0.015em;  /* títulos */
   --tracking-normal: 0;
 
   /* --- Espaciado --------------------------------------------------------- */
@@ -233,18 +273,23 @@
    */
   --card-min-comodo: 300px;
   --card-padding-comodo: var(--space-4);
-  --card-gap-comodo: var(--space-6);
+  --card-gap-comodo: var(--space-4);
 
   --card-min-compacto: 220px;
   --card-padding-compacto: var(--space-3);
-  --card-gap-compacto: var(--space-5);
+  --card-gap-compacto: var(--space-3);
 
   /* Entre las líneas de una tarjeta: más junto que el resto, que se lea como un bloque. */
   --card-stack: 6px;
 
-  /* El color de una etiqueta va solo en un punto; el nombre, en neutro. */
-  --tag-dot: 7px;
+  /* El color de una etiqueta va solo en una tesela cuadrada; el nombre, en neutro. */
+  --tag-dot: 8px;
   --tag-dot-gap: 6px;
+  --tag-tile-radius: 1.5px;
+
+  /* La cenefa de la tarjeta: la franja de arriba, hecha con los colores de sus etiquetas. */
+  --tile-band: 5px;
+  --tile-grout: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -311,9 +311,9 @@
 
   .color {
     flex: none;
-    width: 10px;
-    height: 10px;
-    border-radius: var(--radius-pill);
+    width: var(--tag-dot);
+    height: var(--tag-dot);
+    border-radius: var(--tag-tile-radius);
   }
 
   .nombre {
@@ -349,7 +349,7 @@
     height: 16px;
     padding: 0;
     border: 2px solid transparent;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     cursor: pointer;
   }
   .muestra.elegida {

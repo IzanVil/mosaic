@@ -101,7 +101,7 @@
     flex: none;
     width: var(--tag-dot);
     height: var(--tag-dot);
-    border-radius: 50%;
+    border-radius: var(--tag-tile-radius);
     background: var(--chip-color);
   }
 

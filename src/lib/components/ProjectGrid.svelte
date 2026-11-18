@@ -88,19 +88,29 @@
     gap: var(--space-2);
   }
 
-  /* En minúscula, como el resto de rótulos. Sin regla debajo: ya la lleva cada tarjeta. */
+  /* En minúscula, como el resto de rótulos, y con su tesela de acento: es un estado. */
   h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     margin: 0;
-    font-size: var(--text-meta);
-    font-weight: 600;
-    line-height: var(--text-meta-lh);
-    color: var(--text-secondary);
+    font-size: var(--text-body);
+    font-weight: 700;
+    line-height: var(--text-body-lh);
+    color: var(--text-primary);
+  }
+  h2::before {
+    content: '';
+    width: var(--tag-dot);
+    height: var(--tag-dot);
+    border-radius: var(--tag-tile-radius);
+    background: var(--accent);
   }
 
   .rejilla {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--columna), 1fr));
-    /* Sin hueco entre filas: separa la regla de cada tarjeta y su relleno. */
-    gap: 0 var(--hueco);
+    /* La llaga entre azulejos, la misma en las dos direcciones. */
+    gap: var(--hueco);
   }
 </style>

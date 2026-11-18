@@ -42,3 +42,20 @@ export const DEFAULT_TAG_COLOR = '#3B82F6';
 export function colorInputValue(hex: string): string {
   return /^#[0-9A-Fa-f]{6}$/.test(hex) ? hex.toLowerCase() : DEFAULT_TAG_COLOR.toLowerCase();
 }
+
+/**
+ * La cenefa de una tarjeta: un tramo por etiqueta, en su orden y del mismo ancho,
+ * separados por una llaga transparente de `--tile-grout`. Sin etiquetas no hay
+ * cenefa propia: la tarjeta pone la neutra.
+ */
+export function tagBand(colors: readonly string[]): string | undefined {
+  if (colors.length === 0) return undefined;
+  if (colors.length === 1) return colors[0];
+  const at = (i: number) => Number(((i * 100) / colors.length).toFixed(3));
+  const stops = colors.map((color, i) =>
+    i === colors.length - 1
+      ? `${color} ${at(i)}% 100%`
+      : `${color} ${at(i)}% calc(${at(i + 1)}% - var(--tile-grout)), transparent 0 ${at(i + 1)}%`,
+  );
+  return `linear-gradient(90deg, ${stops.join(', ')})`;
+}
