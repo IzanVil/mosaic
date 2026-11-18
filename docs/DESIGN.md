@@ -239,6 +239,3 @@ de debajo.
 - **La jerarquía de la cabecera** (problema 10) es de composición, no de tokens.
 - **El estado de pocos resultados** (problema 2) es de producto: depende de
   cuántos resultados hay, no del color.
-- **Las capturas, el GIF y la web** enseñan todavía el diseño de la 0.3.1, que
-  es el que se descarga. Se rehacen al publicar la versión que lleve Azulejo, y
-  con ellas el marco de `scripts/demo/`, que tiene un fondo turquesa.

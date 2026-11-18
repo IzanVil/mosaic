@@ -377,13 +377,14 @@ Mundo visual nuevo: paleta, letra y tarjeta. El porqué está en `docs/DESIGN.md
       etiquetas (`tagBand`, con tests)
 - [x] Etiquetas y muestras de color como teselas cuadradas; la marca con
       cuatro teselas
-- [ ] Rehacer las capturas y el GIF del README y de la web al publicar la
-      versión que lo lleve (hoy enseñan la 0.3.1, que es la que se descarga),
-      con el marco de `scripts/demo/` sin su fondo turquesa y el pie de la
-      captura de temas, que habla de «la misma paleta cálida»
+- [x] Capturas y GIF del README y de la web rehechos, con el marco de
+      `scripts/demo/` en cobalto liso
+- [x] Publicado en Mosaic 0.4.0 el 2026-11-19
 
 ## Mantenimiento
 
+- [x] Mosaic 0.4.0 publicado el 2026-11-19: el aspecto Azulejo y `libz-sys`
+      1.1.33
 - [x] Mosaic 0.3.1 publicado el 2026-11-16: el botón de Git ya dice «sin
       cambios» y el refresco solo redibuja lo que cambió, el selector de
       etiquetas se ve bien en una tarjeta sin etiquetas, y SQLite 3.54.1,
