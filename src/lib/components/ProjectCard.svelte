@@ -10,6 +10,7 @@
   import { unassignTagFromProject } from '../stores/tags';
   import type { ProjectWithTags } from '../types';
   import { formatRelativeTime } from '../utils/format';
+  import { parentFolder } from '../utils/path';
 
   interface Props {
     /** El proyecto de la tarjeta. */
@@ -27,7 +28,8 @@
   let hiddenTags = $derived(project.tags.slice(VISIBLE_TAGS));
 
   /** Las dos últimas partes de la ruta: el prefijo es el de todas; la entera, en el tooltip. */
-  let shortPath = $derived(project.path.split('/').filter(Boolean).slice(-2).join('/'));
+  // Solo la carpeta que lo contiene: el nombre ya está encima y repetirlo era ruido.
+  let folder = $derived(parentFolder(project.path));
 
   let branchLabel = $derived(
     status?.branch ?? (status?.last_commit_sha ? status.last_commit_sha.slice(0, 7) : null),
@@ -77,33 +79,8 @@
   </header>
 
   {#if !compact}
-    <p class="ruta" title={project.path}>{shortPath}</p>
+    <p class="ruta" title={project.path}>{folder}</p>
   {/if}
-
-  <div class="etiquetas">
-    {#each shownTags as tag (tag.id)}
-      <TagChip
-        {tag}
-        removable
-        revealOnHover
-        onRemove={() => unassignTagFromProject(project.id, tag.id)}
-      />
-    {/each}
-    {#if hiddenTags.length > 0}
-      <span class="mas" title={hiddenTags.map((tag) => tag.name).join(', ')}>
-        +{hiddenTags.length}
-      </span>
-    {/if}
-
-    <span class="anadir">
-      <TagPicker
-        projectId={project.id}
-        assigned={project.tags}
-        compact={project.tags.length > 0}
-        plain={project.tags.length === 0}
-      />
-    </span>
-  </div>
 
   <p class="estado">
     {#if project.primary_language}<span class="lenguaje">{project.primary_language}</span>{/if}
@@ -125,6 +102,32 @@
       </span>
     {/if}
   </p>
+
+  <div class="etiquetas">
+    {#each shownTags as tag (tag.id)}
+      <TagChip
+        {tag}
+        plain
+        removable
+        revealOnHover
+        onRemove={() => unassignTagFromProject(project.id, tag.id)}
+      />
+    {/each}
+    {#if hiddenTags.length > 0}
+      <span class="mas" title={hiddenTags.map((tag) => tag.name).join(', ')}>
+        +{hiddenTags.length}
+      </span>
+    {/if}
+
+    <span class="anadir">
+      <TagPicker
+        projectId={project.id}
+        assigned={project.tags}
+        compact={project.tags.length > 0}
+        plain={project.tags.length === 0}
+      />
+    </span>
+  </div>
 
   {#if !compact}
     <footer>
@@ -152,28 +155,26 @@
 </article>
 
 <style>
+  /* Una cartela, no una caja: sin fondo, borde ni sombra, solo una regla fina encima. El
+     relleno es vertical; el horizontal lo pone el hueco entre columnas de la rejilla. */
   .tarjeta {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--card-stack);
     /* La rejilla fija el relleno según la densidad; el 16 es el de reserva. */
-    padding: var(--card-padding, var(--space-4));
+    padding: var(--card-padding, var(--space-4)) 0
+      calc(var(--card-padding, var(--space-4)) + var(--space-2));
     min-width: 0;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    background: var(--surface-raised);
-    box-shadow: var(--shadow-sm);
-    transition:
-      border-color var(--duration-fast) var(--ease-out),
-      background var(--duration-fast) var(--ease-out);
+    border-top: 1px solid var(--border-subtle);
+    transition: border-color var(--duration-fast) var(--ease-out);
   }
-  .tarjeta:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-sunken);
+  .tarjeta:hover,
+  .tarjeta:focus-within {
+    border-top-color: var(--border-strong);
   }
+  /* El estado lleva el acento; el grupo «Fijados» y la chincheta dicen ya el resto. */
   .tarjeta.fijada {
-    border-color: var(--accent-border);
-    box-shadow: var(--shadow-sm), inset 2px 0 0 var(--accent);
+    border-top-color: var(--accent);
   }
   .tarjeta.ausente {
     opacity: 0.55;
@@ -189,9 +190,9 @@
   h3 {
     margin: 0;
     min-width: 0;
-    font-size: var(--text-card);
-    line-height: var(--text-card-lh);
-    font-weight: var(--text-card-weight);
+    font-size: var(--text-card-title);
+    line-height: var(--text-card-title-lh);
+    font-weight: var(--text-card-title-weight);
     letter-spacing: var(--tracking-tight);
     color: var(--text-primary);
     overflow: hidden;
@@ -270,7 +271,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-1) var(--space-2);
+    /* El alto del «+» que asoma al pasar: sin esto, la fila crecía bajo el ratón. */
     min-height: 22px;
   }
 
@@ -333,8 +335,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    margin-top: var(--space-1);
-    min-height: 26px;
+    min-height: 24px;
   }
 
   .apertura {
@@ -371,7 +372,7 @@
       color var(--duration-fast) var(--ease-out);
   }
   .acciones button:hover:not(:disabled) {
-    background: var(--surface-base);
+    background: var(--surface-raised);
     color: var(--text-primary);
   }
   .acciones button:disabled {

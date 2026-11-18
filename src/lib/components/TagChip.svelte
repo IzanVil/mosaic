@@ -19,6 +19,8 @@
     title?: string;
     /** Oculta la X hasta tener el ratón o el foco: en las tarjetas, una X fija es ruido. */
     revealOnHover?: boolean;
+    /** Sin fondo, solo el punto y el nombre: en la tarjeta, una píldora pesa más que el proyecto. */
+    plain?: boolean;
   }
 
   let {
@@ -29,28 +31,28 @@
     count = null,
     title,
     revealOnHover = false,
+    plain = false,
   }: Props = $props();
-
-  // Una sola gramática: fondo y borde tintados y texto mezclado con la tinta, con los
-  // porcentajes de `--tag-chip-*`, que cambian con el tema. Sin variante rellena: con
-  // etiquetas claras, el texto blanco se quedaba en 2:1.
-  let style = $derived(
-    `--chip-color: ${tag.color};` +
-      ' background-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-bg), transparent);' +
-      ' border-color: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);' +
-      ' color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), var(--tag-chip-ink));',
-  );
 </script>
 
 {#if onClick}
-  <button type="button" class="chip pulsable" onclick={onClick} title={title ?? tag.name} {style}>
+  <button
+    type="button"
+    class="chip pulsable"
+    class:plain
+    onclick={onClick}
+    title={title ?? tag.name}
+    style:--chip-color={tag.color}
+  >
+    <span class="punto" aria-hidden="true"></span>
     <span class="nombre">{tag.name}</span>
     {#if count !== null}
       <span class="cuenta">{count}</span>
     {/if}
   </button>
 {:else}
-  <span class="chip" {style} title={title ?? tag.name}>
+  <span class="chip" class:plain title={title ?? tag.name} style:--chip-color={tag.color}>
+    <span class="punto" aria-hidden="true"></span>
     <span class="nombre">{tag.name}</span>
     {#if count !== null}
       <span class="cuenta">{count}</span>
@@ -71,27 +73,44 @@
 {/if}
 
 <style>
-  /* La misma forma que los chips neutros de `FilterBar`: una sola gramática. */
+  /* El color va solo en el punto y el nombre en neutro: con el chip entero teñido, las
+     etiquetas pesaban más que el nombre del proyecto. Misma píldora que los chips neutros
+     de `FilterBar`. */
   .chip {
     display: inline-flex;
     max-width: 100%;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--tag-dot-gap);
     padding: 2px var(--space-2);
-    border: 1px solid;
+    border: 0;
     border-radius: var(--radius-pill);
+    background: var(--surface-raised);
     font: inherit;
     font-size: var(--text-meta);
     line-height: 16px;
     font-weight: var(--text-meta-weight);
+    color: var(--text-primary);
+  }
+  .chip.plain {
+    padding: 0;
+    background: none;
+    color: var(--text-secondary);
+  }
+
+  .punto {
+    flex: none;
+    width: var(--tag-dot);
+    height: var(--tag-dot);
+    border-radius: 50%;
+    background: var(--chip-color);
   }
 
   .pulsable {
     cursor: pointer;
-    transition: filter var(--duration-fast) var(--ease-out);
+    transition: background var(--duration-fast) var(--ease-out);
   }
   .pulsable:hover {
-    filter: brightness(1.1);
+    background: var(--surface-sunken);
   }
 
   .nombre {
@@ -102,24 +121,27 @@
   }
 
   .cuenta {
-    opacity: 0.7;
+    color: var(--text-tertiary);
   }
 
   .quitar {
     display: inline-flex;
+    margin-left: calc(var(--space-1) - var(--tag-dot-gap));
     margin-right: calc(var(--space-1) * -1);
     padding: 2px;
     border: 0;
     border-radius: var(--radius-pill);
     background: transparent;
-    color: inherit;
+    color: var(--text-tertiary);
     cursor: pointer;
     transition:
       background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out),
       opacity var(--duration-fast) var(--ease-out);
   }
   .quitar:hover {
-    background: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);
+    background: var(--surface-sunken);
+    color: var(--text-primary);
   }
 
   /* Oculta, la X sigue ocupando su hueco: el chip no cambia de ancho. Se revela sobre este

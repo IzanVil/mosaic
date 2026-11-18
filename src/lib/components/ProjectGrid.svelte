@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Pin, SearchX } from '@lucide/svelte';
+  import { SearchX } from '@lucide/svelte';
 
   import EmptyState from './EmptyState.svelte';
   import LazyCard from './LazyCard.svelte';
@@ -40,7 +40,7 @@
   <div class="tablero" class:compacto={density === 'compacto'}>
     {#if pinned.length > 0}
       <section aria-label={$t('tablero.fijadosSeccion')}>
-        <h2><Pin size={12} strokeWidth={1.75} /> {$t('tablero.fijados')}</h2>
+        <h2>{$t('tablero.fijados')}</h2>
         <div class="rejilla">
           {#each pinned as project, i (project.id)}
             <LazyCard {project} compact={density === 'compacto'} eager={i < EAGER} />
@@ -49,9 +49,6 @@
       </section>
     {/if}
 
-    {#if pinned.length > 0 && rest.length > 0}
-      <hr />
-    {/if}
 
     {#if rest.length > 0}
       <section aria-label={$t('tablero.restoSeccion')}>
@@ -88,31 +85,22 @@
   section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-2);
   }
 
+  /* En minúscula, como el resto de rótulos. Sin regla debajo: ya la lleva cada tarjeta. */
   h2 {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
     margin: 0;
     font-size: var(--text-meta);
-    font-weight: var(--text-meta-weight);
+    font-weight: 600;
     line-height: var(--text-meta-lh);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
 
   .rejilla {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--columna), 1fr));
-    gap: var(--hueco);
-  }
-
-  hr {
-    margin: 0;
-    border: 0;
-    border-top: 1px solid var(--border-subtle);
+    /* Sin hueco entre filas: separa la regla de cada tarjeta y su relleno. */
+    gap: 0 var(--hueco);
   }
 </style>

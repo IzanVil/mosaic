@@ -344,21 +344,19 @@
     color: var(--accent);
   }
 
-  /* La receta del chip de etiqueta, en neutro: lo distinguen esta fila y la X a la vista. */
+  /* La píldora de `TagChip` sin el punto: lo que no es una etiqueta no lleva color. */
   .chip {
-    --chip-color: var(--text-secondary);
     display: inline-flex;
     max-width: 100%;
     align-items: center;
     gap: var(--space-1);
     padding: 2px var(--space-2);
-    border: 1px solid color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);
     border-radius: var(--radius-pill);
-    background: color-mix(in oklab, var(--chip-color) var(--tag-chip-bg), transparent);
+    background: var(--surface-raised);
     font-size: var(--text-meta);
     line-height: 16px;
     font-weight: var(--text-meta-weight);
-    color: color-mix(in oklab, var(--chip-color) var(--tag-chip-text), var(--tag-chip-ink));
+    color: var(--text-primary);
   }
 
   /* Mismo hueco y misma X que `TagChip`, para que las dos filas casen. */
@@ -369,12 +367,15 @@
     border: 0;
     border-radius: var(--radius-pill);
     background: transparent;
-    color: inherit;
+    color: var(--text-tertiary);
     cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-out);
+    transition:
+      background var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
   }
   .quitar:hover {
-    background: color-mix(in oklab, var(--chip-color) var(--tag-chip-border), transparent);
+    background: var(--surface-sunken);
+    color: var(--text-primary);
   }
 
   .mas {
