@@ -350,6 +350,22 @@ Pendiente:
       `.msi`); el README en inglés usa sus capturas y ya no avisa de que la
       interfaz solo está en español, y los README y la web enlazan los dos `.msi`
 
+## Rediseño «cartela de museo» · HECHO
+
+Composición nueva sobre la misma paleta, tipografía y movimiento. El porqué está
+en `docs/DESIGN.md`.
+
+- [x] La tarjeta como cartela: sin caja, una regla fina encima, el nombre a
+      17 px y la carpeta que lo contiene en vez de la ruta
+- [x] Etiquetas como punto de color y nombre en neutro; fuera `--tag-chip-*`
+- [x] Cabecera, panel lateral y barra de herramientas sin bordes; rótulos en
+      minúscula
+- [x] Botón principal en tinta; el turquesa queda para el estado
+- [x] Ajustes y la ficha con el mismo sistema: campos rellenos, secundarios
+      con contorno, el README sin caja
+- [ ] Rehacer las capturas y el GIF del README y de la web al publicar la
+      versión que lo lleve (hoy enseñan la 0.3.1, que es la que se descarga)
+
 ## Mantenimiento
 
 - [x] Mosaic 0.3.1 publicado el 2026-11-16: el botón de Git ya dice «sin
