@@ -415,7 +415,7 @@ with `MOSAIC_LOG` (for example, `MOSAIC_LOG=debug pnpm tauri dev`).
   <tr>
     <td width="33%" valign="top"><b>Backend</b><br><sub>Rust and <a href="https://tauri.app">Tauri 2</a>. SQLite through <code>rusqlite</code>. Repositories read with <code>git2</code>, built without network support.</sub></td>
     <td width="33%" valign="top"><b>Frontend</b><br><sub><a href="https://svelte.dev">Svelte 5</a> with strict TypeScript and Vite. Fuzzy search with <code>fuse.js</code>.</sub></td>
-    <td width="33%" valign="top"><b>Design</b><br><sub>Its own tokens in oklch, warm neutrals and a teal accent. Inter and JetBrains Mono are bundled.</sub></td>
+    <td width="33%" valign="top"><b>Design</b><br><sub>Its own tokens in oklch, glazed white and cobalt. Schibsted Grotesk and JetBrains Mono are bundled.</sub></td>
   </tr>
 </table>
 

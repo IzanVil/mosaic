@@ -413,7 +413,7 @@ controlan con `MOSAIC_LOG` (por ejemplo, `MOSAIC_LOG=debug pnpm tauri dev`).
   <tr>
     <td width="33%" valign="top"><b>Backend</b><br><sub>Rust y <a href="https://tauri.app">Tauri 2</a>. SQLite con <code>rusqlite</code>. Repositorios leídos con <code>git2</code>, compilado sin soporte de red.</sub></td>
     <td width="33%" valign="top"><b>Frontend</b><br><sub><a href="https://svelte.dev">Svelte 5</a> con TypeScript estricto y Vite. Búsqueda difusa con <code>fuse.js</code>.</sub></td>
-    <td width="33%" valign="top"><b>Diseño</b><br><sub>Tokens propios en oklch, neutros cálidos y acento turquesa. Inter y JetBrains Mono van empaquetadas.</sub></td>
+    <td width="33%" valign="top"><b>Diseño</b><br><sub>Tokens propios en oklch, blanco esmaltado y cobalto. Schibsted Grotesk y JetBrains Mono van empaquetadas.</sub></td>
   </tr>
 </table>
 

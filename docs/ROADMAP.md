@@ -363,8 +363,24 @@ en `docs/DESIGN.md`.
 - [x] Botón principal en tinta; el turquesa queda para el estado
 - [x] Ajustes y la ficha con el mismo sistema: campos rellenos, secundarios
       con contorno, el README sin caja
+- [x] Sustituido el mismo día por Azulejo (abajo): se leía como la misma
+      aplicación
+
+## Azulejo · HECHO
+
+Mundo visual nuevo: paleta, letra y tarjeta. El porqué está en `docs/DESIGN.md`.
+
+- [x] Neutros con el matiz del cobalto, acento en cobalto y el lateral como
+      una franja de ese color
+- [x] Schibsted Grotesk en lugar de Inter
+- [x] La tarjeta como azulejo, con una cenefa hecha de los colores de sus
+      etiquetas (`tagBand`, con tests)
+- [x] Etiquetas y muestras de color como teselas cuadradas; la marca con
+      cuatro teselas
 - [ ] Rehacer las capturas y el GIF del README y de la web al publicar la
-      versión que lo lleve (hoy enseñan la 0.3.1, que es la que se descarga)
+      versión que lo lleve (hoy enseñan la 0.3.1, que es la que se descarga),
+      con el marco de `scripts/demo/` sin su fondo turquesa y el pie de la
+      captura de temas, que habla de «la misma paleta cálida»
 
 ## Mantenimiento
 
