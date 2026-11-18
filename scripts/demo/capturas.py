@@ -167,7 +167,7 @@ def diagonal(oscuro, claro):
     mascara = Image.new("L", (an, al), 0)
     ImageDraw.Draw(mascara).polygon([(an * 0.62, 0), (an, 0), (an, al), (an * 0.38, al)], fill=255)
     mezcla = Image.composite(claro, oscuro, mascara)
-    ImageDraw.Draw(mezcla).line([(an * 0.62, 0), (an * 0.38, al)], fill=(45, 212, 191), width=3)
+    ImageDraw.Draw(mezcla).line([(an * 0.62, 0), (an * 0.38, al)], fill=(240, 244, 252), width=3)
     return mezcla
 
 
